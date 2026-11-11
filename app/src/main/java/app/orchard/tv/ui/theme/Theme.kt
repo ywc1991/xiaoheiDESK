@@ -32,6 +32,9 @@ object Palette {
     val Fill = Color(0x2E787880)
     val FillStrong = Color(0x52787880)
     val Hairline = Color(0x1AFFFFFF)
+
+    /** A quiet rule between sections of a panel, a step above the hairline. */
+    val Separator = Color(0x29EBEBF5)
     val Green = Color(0xFF30D158)
     val Orange = Color(0xFFFF9F0A)
     val Red = Color(0xFFFF453A)
@@ -79,7 +82,7 @@ val InterDisplay = inter(32f)
 object Type {
     val Clock = TextStyle(
         fontFamily = InterDisplay, fontWeight = FontWeight.W700,
-        fontSize = 104.sp, letterSpacing = (-0.04).em, color = Palette.Label,
+        fontSize = 104.sp, letterSpacing = (-0.03).em, color = Palette.Label,
     )
     /** Over and under the large clock: the date, and the weather. */
     val ClockDate = TextStyle(
@@ -122,5 +125,15 @@ object Type {
     val Caption = TextStyle(
         fontFamily = InterText, fontWeight = FontWeight.W500,
         fontSize = 11.sp, letterSpacing = 0.01.em, color = Palette.SecondaryLabel,
+    )
+    /** A panel's section label ("今天"/"本周"): small, tracked out, quiet. */
+    val Section = TextStyle(
+        fontFamily = InterText, fontWeight = FontWeight.W600,
+        fontSize = 11.sp, letterSpacing = 0.08.em, color = Palette.SecondaryLabel,
+    )
+    /** The weather panel's current temperature, the large reading iOS Weather leads with. */
+    val TempLarge = TextStyle(
+        fontFamily = InterDisplay, fontWeight = FontWeight.W500,
+        fontSize = 36.sp, lineHeight = 40.sp, letterSpacing = (-0.02).em, color = Palette.Label,
     )
 }

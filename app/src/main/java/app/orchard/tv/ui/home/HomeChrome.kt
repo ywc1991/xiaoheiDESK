@@ -19,6 +19,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -788,11 +789,11 @@ fun CornerClock(
     onFocused: (Boolean) -> Unit = {},
 ) {
     val dim = Color.White.copy(alpha = 0.92f)
-    val shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 8f)
+    val shadow = Shadow(Color.Black.copy(alpha = 0.45f), blurRadius = 12f)
     val style = Type.Title.copy(color = dim, shadow = shadow)
     val drift = heldDrift(saving, now)
     if (onClick == null) {
-        Row(modifier.height(34.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(modifier.height(36.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText(dateShortText(now), style = style)
             BasicText(
                 timeText(now), style = style,
@@ -819,8 +820,8 @@ fun CornerClock(
             Modifier
                 .clip(RoundedCornerShape(50))
                 .background(bg)
-                .height(34.dp)
-                .padding(horizontal = 14.dp),
+                .height(36.dp)
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BasicText(dateShortText(now), style = style.copy(color = fg, shadow = if (state.focused) null else shadow))
@@ -847,7 +848,7 @@ fun CornerWeather(
     onFocused: (Boolean) -> Unit = {},
 ) {
     val dim = Color.White.copy(alpha = 0.92f)
-    val shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 8f)
+    val shadow = Shadow(Color.Black.copy(alpha = 0.45f), blurRadius = 12f)
     Weather.now?.let { w ->
         Pressable(
             onClick = onClick,
@@ -867,8 +868,8 @@ fun CornerWeather(
                 Modifier
                     .clip(RoundedCornerShape(50))
                     .background(bg)
-                    .height(34.dp)
-                    .padding(horizontal = 14.dp),
+                    .height(36.dp)
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Same 17.dp glyph as the status pill's icons, so the two read as one weight.
@@ -937,8 +938,8 @@ fun StatusPill(
             Modifier
                 .clip(RoundedCornerShape(50))
                 .drawBehind { drawRect(bg) }
-                .height(34.dp)
-                .padding(horizontal = 14.dp),
+                .height(36.dp)
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {

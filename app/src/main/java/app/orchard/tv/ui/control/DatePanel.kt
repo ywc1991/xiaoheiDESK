@@ -125,17 +125,17 @@ fun DatePanel(
                         .width(430.dp)
                         .consumeTaps()
                         .liquidGlass(30.dp)
-                        .padding(22.dp),
+                        .padding(24.dp),
                 ) {
                     Header(viewY, viewM, today)
-                    Spacer(Modifier.height(14.dp))
+                    Spacer(Modifier.height(16.dp))
                     WeekHeader()
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     MonthGrid(viewY, viewM, today)
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(14.dp))
                     BasicText(
                         stringResource(R.string.date_hint),
-                        style = Type.Caption.copy(color = Palette.SecondaryLabel),
+                        style = Type.Caption.copy(color = Palette.TertiaryLabel),
                     )
                 }
             }
@@ -156,6 +156,7 @@ private fun Header(viewY: Int, viewM: Int, today: LocalDate) {
     }
     // The month being looked at, with today anchored underneath it, the way the weather panel
     // leads with the place and keeps the current reading below.
+    val fest = Lunar.festivalFor(today)
     BasicText(
         "%d年%d月".format(viewY, viewM),
         style = Type.Title,
@@ -164,7 +165,7 @@ private fun Header(viewY: Int, viewM: Int, today: LocalDate) {
     )
     Spacer(Modifier.height(4.dp))
     BasicText(
-        "今天 ${today.monthValue}月${today.dayOfMonth}日 $weekday · ${Lunar.fullLabel(today)}",
+        "今天 ${today.monthValue}月${today.dayOfMonth}日 $weekday · ${Lunar.fullLabel(today)}" + (fest?.let { " $it" } ?: ""),
         style = Type.Callout.copy(color = Palette.SecondaryLabel),
     )
 }
@@ -176,7 +177,7 @@ private fun WeekHeader() {
     Row(Modifier.fillMaxWidth()) {
         names.forEach {
             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                BasicText(it, style = Type.Caption.copy(color = Palette.SecondaryLabel), softWrap = false)
+                BasicText(it, style = Type.Section, softWrap = false)
             }
         }
     }
@@ -188,32 +189,31 @@ private fun MonthGrid(year: Int, month: Int, today: LocalDate) {
     val days = Lunar.daysInMonth(year, month)
     val cells = first + days
     val weeks = (cells + 6) / 7
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
         for (w in 0 until weeks) {
             Row(Modifier.fillMaxWidth()) {
                 for (d in 0..6) {
                     val idx = w * 7 + d
                     val day = idx - first + 1
                     if (idx < first || day > days) {
-                        Box(Modifier.weight(1f).height(48.dp))
+                        Box(Modifier.weight(1f).height(50.dp))
                     } else {
                         val date = LocalDate.of(year, month, day)
                         val isToday = date == today
-                        val lunar = Lunar.toLunar(date)
                         val bg = if (isToday) Palette.Focus else Color.Transparent
                         val fg = if (isToday) Palette.OnFocus else Palette.Label
                         val sub = if (isToday) Palette.OnFocus else Palette.SecondaryLabel
                         Column(
                             Modifier
                                 .weight(1f)
-                                .height(48.dp)
-                                .clip(RoundedCornerShape(10.dp))
+                                .height(50.dp)
+                                .clip(RoundedCornerShape(12.dp))
                                 .background(bg),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            BasicText("$day", style = Type.Callout.copy(color = fg))
-                            BasicText(Lunar.dayName(lunar.day), style = Type.Caption.copy(color = sub))
+                            BasicText("$day", style = Type.Headline.copy(color = fg))
+                            BasicText(Lunar.lunarSubLabel(date), style = Type.Caption.copy(color = sub))
                         }
                     }
                 }

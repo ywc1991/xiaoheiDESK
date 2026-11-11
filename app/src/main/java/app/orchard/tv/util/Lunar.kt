@@ -130,6 +130,70 @@ object Lunar {
         val l = toLunar(date)
         return "农历${ganZhiYear(l.year)}${monthName(l.month, l.isLeap)}${dayName(l.day)}"
     }
+
+    // ---- 节日 ----
+    // 农历节日：键为「农历月 -> 农历日」，闰月不置节日（传统上节日落在正常月）。
+    private val LUNAR_FESTIVALS: Map<Int, Map<Int, String>> = mapOf(
+        1 to mapOf(1 to "春节", 15 to "元宵"),
+        2 to mapOf(2 to "龙抬头"),
+        3 to mapOf(3 to "上巳"),
+        5 to mapOf(5 to "端午"),
+        7 to mapOf(7 to "七夕", 15 to "中元"),
+        8 to mapOf(15 to "中秋"),
+        9 to mapOf(9 to "重阳"),
+        10 to mapOf(1 to "寒衣", 15 to "下元"),
+        12 to mapOf(8 to "腊八", 23 to "小年"),
+    )
+
+    // 公历节日：键为「公历月 -> 公历日」。
+    private val SOLAR_FESTIVALS: Map<Int, Map<Int, String>> = mapOf(
+        1 to mapOf(1 to "元旦"),
+        2 to mapOf(14 to "情人节"),
+        3 to mapOf(8 to "妇女节", 12 to "植树节"),
+        4 to mapOf(1 to "愚人节"),
+        5 to mapOf(1 to "劳动节", 4 to "青年节"),
+        6 to mapOf(1 to "儿童节"),
+        7 to mapOf(1 to "建党节"),
+        8 to mapOf(1 to "建军节"),
+        9 to mapOf(10 to "教师节"),
+        10 to mapOf(1 to "国庆"),
+        12 to mapOf(25 to "圣诞"),
+    )
+
+    /** 清明：21 世纪用寿星公式估算（1900–2100 误差极小），返回 4 月的日期。 */
+    private fun qingmingDay(year: Int): Int {
+        val y = year % 100
+        return ((y * 0.2422 + 4.81).toInt()) - (y / 4)
+    }
+
+    /** 是否农历除夕（明天是农历正月初一）。 */
+    private fun isLunarNewYearEve(date: LocalDate): Boolean {
+        val t = toLunar(date.plusDays(1))
+        return t.month == 1 && t.day == 1 && !t.isLeap
+    }
+
+    /** 返回该公历日期对应的节日名，无则返回 null。优先级：除夕 > 农历节日 > 公历节日 > 清明。 */
+    fun festivalFor(date: LocalDate): String? {
+        if (isLunarNewYearEve(date)) return "除夕"
+        val lunar = toLunar(date)
+        if (!lunar.isLeap) LUNAR_FESTIVALS[lunar.month]?.get(lunar.day)?.let { return it }
+        SOLAR_FESTIVALS[date.monthValue]?.get(date.dayOfMonth)?.let { return it }
+        if (date.monthValue == 4 && date.dayOfMonth == qingmingDay(date.year)) return "清明"
+        return null
+    }
+
+    /**
+     * 日历格子里农历一栏应显示的文字：
+     * - 有节日则显示节日名；
+     * - 否则农历初一显示「月份名」（如 正月/九月/闰二月）；
+     * - 其余显示农历日（如 十四/廿三）。
+     */
+    fun lunarSubLabel(date: LocalDate): String {
+        festivalFor(date)?.let { return it }
+        val lunar = toLunar(date)
+        if (lunar.day == 1) return monthName(lunar.month, lunar.isLeap)
+        return dayName(lunar.day)
+    }
 }
 
 data class LunarDate(val year: Int, val month: Int, val day: Int, val isLeap: Boolean)

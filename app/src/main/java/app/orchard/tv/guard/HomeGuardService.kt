@@ -2294,7 +2294,7 @@ class HomeGuardService : AccessibilityService() {
             // starts PatchWall, Aerial pauses ~30-80 ms later, and the bounce-back reclaimed the
             // front before PatchWall's window came up. onAccessibilityEvent already honours
             // allowStockUntil the same way; this makes the HOME-in-Aerial path consistent with it.
-            if (s.backOnPause && SystemClock.uptimeMillis() < s.allowStockUntil) {
+            if (s.backOnPause && SystemClock.uptimeMillis() < allowStockUntil) {
                 Log.i(TAG, "Aerial paused into the stock launcher on purpose; leaving it in front")
                 return false
             }
