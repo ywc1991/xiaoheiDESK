@@ -59,8 +59,17 @@ object Updates {
     private const val STALL_BYTES = 256 * 1024L
     const val CONTROL_CENTER_MAX_AGE_MS = UpdateCheck.PANEL_MAX_AGE_MS
 
-    /** This build's version, e.g. "1.17" (the guard build's "-guard" left off). */
+    /** This build's product version, shown in Control Center, e.g. "1.0.0" (flavor suffix left off). */
     val current: String = BuildConfig.VERSION_NAME.substringBefore('-')
+
+    /**
+     * The upstream Aerial release this build is based on. xiaoheiDESK has its own version line,
+     * so comparing [current] with the upstream version.txt would make 1.83 look newer than
+     * 1.0.0 and offer to replace this build with a stock Aerial APK. Update checks, release
+     * notes and the website's `v=` parameter therefore use the upstream baseline; [current]
+     * is only the version we show the owner. Bump this when the custom build is rebased.
+     */
+    const val upstream = "1.83"
 
     /** The newer release's version, or null when this is the latest (or nothing is known yet). */
     var available by mutableStateOf<String?>(null); private set
@@ -86,14 +95,14 @@ object Updates {
         started = true
         appContext = context.applicationContext
         prefs = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        available = prefs.getString("latest", null)?.takeIf { newer(it, current) }
+        available = prefs.getString("latest", null)?.takeIf { newer(it, upstream) }
         checker = UpdateCheck(
             scope = scope,
             lastSuccess = { prefs.getLong("checked_at", 0) },
             read = { withContext(Dispatchers.IO) { read(VERSION_URL) } },
             save = { latest, checkedAt ->
                 prefs.edit { putString("latest", latest); putLong("checked_at", checkedAt) }
-                available = latest.takeIf { newer(it, current) }
+                available = latest.takeIf { newer(it, upstream) }
                 loadNotes()
             },
             log = { Log.i(TAG, it); DiagLog.i("update check: $it") },
@@ -137,7 +146,7 @@ object Updates {
         val zh = Locale.getDefault().language == "zh"
         if (prefs.getString("notes_for", null) == latest) {
             prefs.getString("notes", null)?.let { json ->
-                runCatching { ReleaseNotesParser.parse(json, current, latest, zh) }.getOrNull()?.let { notes = it; return }
+                runCatching { ReleaseNotesParser.parse(json, upstream, latest, zh) }.getOrNull()?.let { notes = it; return }
             }
         }
         if (readingNotes) return
@@ -146,7 +155,7 @@ object Updates {
             val json = runCatching { withContext(Dispatchers.IO) { read(NOTES_URL) } }
                 .onFailure { Log.i(TAG, "release notes: ${it.javaClass.simpleName}") }.getOrNull()
             readingNotes = false
-            val parsed = json?.let { runCatching { ReleaseNotesParser.parse(it, current, latest, zh) }.getOrNull() }
+            val parsed = json?.let { runCatching { ReleaseNotesParser.parse(it, upstream, latest, zh) }.getOrNull() }
             // Only notes that already have this release: the site's file may be a deploy behind.
             if (parsed.isNullOrEmpty() || parsed.first().version != latest || available != latest) return@launch
             prefs.edit { putString("notes", json); putString("notes_for", latest) }
