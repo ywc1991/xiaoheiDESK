@@ -20,7 +20,7 @@ android {
         minSdk = 21
         targetSdk = 34
         versionCode = 112
-        versionName = "1.83"
+        versionName = "1.83-custom"
         // `./gradlew -Pdiag ...`: a build for one reporter's TV whose logcat shows no app lines;
         // see system/DiagLog.kt.
         val diag = project.hasProperty("diag")

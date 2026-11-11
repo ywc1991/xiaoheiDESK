@@ -91,7 +91,12 @@ private fun glyphPath(glyph: Glyph, level: Float): String? {
         Glyph.Globe -> GlyphPaths.LANGUAGE
         Glyph.Moon -> GlyphPaths.BEDTIME
         Glyph.Cloud -> GlyphPaths.CLOUD
-        Glyph.CloudRain -> GlyphPaths.RAINY
+        Glyph.CloudRain -> when {
+            // Fewer drops, the lighter the rain: see WeatherPanel's rainLevel.
+            level < 0.34f -> GlyphPaths.RAINY_LIGHT
+            level < 0.67f -> GlyphPaths.RAINY_MEDIUM
+            else -> GlyphPaths.RAINY
+        }
         Glyph.CloudSnow -> GlyphPaths.WEATHER_SNOWY
         Glyph.CloudFog -> GlyphPaths.FOGGY
         Glyph.CloudBolt -> GlyphPaths.THUNDERSTORM

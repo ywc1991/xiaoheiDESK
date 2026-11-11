@@ -302,12 +302,27 @@ private fun Labels(
     caption: String?,
     now: LocalDateTime,
     showTime: Boolean = true,
+    switchKey: Any? = null,
     /** A shade under the labels: over photos. The aerial films are left as they are, as on Home. */
     shade: Boolean = true,
 ) {
     // Fades in where Home's own clock has moved to, as the photos cover it.
     val time by animateFloatAsState(if (showTime) 1f else 0f, tween(2000), label = "time")
-    Box(Modifier.fillMaxSize()) {
+    // Custom: both stay up for [LABELS_SHOW_MS] after each switch — the next film or photo, or a
+    // new caption within a film — then fade out and leave the picture alone. Skipping with
+    // left / right restarts the wait.
+    var shown by remember(switchKey, caption) { mutableStateOf(true) }
+    LaunchedEffect(switchKey, caption) {
+        shown = true
+        delay(LABELS_SHOW_MS)
+        shown = false
+    }
+    val labelsAlpha by animateFloatAsState(
+        if (shown) 1f else 0f,
+        tween(if (shown) 250 else 800, easing = Motion.EaseOut),
+        label = "labels",
+    )
+    Box(Modifier.fillMaxSize().graphicsLayer { alpha = labelsAlpha }) {
         if (shade) Canvas(Modifier.fillMaxSize().diagLayer("shade")) {
             val shade = labelShadeImage
             // Just enough shade under the text to read it over bright sky or snow. Only its two
@@ -326,7 +341,7 @@ private fun Labels(
         val drift = saverDrift(now)
         if (time > 0f && AerialSettings.screensaverClock) BasicText(
             timeText(now),
-            style = SaverClockStyle,
+            style = Type.Title.copy(color = Color.White.copy(alpha = 0.92f)),
             modifier = Modifier
                 .align(if (AerialSettings.clockRight) Alignment.TopEnd else Alignment.TopStart)
                 .padding(top = SaverClockTop, start = SaverClockSide, end = SaverClockSide)
@@ -608,7 +623,7 @@ private fun AerialSaver(
         onRelease = { player.clearVideoSurfaceView(it.surface) },
     )
     Box(Modifier.fillMaxSize().graphicsLayer { alpha = veil }.background(Color.Black))
-    Labels(if (playing) caption ?: film.captionAt(((if (index == 0) firstAtMs else 0L) / 1000).toInt()) else null, now, shade = false)
+    Labels(if (playing) caption ?: film.captionAt(((if (index == 0) firstAtMs else 0L) / 1000).toInt()) else null, now, switchKey = index, shade = false)
 }
 
 /** How quickly the black lifts off a Dolby Vision film once it moves. */
@@ -624,6 +639,9 @@ private const val RETRY_MS = 1_500L
 private const val STALL_MS = 8_000L
 
 private val DECODER_ERRORS = PlaybackException.ERROR_CODE_DECODER_INIT_FAILED..PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED
+
+/** How long the time and the place stay up after the screensaver switches. */
+private const val LABELS_SHOW_MS = 5_000L
 
 @Composable
 private fun PhotoSaver(
@@ -686,7 +704,7 @@ private fun PhotoSaver(
         }
     }
     val wp = pool.getOrNull((image?.first ?: 0).mod(pool.size.coerceAtLeast(1)))
-    Labels(wp?.let(::stillCaption), now, showTime = carried == null || image != null)
+    Labels(wp?.let(::stillCaption), now, showTime = carried == null || image != null, switchKey = slide)
 }
 
 /** A large clock that moves once a minute over the wallpaper or the apps' light. */

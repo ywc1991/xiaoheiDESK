@@ -24,6 +24,7 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -80,6 +82,8 @@ import app.orchard.tv.guard.KidsWatch
 import app.orchard.tv.apps.AppEntry
 import app.orchard.tv.ui.control.ControlCenter
 import app.orchard.tv.ui.wallpaper.SheetCovers
+import app.orchard.tv.ui.control.DatePanel
+import app.orchard.tv.ui.control.WeatherPanel
 import app.orchard.tv.ui.wallpaper.WallpaperSheet
 import app.orchard.tv.wallpaper.AerialFormats
 import app.orchard.tv.wallpaper.ScreensaverMode
@@ -301,6 +305,7 @@ fun HomeScreen(
     val firmwareInputPanel = remember {
         SystemProbe.tclInputPanel(appContext) != null || SystemProbe.coocaaInputPanel(appContext)
     }
+    val weatherRequester = remember { FocusRequester() }
 
     var focusedKey by remember { mutableStateOf<String?>(null) }
     // Where focus goes when the overlay closes, when that is not the tile it was on. Kept apart
@@ -550,6 +555,9 @@ fun HomeScreen(
         val metrics = remember(maxWidth, maxHeight, columns, oneRow, plateNames, peek, hasPlate, largeClock, clockRightNow) {
             GridMetrics(maxWidth, maxHeight, columns, oneRow, plateNames, peek, hasPlate, largeClock, clockRightNow)
         }
+        // The two corners of the top row take the same width, so the clock on the left and the
+        // weather beside the pill on the right read as one matched pair.
+        val topGroupWidth = maxWidth * 0.44f
         val collapsePx = with(density) { metrics.collapse.toPx() }
 
         // Into the grid as from one row: the first row whole at the top. Two rows go in a row
@@ -764,6 +772,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .diagLayer("clock")
                             .padding(start = metrics.margin, top = 28.dp)
+                            .width(topGroupWidth)
                             .graphicsLayer {
                                 alpha = 1f - (scroll.value / collapsePx * 1.6f).coerceIn(0f, 1f)
                                 compositingStrategy = CompositingStrategy.ModulateAlpha
@@ -862,14 +871,27 @@ fun HomeScreen(
 
         // The pill holds only the network and Control Center. The time joins it once the clock
         // above the top row has scrolled away, so the screen never shows the time twice. The small
-        // clock on the right puts the time and weather just left of the pill.
+        // clock on the right puts the time just left of the pill; the weather sits left of it.
         Row(
             Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = 28.dp, end = metrics.margin - 14.dp)
+                .width(topGroupWidth)
                 .graphicsLayer { alpha = if (overlay is Overlay.ControlCenter) 0f else 1f },
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End,
         ) {
+            if (!AerialSettings.largeClock) {
+                CornerWeather(
+                    onClick = { vm.overlay = Overlay.Weather },
+                    enabled = gridEnabled && moving == null,
+                    focusRequester = weatherRequester,
+                    onFocused = { gained -> if (gained) pillFocused = false },
+                    modifier = Modifier
+                        .padding(end = 14.dp)
+                        .graphicsLayer { alpha = 1f - (scroll.value / collapsePx * 1.6f).coerceIn(0f, 1f) },
+                )
+            }
             if (!AerialSettings.largeClock && AerialSettings.clockRight) {
                 CornerClock(
                     now = now,
@@ -1107,6 +1129,11 @@ fun HomeScreen(
         )
 
         NoticeBanner(vm.notice, Modifier.align(Alignment.TopCenter).padding(top = 24.dp), vm.noticeGlyph)
+
+        WeatherPanel(
+            visible = overlay is Overlay.Weather,
+            onClose = { vm.overlay = Overlay.None },
+        )
 
         Screensaver(visible = vm.screensaverVisible, apps = apps, now = now, skips = vm.screensaverSkips, carry = when {
                 filmSaver -> SaverCarry.Film(liveFilm)

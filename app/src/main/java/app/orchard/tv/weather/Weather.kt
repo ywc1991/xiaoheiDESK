@@ -23,8 +23,28 @@ import kotlin.math.roundToInt
 
 enum class WeatherKind { Clear, PartlyCloudy, Cloudy, Fog, Rain, Snow, Thunder }
 
-/** [high] and [low] are today's, shown under the large clock; null in a reading saved by an older version. */
-data class WeatherNow(val celsius: Int, val kind: WeatherKind, val day: Boolean, val high: Int? = null, val low: Int? = null)
+/**
+ * [high] and [low] are today's, shown under the large clock; null in a reading saved by an older
+ * version. [code] is Open-Meteo's raw WMO weather code, kept so the forecast panel can name the
+ * exact condition (e.g. 61 light rain vs 65 heavy rain) and pick how many raindrops to draw.
+ */
+data class WeatherNow(
+    val celsius: Int,
+    val kind: WeatherKind,
+    val day: Boolean,
+    val high: Int? = null,
+    val low: Int? = null,
+    val code: Int = 0,
+)
+
+/** One hour of today, from the current hour on. */
+data class HourPoint(val hour: Int, val celsius: Int, val kind: WeatherKind, val code: Int = 0)
+
+/** One day of the week ahead. [date] is ISO, "2026-10-22". */
+data class DayPoint(val date: String, val max: Int, val min: Int, val kind: WeatherKind, val code: Int = 0)
+
+/** Today hour by hour, and the coming week. Shown when the weather is selected on Home. */
+data class WeatherForecast(val hours: List<HourPoint>, val days: List<DayPoint>)
 
 /**
  * The weather beside the home clock, from Open-Meteo: no key, reachable from China. The place is
@@ -54,12 +74,16 @@ object Weather {
     /** True when the owner named the place; false while it is guessed from the network. */
     var chosen by mutableStateOf(false); private set
 
+    /** Today's hours and the coming week, once the weather has been selected on Home. */
+    var forecast by mutableStateOf<WeatherForecast?>(null); private set
+
     private lateinit var prefs: SharedPreferences
     private lateinit var app: Context
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var started = false
     private var lastAttempt = 0L
     private var job: Job? = null
+    private var forecastJob: Job? = null
 
     fun init(context: Context) {
         if (started) return
@@ -74,6 +98,7 @@ object Weather {
                 prefs.getInt("celsius", 0), kind, prefs.getBoolean("day", true),
                 high = prefs.getInt("high", NONE).takeIf { it != NONE },
                 low = prefs.getInt("low", NONE).takeIf { it != NONE },
+                code = prefs.getInt("code", 0),
             )
         }
     }
@@ -103,6 +128,7 @@ object Weather {
                     putInt("celsius", reading.celsius)
                     putString("kind", reading.kind.name)
                     putBoolean("day", reading.day)
+                    putInt("code", reading.code)
                     putInt("high", reading.high ?: NONE)
                     putInt("low", reading.low ?: NONE)
                 }
@@ -112,33 +138,7 @@ object Weather {
 
     /** Off the main thread. */
     private fun fetch(): WeatherNow {
-        var lat = prefs.getFloat("lat", Float.NaN)
-        var lon = prefs.getFloat("lon", Float.NaN)
-        val guessedLongAgo = System.currentTimeMillis() - prefs.getLong("located_at", 0) > RELOCATE_MS
-        if (prefs.getBoolean("chosen", false) && !lat.isNaN() && !prefs.getBoolean("checked_against_cities", false)) {
-            correctChosenPlace(lat, lon)?.let { lat = it.lat.toFloat(); lon = it.lon.toFloat() }
-        }
-        if (!prefs.getBoolean("chosen", false) && (lat.isNaN() || guessedLongAgo)) {
-            val guess = locate()
-            if (guess != null) {
-                lat = guess.lat
-                lon = guess.lon
-                val city = guess.city
-                // The services name the city in English ("Foshan"); in China, say it as the owner would.
-                // A name the table spells otherwise, or a district's, stayed in pinyin among Chinese
-                // text (Hisense 43E3G, issue #1195): then the main listed place at that point names it.
-                val zh = city?.takeIf { guess.cn && Locale.getDefault().language == "zh" }
-                    ?.let {
-                        (Cities.near(app, it, lat.toDouble(), lon.toDouble(), km = 80.0, ascii = true)
-                            ?: Cities.mainNear(app, lat.toDouble(), lon.toDouble(), km = 20.0))?.name
-                    }
-                prefs.edit {
-                    putFloat("lat", lat); putFloat("lon", lon)
-                    putString("place", zh ?: city)
-                    putLong("located_at", System.currentTimeMillis())
-                }
-            }
-        }
+        val (lat, lon) = coordinates()
         val json = JSONObject(get("https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto"))
         val current = json.getJSONObject("current")
         val daily = json.optJSONObject("daily")
@@ -147,9 +147,101 @@ object Weather {
             celsius = current.getDouble("temperature_2m").roundToInt(),
             kind = kindOf(current.getInt("weather_code")),
             day = current.optInt("is_day", 1) == 1,
+            code = current.getInt("weather_code"),
             high = today("temperature_2m_max"),
             low = today("temperature_2m_min"),
         )
+    }
+
+    /**
+     * The place to ask about: the one named on the phone page, or a guess from the network's public
+     * address (ipinfo.io, no key, its "loc" being "lat,lon"), re-guessed once a day. Off the main
+     * thread.
+     */
+    private fun coordinates(): Pair<Double, Double> {
+        var lat = prefs.getFloat("lat", Float.NaN).toDouble()
+        var lon = prefs.getFloat("lon", Float.NaN).toDouble()
+        val guessedLongAgo = System.currentTimeMillis() - prefs.getLong("located_at", 0) > RELOCATE_MS
+        if (prefs.getBoolean("chosen", false) && !lat.isNaN() && !prefs.getBoolean("checked_against_cities", false)) {
+            correctChosenPlace(lat.toFloat(), lon.toFloat())?.let { lat = it.lat; lon = it.lon }
+        }
+        if (!prefs.getBoolean("chosen", false) && (lat.isNaN() || guessedLongAgo)) {
+            val guess = locate()
+            if (guess != null) {
+                lat = guess.lat.toDouble()
+                lon = guess.lon.toDouble()
+                val city = guess.city
+                // The services name the city in English ("Foshan"); in China, say it as the owner would.
+                // A name the table spells otherwise, or a district's, stayed in pinyin among Chinese
+                // text (Hisense 43E3G, issue #1195): then the main listed place at that point names it.
+                val zh = city?.takeIf { guess.cn && Locale.getDefault().language == "zh" }
+                    ?.let {
+                        (Cities.near(app, it, lat, lon, km = 80.0, ascii = true)
+                            ?: Cities.mainNear(app, lat, lon, km = 20.0))?.name
+                    }
+                prefs.edit {
+                    putFloat("lat", lat.toFloat()); putFloat("lon", lon.toFloat())
+                    putString("place", zh ?: city)
+                    putLong("located_at", System.currentTimeMillis())
+                }
+            }
+        }
+        return lat to lon
+    }
+
+    /**
+     * Today hour by hour from now on, plus the coming week. Fetched when the weather is selected on
+     * Home; the old reading stays up until the new one arrives. Off the main thread.
+     */
+    fun loadForecast() {
+        forecastJob?.cancel()
+        forecastJob = scope.launch {
+            val f = runCatching { withContext(Dispatchers.IO) { fetchForecast() } }
+                .onFailure { Log.w(TAG, "could not fetch the forecast", it) }
+                .getOrNull() ?: return@launch
+            forecast = f
+        }
+    }
+
+    private fun fetchForecast(): WeatherForecast {
+        val (lat, lon) = coordinates()
+        val json = JSONObject(get(
+            "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon" +
+                "&current=weather_code&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min" +
+                "&timezone=auto&forecast_days=7",
+        ))
+        val hourly = json.getJSONObject("hourly")
+        val times = hourly.getJSONArray("time")
+        val temps = hourly.getJSONArray("temperature_2m")
+        val codes = hourly.getJSONArray("weather_code")
+        // Anchor to the current hour in the place's own timezone. Open-Meteo answers in local time
+        // (timezone=auto), which may differ from the device clock, so read "now" from the same
+        // source as the hourly times. Floor to the hour so the first cell is the current hour.
+        val currentTime = json.optJSONObject("current")?.optString("time")?.takeIf { it.length >= 13 }
+        val threshold = currentTime?.substring(0, 13)?.plus(":00")
+        // The next 12 hours from now on, crossing midnight into tomorrow when the evening runs out.
+        val hours = mutableListOf<HourPoint>()
+        for (i in 0 until times.length()) {
+            val t = times.getString(i)
+            if (threshold != null && t < threshold) continue
+            hours.add(HourPoint(t.substring(11, 13).toInt(), temps.getDouble(i).roundToInt(), kindOf(codes.getInt(i)), codes.getInt(i)))
+            if (hours.size >= 12) break
+        }
+        val daily = json.getJSONObject("daily")
+        val dTimes = daily.getJSONArray("time")
+        val dMax = daily.getJSONArray("temperature_2m_max")
+        val dMin = daily.getJSONArray("temperature_2m_min")
+        val dCodes = daily.getJSONArray("weather_code")
+        val days = (0 until dTimes.length()).map { i ->
+            DayPoint(
+                date = dTimes.getString(i),
+                max = dMax.getDouble(i).roundToInt(),
+                min = dMin.getDouble(i).roundToInt(),
+                kind = kindOf(dCodes.getInt(i)),
+                code = dCodes.getInt(i),
+            )
+        }
+        return WeatherForecast(hours, days)
     }
 
     /**

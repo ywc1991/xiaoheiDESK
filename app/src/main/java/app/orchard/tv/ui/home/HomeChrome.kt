@@ -108,6 +108,8 @@ import app.orchard.tv.weather.Weather
 import app.orchard.tv.weather.WeatherKind
 import app.orchard.tv.weather.WeatherNow
 import java.text.SimpleDateFormat
+import kotlinx.coroutines.delay
+import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -185,6 +187,21 @@ fun dateText(now: LocalDateTime): String {
     // its stand-alone form, "23 октябрь" in Russian where a date needs "23 октября".
     val millis = now.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
     return SimpleDateFormat(pattern, locale).format(Date(millis))
+}
+
+/** Short date with weekday, e.g. "10/22 周四", for the corner clock. */
+@Composable
+fun dateShortText(now: LocalDateTime): String {
+    val weekday = when (now.dayOfWeek) {
+        DayOfWeek.MONDAY -> "一"
+        DayOfWeek.TUESDAY -> "二"
+        DayOfWeek.WEDNESDAY -> "三"
+        DayOfWeek.THURSDAY -> "四"
+        DayOfWeek.FRIDAY -> "五"
+        DayOfWeek.SATURDAY -> "六"
+        DayOfWeek.SUNDAY -> "日"
+    }
+    return "${now.monthValue}/${now.dayOfMonth} 周$weekday"
 }
 
 /**
@@ -754,31 +771,117 @@ private fun conditionName(kind: WeatherKind): Int = when (kind) {
 }
 
 /**
- * The small clock: the time and the weather in one quiet line in the top left, level with the status
- * pill, so the wallpaper keeps the rest of the screen. A soft shadow keeps it readable on photos.
+ * The small clock: the date with weekday and the time in one quiet line in the top left, level
+ * with the status pill, so the wallpaper keeps the rest of the screen. A soft shadow keeps it
+ * readable on photos. Where it is focusable, selecting it opens the lunar calendar.
  */
 @Composable
-fun CornerClock(now: LocalDateTime, modifier: Modifier = Modifier, toSaver: () -> Float = { 0f }, saving: Boolean = false) {
-    val drift = heldDrift(saving, now)
+fun CornerClock(
+    now: LocalDateTime,
+    modifier: Modifier = Modifier,
+    toSaver: () -> Float = { 0f },
+    saving: Boolean = false,
+    onClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
+    focusRequester: FocusRequester? = null,
+    onFocused: (Boolean) -> Unit = {},
+) {
     val dim = Color.White.copy(alpha = 0.92f)
     val shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 8f)
-    Row(modifier.height(34.dp), verticalAlignment = Alignment.CenterVertically) {
-        BasicText(
-            timeText(now), style = Type.SmallClock.copy(fontSize = Type.Title.fontSize, color = dim, shadow = shadow),
-            modifier = Modifier.toSaverClock(toSaver, Type.Title.fontSize, Type.Title.fontSize.value.dp * CAP_TOP, drift),
+    val style = Type.Title.copy(color = dim, shadow = shadow)
+    val drift = heldDrift(saving, now)
+    if (onClick == null) {
+        Row(modifier.height(34.dp), verticalAlignment = Alignment.CenterVertically) {
+            BasicText(dateShortText(now), style = style)
+            BasicText(
+                timeText(now), style = style,
+                modifier = Modifier.padding(start = 12.dp).toSaverClock(toSaver, Type.Title.fontSize, Type.Title.fontSize.value.dp * CAP_TOP, drift),
+            )
+        }
+        return
+    }
+    Pressable(
+        onClick = onClick,
+        enabled = enabled,
+        focusRequester = focusRequester,
+        focusedScale = 1.08f,
+        modifier = modifier,
+    ) { state ->
+        LaunchedEffect(state.focused) { onFocused(state.focused) }
+        val bg by animateColorAsState(
+            if (state.focused) Palette.Focus else Color.Transparent,
+            tween(160, easing = Motion.EaseOut),
+            label = "clock-bg",
         )
-        Weather.now?.takeIf { AerialSettings.showWeather }?.let { w ->
-            val aside = Modifier.graphicsLayer {
-                alpha = 1f - (toSaver() * 2.5f).coerceIn(0f, 1f)
-                compositingStrategy = CompositingStrategy.ModulateAlpha
-            }
-            GlyphIcon(glyphFor(w), dim, 18.dp, aside.padding(start = 16.dp, end = 6.dp))
-            val place = Weather.place?.takeIf { it.length <= 12 }
-            BasicText(listOfNotNull(place, "${w.celsius}°").joinToString(" "), style = Type.Headline.copy(color = dim, shadow = shadow), modifier = aside)
+        val fg = if (state.focused) Palette.OnFocus else dim
+        Row(
+            Modifier
+                .clip(RoundedCornerShape(50))
+                .background(bg)
+                .height(34.dp)
+                .padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            BasicText(dateShortText(now), style = style.copy(color = fg, shadow = if (state.focused) null else shadow))
+            BasicText(
+                timeText(now), style = style.copy(color = fg, shadow = if (state.focused) null else shadow),
+                modifier = Modifier.padding(start = 12.dp).toSaverClock(toSaver, Type.Title.fontSize, Type.Title.fontSize.value.dp * CAP_TOP, drift),
+            )
         }
     }
 }
 
+
+/**
+ * The weather, top right beside the pill: glyph, city, temperature. The same weight and icon size
+ * as the status pill beside it (issue: matched pair, #3), and the same pill when selected (issue
+ * #4), so the two read as one. Focusable: selecting it opens the forecast.
+ */
+@Composable
+fun CornerWeather(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    focusRequester: FocusRequester? = null,
+    onFocused: (Boolean) -> Unit = {},
+) {
+    val dim = Color.White.copy(alpha = 0.92f)
+    val shadow = Shadow(Color.Black.copy(alpha = 0.5f), blurRadius = 8f)
+    Weather.now?.let { w ->
+        Pressable(
+            onClick = onClick,
+            enabled = enabled,
+            focusRequester = focusRequester,
+            focusedScale = 1.08f,
+            modifier = modifier,
+        ) { state ->
+            LaunchedEffect(state.focused) { onFocused(state.focused) }
+            val bg by animateColorAsState(
+                if (state.focused) Palette.Focus else Color.Transparent,
+                tween(160, easing = Motion.EaseOut),
+                label = "weather-bg",
+            )
+            val fg = if (state.focused) Palette.OnFocus else dim
+            Row(
+                Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(bg)
+                    .height(34.dp)
+                    .padding(horizontal = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // Same 17.dp glyph as the status pill's icons, so the two read as one weight.
+                GlyphIcon(glyphFor(w), fg, 17.dp)
+                val place = Weather.place?.takeIf { it.length <= 12 }
+                BasicText(
+                    listOfNotNull(place, "${w.celsius}°").joinToString(" "),
+                    style = Type.Title.copy(color = fg, shadow = if (state.focused) null else shadow),
+                    modifier = Modifier.padding(start = 6.dp),
+                )
+            }
+        }
+    }
+}
 private fun glyphFor(w: WeatherNow): Glyph = when (w.kind) {
     WeatherKind.Clear -> if (w.day) Glyph.Sun else Glyph.Moon
     WeatherKind.PartlyCloudy -> if (w.day) Glyph.CloudSun else Glyph.Cloud
