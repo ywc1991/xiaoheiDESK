@@ -42,6 +42,7 @@ import app.orchard.tv.R
 import app.orchard.tv.ui.components.consumeTaps
 import app.orchard.tv.ui.components.dismissOnTap
 import app.orchard.tv.ui.components.liquidGlass
+import app.orchard.tv.ui.components.focusGlassSurface
 import app.orchard.tv.ui.theme.Motion
 import app.orchard.tv.ui.theme.Palette
 import app.orchard.tv.ui.theme.Type
@@ -125,6 +126,7 @@ fun DatePanel(
                         .width(430.dp)
                         .consumeTaps()
                         .liquidGlass(30.dp)
+                        .focusGlassSurface(30.dp)
                         .padding(24.dp),
                 ) {
                     Header(viewY, viewM, today)

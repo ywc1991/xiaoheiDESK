@@ -105,6 +105,7 @@ import app.orchard.tv.ui.components.Pressable
 import app.orchard.tv.ui.components.consumeTaps
 import app.orchard.tv.ui.components.dismissOnTap
 import app.orchard.tv.ui.components.liquidGlass
+import app.orchard.tv.ui.components.focusGlassSurface
 import app.orchard.tv.ui.home.MenuRow
 import app.orchard.tv.ui.home.VpnBadge
 import app.orchard.tv.ui.home.dateText
@@ -184,6 +185,7 @@ fun ControlCenter(
                     .width(300.dp)
                     .consumeTaps()
                     .liquidGlass(24.dp, seeThroughFilm = onShelf)
+                    .focusGlassSurface(24.dp)
                     .padding(16.dp),
             ) {
                 AnimatedContent(

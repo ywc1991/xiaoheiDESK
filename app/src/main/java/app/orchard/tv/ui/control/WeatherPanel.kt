@@ -48,6 +48,7 @@ import app.orchard.tv.ui.components.Pressable
 import app.orchard.tv.ui.components.consumeTaps
 import app.orchard.tv.ui.components.dismissOnTap
 import app.orchard.tv.ui.components.liquidGlass
+import app.orchard.tv.ui.components.focusGlassSurface
 import app.orchard.tv.ui.theme.Glyph
 import app.orchard.tv.ui.theme.GlyphIcon
 import app.orchard.tv.ui.theme.Motion
@@ -113,6 +114,7 @@ fun WeatherPanel(
                         .heightIn(max = maxHeight)
                         .consumeTaps()
                         .liquidGlass(30.dp)
+                        .focusGlassSurface(30.dp)
                         .padding(22.dp),
                 ) {
                     item { Header() }
@@ -201,13 +203,8 @@ private fun Hours() {
             HourCell(
                 hour,
                 focusRequester = if (index == 0) first else null,
-                // The strip's ends sit where the week's first and last columns put their text:
-                // left flush at the row's inset, right flush at its end.
-                align = when (index) {
-                    0 -> TextAlign.Start
-                    hours.lastIndex -> TextAlign.End
-                    else -> TextAlign.Center
-                },
+                // Every hour owns exactly the same slice of the strip, whose ends line up with
+                // the week's first and last columns below.
                 modifier = Modifier.weight(1f),
             )
         }
@@ -218,7 +215,6 @@ private fun Hours() {
 private fun HourCell(
     hour: HourPoint,
     focusRequester: FocusRequester?,
-    align: TextAlign = TextAlign.Center,
     modifier: Modifier = Modifier,
 ) {
     Pressable(onClick = {}, focusRequester = focusRequester, focusedScale = 1.05f, modifier = modifier) { state ->
@@ -228,30 +224,40 @@ private fun HourCell(
         val fg = if (state.focused) Palette.OnFocus else Palette.Label
         Column(
             Modifier
+                // Fill the whole equal-weight slice: a wrap-content plate made neighbouring
+                // hours look narrower or wider than one another.
+                .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
                 .background(bg)
                 .padding(vertical = 8.dp, horizontal = 1.dp),
-            horizontalAlignment = when (align) {
-                TextAlign.Start -> Alignment.Start
-                TextAlign.End -> Alignment.End
-                else -> Alignment.CenterHorizontally
-            },
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             BasicText(
                 stringResource(R.string.wx_hour, hour.hour),
-                style = Type.Caption.copy(color = fg, textAlign = align),
+                style = Type.Caption.copy(color = fg, textAlign = TextAlign.Center),
                 softWrap = false,
             )
             Spacer(Modifier.height(5.dp))
-            GlyphIcon(glyphFor(hour.kind, day = hour.hour in 6..17), fg, 18.dp, level = rainLevel(hour.code))
+            // A fixed slot keeps every glyph on the same width, whichever shape it draws.
+            GlyphSlot(glyphFor(hour.kind, day = hour.hour in 6..17), fg, rainLevel(hour.code))
             Spacer(Modifier.height(5.dp))
-            BasicText("${hour.celsius}°", style = Type.Callout.copy(color = fg, textAlign = align), softWrap = false)
+            BasicText("${hour.celsius}°", style = Type.Callout.copy(color = fg, textAlign = TextAlign.Center), softWrap = false)
         }
     }
 }
 
-/** How far a row's content sits in from the panel's edge; the hours and the days share it. */
+/** The rows' inset from the panel edge: hours and days share it, so their content is the same width. */
 private val RowInset = 10.dp
+/** Both the hourly strip and the week use this glyph size, inside the same fixed-width slot. */
+private val ForecastGlyph = 18.dp
+private val GlyphSlotWidth = 24.dp
+
+@Composable
+private fun GlyphSlot(glyph: Glyph, tint: Color, level: Float) {
+    Box(Modifier.width(GlyphSlotWidth), contentAlignment = Alignment.Center) {
+        GlyphIcon(glyph, tint, ForecastGlyph, level = level)
+    }
+}
 
 @Composable
 private fun DayRow(day: DayPoint, today: Boolean) {
@@ -265,7 +271,9 @@ private fun DayRow(day: DayPoint, today: Boolean) {
             Modifier
                 .clip(RoundedCornerShape(10.dp))
                 .background(bg)
-                .padding(horizontal = RowInset, vertical = 7.dp),
+                // RowInset + the hour cell's 1 dp inset: the week's text and the hourly plates
+                // then start and end on exactly the same x, so both sections are the same width.
+                .padding(horizontal = RowInset + 1.dp, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             // Five equal-width columns, so every day of the week lines up under the same columns.
@@ -283,8 +291,9 @@ private fun DayRow(day: DayPoint, today: Boolean) {
                 maxLines = 1,
                 modifier = Modifier.weight(1f),
             )
+            // Same glyph slot as the hourly strip above, centred in its equal-width column.
             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                GlyphIcon(glyphFor(day.kind, day = true), fg, 18.dp, level = rainLevel(day.code))
+                GlyphSlot(glyphFor(day.kind, day = true), fg, rainLevel(day.code))
             }
             BasicText(
                 wxNameOf(day.code, day.kind),

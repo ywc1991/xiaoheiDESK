@@ -9,6 +9,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +24,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
@@ -285,3 +288,16 @@ private val PanelTint = ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
     0f, 0f, 0.48f, 0f, 14f,
     0f, 0f, 0f, 1f, 0f,
 )))
+
+/**
+ * The very same glass a focused corner control or app name wears: a lit vertical highlight and a
+ * bright hairline rim. Laid over [liquidGlass] on the calendar, weather and settings panels, so
+ * every piece of glass on Home reads as one material.
+ */
+fun Modifier.focusGlassSurface(corner: Dp): Modifier {
+    val shape = RoundedCornerShape(corner)
+    return this
+        .clip(shape)
+        .background(Brush.verticalGradient(listOf(Palette.FocusGlassTop, Palette.FocusGlassBottom)), shape)
+        .border(1.dp, Palette.FocusGlassRim, shape)
+}
