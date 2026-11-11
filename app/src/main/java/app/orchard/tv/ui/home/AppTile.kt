@@ -276,38 +276,6 @@ fun AppTile(
                 translate(-shadow.ext, -shadow.ext) { drawImage(shadow.image) }
             }
         }
-        // A focused app rests on a lit glass card: the same plate the corner controls wear when
-        // focused, grown just past the tile so it reads as a card instead of a hard white frame.
-        // It sits behind the artwork, so only its rim and the name's edge show through.
-        if (showShadow) {
-            Spacer(
-                Modifier
-                    .size(width + 20.dp, height + 20.dp)
-                    .align(Alignment.TopCenter)
-                    .offset(y = (-10).dp)
-                    .graphicsLayer {
-                        scaleX = scale
-                        scaleY = scale
-                        alpha = lift * 0.9f * opacity()
-                        compositingStrategy = CompositingStrategy.ModulateAlpha
-                    }
-                    .drawBehind {
-                        val corner = CornerRadius((Corner + 8.dp).toPx())
-                        drawRoundRect(
-                            brush = Brush.verticalGradient(
-                                listOf(Palette.FocusGlassTop, Palette.FocusGlassBottom),
-                            ),
-                            cornerRadius = corner,
-                        )
-                        drawRoundRect(
-                            color = Palette.FocusGlassRim,
-                            cornerRadius = corner,
-                            style = Stroke(1.dp.toPx()),
-                            alpha = 0.75f,
-                        )
-                    },
-            )
-        }
         Box(
             Modifier
                 .size(width, height)
@@ -505,31 +473,6 @@ fun AppTile(
                     }
                     // A focused tile's rim catches a little more light.
                     if (lift > 0.01f) drawImage(rim, dstSize = full, alpha = 0.08f * lift)
-                    // Glass face: a soft vertical sheen, a hairline highlight along the top edge
-                    // and a lit rim. Kept faint so the app's artwork still reads through it.
-                    if (lift > 0.01f) {
-                        val corner = CornerRadius(Corner.toPx())
-                        drawRoundRect(
-                            brush = Brush.verticalGradient(
-                                listOf(Palette.FocusGlassTop, Palette.FocusGlassBottom),
-                            ),
-                            cornerRadius = corner,
-                            alpha = 0.55f * lift,
-                        )
-                        drawLine(
-                            color = Color.White,
-                            start = Offset(Corner.toPx() * 2f, 1.5.dp.toPx()),
-                            end = Offset(size.width - Corner.toPx() * 2f, 1.5.dp.toPx()),
-                            strokeWidth = 1.5.dp.toPx(),
-                            alpha = 0.4f * lift,
-                        )
-                        drawRoundRect(
-                            color = Palette.FocusGlassRim,
-                            cornerRadius = corner,
-                            style = Stroke(1.5.dp.toPx()),
-                            alpha = 0.7f * lift,
-                        )
-                    }
                 }
             })
         }
@@ -579,6 +522,23 @@ fun AppTile(
                 .align(Alignment.TopCenter)
                 .offset(y = height + 10.dp)
                 .requiredSize(width + 36.dp, 24.dp)
+                .drawBehind {
+                    // The focus glass lives only under the name: the artwork above stays untouched.
+                    val r = CornerRadius(12.dp.toPx())
+                    drawRoundRect(
+                        brush = Brush.verticalGradient(
+                            listOf(Palette.FocusGlassTop, Palette.FocusGlassBottom),
+                        ),
+                        cornerRadius = r,
+                        alpha = 0.85f * lift,
+                    )
+                    drawRoundRect(
+                        color = Palette.FocusGlassRim,
+                        cornerRadius = r,
+                        style = Stroke(1.dp.toPx()),
+                        alpha = 0.7f * lift,
+                    )
+                }
                 .graphicsLayer {
                     // Only the focused app shows its name. With every name shown, the others stay a
                     // little dimmer than the focused one.
