@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- xiaoheiDESK mark: two ears and a quiet arc, inside the 66dp safe zone of the 108dp canvas. -->
+<!-- xiaoheiDESK mark: two ears, a round head and one curled tail, inside the safe zone of the 108dp canvas. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <path android:pathData="M27,48 L30,29 L44,42 Z" android:fillColor="#FFF7F8FA" />
-    <path android:pathData="M64,42 L78,29 L81,48 Z" android:fillColor="#FFF7F8FA" />
-    <path android:pathData="M40,67 Q54,57 68,67"
-        android:strokeColor="#FFF7F8FA" android:strokeWidth="3"
-        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M42.0,65.0 a28,25 0 1,0 56,0 a28,25 0 1,0 -56,0 z" android:fillColor="#FFF7F8FA" />
+    <path android:pathData="M40.0,24.0 L42.0,78.0 L61.0,64.0 z" android:fillColor="#FFF7F8FA" />
+    <path android:pathData="M100.0,24.0 L98.0,78.0 L79.0,64.0 z" android:fillColor="#FFF7F8FA" />
+    <path android:pathData="M90.0,106.0 C108.0,124.0,130.0,118.0,136.0,94.0 C140.0,74.0,130.0,60.0,118.0,64.0"
+        android:strokeColor="#FFF7F8FA" android:strokeWidth="7"
+        android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" />
 </vector>
