@@ -22,7 +22,7 @@ android {
         // xiaoheiDESK has its own version line (1.0.0, ...), independent of the upstream
         // Aerial release it is based on. Keep the code above the last custom build (112)
         // so the TV can install 1.0.0 over 1.83-custom in place.
-        versionCode = 122
+        versionCode = 123
         versionName = "1.0.0"
         // `./gradlew -Pdiag ...`: a build for one reporter's TV whose logcat shows no app lines;
         // see system/DiagLog.kt.
