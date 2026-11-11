@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="guard_name">Aerial 桌面守护</string>
-    <string name="guard_description">在不允许更换桌面的电视上，让 Aerial 保持为主屏幕。不会读取任何屏幕内容。</string>
+    <string name="app_name">小黑DESK</string>
+    <string name="guard_name">小黑DESK 桌面守护</string>
+    <string name="guard_description">在不允许更换桌面的电视上，让 小黑DESK 保持为主屏幕。不会读取任何屏幕内容。</string>
 
     <string name="greeting_morning">早上好</string>
     <string name="greeting_afternoon">下午好</string>
@@ -13,11 +14,11 @@
     <string name="cc_settings">设置</string>
     <string name="cc_volume">音量</string>
     <string name="cc_muted">已静音</string>
-    <string name="cc_home_default">Aerial 是默认桌面</string>
+    <string name="cc_home_default">小黑DESK 是默认桌面</string>
     <string name="cc_home_guarded">桌面守护已开启</string>
     <string name="cc_home_not_default">尚未设为默认桌面</string>
     <string name="cc_setup_title">设为主屏幕</string>
-    <string name="cc_setup_body">只装了 APK 时，Aerial 能打开，但按主页键、开机和待机后还是原来的桌面。</string>
+    <string name="cc_setup_body">只装了 APK 时，小黑DESK 能打开，但按主页键、开机和待机后还是原来的桌面。</string>
     <string name="cc_setup_guard">打开桌面守护</string>
     <string name="cc_setup_guard_where">无障碍</string>
     <string name="cc_setup_home">选择默认桌面</string>
@@ -145,9 +146,9 @@
     <string name="st_plate_none">不显示</string>
     <string name="st_sounds">按键声音</string>
     <string name="st_sounds_hint">移动焦点、确认、返回时发出声音，像 Apple TV 一样。</string>
-    <string name="st_sounds_tv_hint">用电视系统自带的按键音，和电视菜单里一样。电视设置里关了按键音时不会响，这时请选「Aerial」。</string>
+    <string name="st_sounds_tv_hint">用电视系统自带的按键音，和电视菜单里一样。电视设置里关了按键音时不会响，这时请选「小黑DESK」。</string>
     <string name="st_sounds_tv">电视</string>
-    <string name="st_sounds_aerial">Aerial</string>
+    <string name="st_sounds_aerial">小黑DESK</string>
     <string name="st_on">开</string>
     <string name="st_off">关</string>
     <string name="st_hidden_apps">隐藏的 App</string>
@@ -167,8 +168,8 @@
     <string name="cc_inputs_settings">信号源设置</string>
     <string name="cc_inputs_pin">显示在主屏幕（可多选）</string>
     <string name="cc_inputs_boot">开机时打开（选一个）</string>
-    <string name="cc_inputs_boot_none">不打开，停在 Aerial</string>
-    <string name="cc_inputs_boot_hint">电视开机或从待机唤醒时，直接切到这个信号源。按主页键仍会回到 Aerial。想开机直接打开某个 App（比如直播 App），在主屏幕上长按它，选「开机时打开」。</string>
+    <string name="cc_inputs_boot_none">不打开，停在 小黑DESK</string>
+    <string name="cc_inputs_boot_hint">电视开机或从待机唤醒时，直接切到这个信号源。按主页键仍会回到 小黑DESK。想开机直接打开某个 App（比如直播 App），在主屏幕上长按它，选「开机时打开」。</string>
     <string name="cc_inputs_pin_hint">选中的信号源会作为磁贴出现在主屏幕最前面，按一下直接切换过去。长按磁贴可以移动或移除。</string>
     <string name="menu_unpin_source">从主屏幕移除</string>
     <string name="menu_source_device">接入的设备</string>
@@ -182,23 +183,23 @@
     <string name="device_set_top_box">机顶盒</string>
     <string name="device_speaker">回音壁</string>
     <string name="cc_update_available">有新版本 %s</string>
-    <string name="cc_update_title">Aerial %s</string>
+    <string name="cc_update_title">小黑DESK %s</string>
     <string name="cc_update_notes">%s 更新内容</string>
-    <string name="cc_update_current">这台电视上是 Aerial %s。</string>
+    <string name="cc_update_current">这台电视上是 小黑DESK %s。</string>
     <string name="cc_update_keeps">App、排列顺序、壁纸和设置都会保留。</string>
     <string name="cc_update_scan">用手机扫码，看怎么升级（可以复制安装命令，或者发给 AI 助手）。</string>
     <string name="cc_update_scan_else">装不上？用手机扫码，看别的升级方法。</string>
     <string name="cc_update_install">下载并安装</string>
     <string name="cc_update_waiting">正在等待系统安装…</string>
     <string name="cc_update_downloading">正在下载… %d%%</string>
-    <string name="cc_update_opened">已打开安装程序，按提示确认更新（小米上是「继续更新」）。装好后按「完成」，会回到 Aerial，设置都保留。</string>
-    <string name="cc_update_permission">请在刚打开的设置里允许 Aerial 安装应用，然后回来再点一次「下载并安装」。</string>
+    <string name="cc_update_opened">已打开安装程序，按提示确认更新（小米上是「继续更新」）。装好后按「完成」，会回到 小黑DESK，设置都保留。</string>
+    <string name="cc_update_permission">请在刚打开的设置里允许 小黑DESK 安装应用，然后回来再点一次「下载并安装」。</string>
     <string name="cc_update_storage_permission">这台电视需要存储权限才能保存更新。请允许弹出的文件权限请求，再点一次「下载并安装」。</string>
     <string name="cc_update_failed_download">下载没有成功（官网和 GitHub 都试过了）。检查网络后再试，或者用下面的命令升级。</string>
     <string name="cc_update_failed_blocked">这台电视不让 App 安装别的 App，请用下面的命令升级。</string>
-    <string name="cc_update_failed_signature">这台电视上的 Aerial 和官方版本签名不同，不能直接覆盖。</string>
+    <string name="cc_update_failed_signature">这台电视上的 小黑DESK 和官方版本签名不同，不能直接覆盖。</string>
     <string name="cc_update_failed_older">官网上的版本还不比这台电视上的新，过一会儿再试。</string>
-    <string name="cc_self_compile">让 Aerial 更流畅</string>
+    <string name="cc_self_compile">让 小黑DESK 更流畅</string>
     <string name="st_pin">家长密码</string>
     <string name="st_pin_off">关闭</string>
     <string name="st_pin_on">开启</string>
@@ -241,7 +242,7 @@
     <string name="ss_videos">视频</string>
     <string name="ss_videos_hint">扫码从手机添加 MP4 或 MOV 视频，离线轮播；没有可播放的视频时显示照片。</string>
     <string name="ss_system">系统内置</string>
-    <string name="ss_system_hint">用电视自带的屏保（比如小米的那些画面），Aerial 不再显示自己的屏保。</string>
+    <string name="ss_system_hint">用电视自带的屏保（比如小米的那些画面），小黑DESK 不再显示自己的屏保。</string>
     <string name="wp_videos_note">你从手机发来的视频，静音、一个接一个播放。和航拍一样会动，按键时停在当前画面。</string>
     <string name="wp_videos_rotate">我的视频 · 轮播</string>
     <string name="wp_video_note">你从手机发来的这个视频，静音、循环播放。和航拍一样会动，按键时停在当前画面。</string>
@@ -281,7 +282,7 @@
     <string name="kids_turn_off">关闭这个模式</string>
     <string name="kids_apps">显示的 App · %d 个</string>
     <string name="kids_apps_hint">桌面按选择的顺序显示。以后新装的 App 不会自动加进来。</string>
-    <string name="kids_sources_note">选了信号源以后，用遥控器的信号源键也能切到电视的其他信号源：它们共用一个播放器，Aerial 分不出来。</string>
+    <string name="kids_sources_note">选了信号源以后，用遥控器的信号源键也能切到电视的其他信号源：它们共用一个播放器，小黑DESK 分不出来。</string>
     <string name="kids_m">%d 分钟</string>
     <string name="kids_h">%d 小时</string>
     <string name="kids_hm">%1$d 小时 %2$d 分钟</string>

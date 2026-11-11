@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="guard_name">Aerial Home Guard</string>
-    <string name="guard_description">Басты экранды өзгертуге болмайтын теледидарларда Aerial-ді басты экран ретінде сақтайды. Экран мазмұнын оқымайды.</string>
+    <string name="guard_name">xiaoheiDESK Home Guard</string>
+    <string name="guard_description">Басты экранды өзгертуге болмайтын теледидарларда xiaoheiDESK-ді басты экран ретінде сақтайды. Экран мазмұнын оқымайды.</string>
     <string name="greeting_morning">Қайырлы таң</string>
     <string name="greeting_afternoon">Қайырлы күн</string>
     <string name="greeting_evening">Қайырлы кеш</string>
@@ -11,11 +11,11 @@
     <string name="cc_settings">Параметрлер</string>
     <string name="cc_volume">Дыбыс деңгейі</string>
     <string name="cc_muted">Дыбыс өшірулі</string>
-    <string name="cc_home_default">Aerial — сіздің басты экраныңыз</string>
+    <string name="cc_home_default">xiaoheiDESK — сіздің басты экраныңыз</string>
     <string name="cc_home_guarded">Home Guard қосулы</string>
     <string name="cc_home_not_default">Әдепкі басты экран емес</string>
-    <string name="cc_setup_title">Aerial-ді басты экран жасаңыз</string>
-    <string name="cc_setup_body">Aerial тек APK-дан орнатылса, ол ашылады, бірақ «Басты бет» түймесі, қосу және күту режимінен шығу бұрынғы лаунчерге апара береді.</string>
+    <string name="cc_setup_title">xiaoheiDESK-ді басты экран жасаңыз</string>
+    <string name="cc_setup_body">xiaoheiDESK тек APK-дан орнатылса, ол ашылады, бірақ «Басты бет» түймесі, қосу және күту режимінен шығу бұрынғы лаунчерге апара береді.</string>
     <string name="cc_setup_guard">Home Guard қосу</string>
     <string name="cc_setup_guard_where">Арнайы мүмкіндіктер</string>
     <string name="cc_setup_home">Әдепкі басты экран қолданбасын таңдау</string>
@@ -111,7 +111,7 @@
     <string name="ss_quality_hd">1080p</string>
     <string name="ss_quality_uhd">4K</string>
     <string name="ss_quality_dv">4K Dolby Vision</string>
-    <string name="ss_aerial_keeps">Aerial теледидарда соңғы %2$d фильмді сақтайды (ең көбі %1$s); тұсқағаз бен скринсейвер оларды кезекпен ойнатады, күн сайын жаңасы қосылады. Скринсейверде оңға — жаңа фильм, солға — алдыңғысы.</string>
+    <string name="ss_aerial_keeps">xiaoheiDESK теледидарда соңғы %2$d фильмді сақтайды (ең көбі %1$s); тұсқағаз бен скринсейвер оларды кезекпен ойнатады, күн сайын жаңасы қосылады. Скринсейверде оңға — жаңа фильм, солға — алдыңғысы.</string>
     <string name="st_focus_style">Фокус стилі</string>
     <string name="st_home_layout">Басты экран</string>
     <string name="st_layout">Орналасу</string>
@@ -138,9 +138,9 @@
     <string name="st_plate_none">Жоқ</string>
     <string name="st_sounds">Дыбыстар</string>
     <string name="st_sounds_hint">Фокус жылжығанда, таңдағанда және «Артқа» басқанда дыбыс шығады, Apple TV сияқты.</string>
-    <string name="st_sounds_tv_hint">Теледидардың өз түйме дыбыстары, мәзірлеріндегідей. Теледидар параметрлерінде өшірулі болса, дыбыс болмайды: онда Aerial таңдаңыз.</string>
+    <string name="st_sounds_tv_hint">Теледидардың өз түйме дыбыстары, мәзірлеріндегідей. Теледидар параметрлерінде өшірулі болса, дыбыс болмайды: онда xiaoheiDESK таңдаңыз.</string>
     <string name="st_sounds_tv">ТД</string>
-    <string name="st_sounds_aerial">Aerial</string>
+    <string name="st_sounds_aerial">xiaoheiDESK</string>
     <string name="st_on">Қосулы</string>
     <string name="st_off">Өшірулі</string>
     <string name="st_hidden_apps">Жасырын қолданбалар</string>
@@ -160,8 +160,8 @@
     <string name="cc_inputs_settings">Көздер параметрлері</string>
     <string name="cc_inputs_pin">Басты экранда көрсету (кез келген саны)</string>
     <string name="cc_inputs_boot">Теледидар қосылғанда (біреу)</string>
-    <string name="cc_inputs_boot_none">Ештеңе, Aerial-де қалу</string>
-    <string name="cc_inputs_boot_hint">Теледидар қосылғанда немесе күту режимінен шыққанда осы көзге ауысу. «Басты бет» бәрібір Aerial-ге қайтарады.</string>
+    <string name="cc_inputs_boot_none">Ештеңе, xiaoheiDESK-де қалу</string>
+    <string name="cc_inputs_boot_hint">Теледидар қосылғанда немесе күту режимінен шыққанда осы көзге ауысу. «Басты бет» бәрібір xiaoheiDESK-ге қайтарады.</string>
     <string name="cc_inputs_pin_hint">Бекітілген көздер басты экранның басында тақтайшалар болып пайда болады; бірден ауысу үшін біреуін таңдаңыз. Жылжыту немесе алып тастау үшін тақтайшаны ұзақ басыңыз.</string>
     <string name="menu_unpin_source">Басты экраннан алып тастау</string>
     <string name="menu_source_device">Қосылған құрылғы</string>
@@ -175,23 +175,23 @@
     <string name="device_set_top_box">ТД қосымша қорабы</string>
     <string name="device_speaker">Саундбар</string>
     <string name="cc_update_available">Жаңа нұсқа: %s</string>
-    <string name="cc_update_title">Aerial %s</string>
+    <string name="cc_update_title">xiaoheiDESK %s</string>
     <string name="cc_update_notes">%s нұсқасындағы жаңалықтар</string>
-    <string name="cc_update_current">Бұл теледидарда Aerial %s орнатылған.</string>
+    <string name="cc_update_current">Бұл теледидарда xiaoheiDESK %s орнатылған.</string>
     <string name="cc_update_keeps">Қолданбаларыңыз, орналасуыңыз, түсқағазыңыз және параметрлеріңіз сол күйінде қалады.</string>
     <string name="cc_update_scan">Қалай жаңартуды көру үшін телефонмен сканерлеңіз (орнату пәрменін көшіру немесе оны жасанды интеллект агентіне беру).</string>
     <string name="cc_update_scan_else">Орната алмай жатсыз ба? Жаңартудың басқа тәсілдерін көру үшін телефонмен сканерлеңіз.</string>
     <string name="cc_update_install">Жүктеп алу және орнату</string>
     <string name="cc_update_waiting">Орнатуды күту…</string>
     <string name="cc_update_downloading">Жүктелуде… %d%%</string>
-    <string name="cc_update_opened">Орнатқыш ашылды: жаңартуды сонда растаңыз. Аяқталғанда, барлық параметрлер сақталған күйде Aerial-ге оралу үшін «Дайын» таңдаңыз.</string>
-    <string name="cc_update_permission">Жаңа ашылған параметрлерде Aerial-ге қолданбаларды орнатуға рұқсат беріңіз, содан кейін оралып, «Жүктеп алу және орнату» таңдаңыз.</string>
+    <string name="cc_update_opened">Орнатқыш ашылды: жаңартуды сонда растаңыз. Аяқталғанда, барлық параметрлер сақталған күйде xiaoheiDESK-ге оралу үшін «Дайын» таңдаңыз.</string>
+    <string name="cc_update_permission">Жаңа ашылған параметрлерде xiaoheiDESK-ге қолданбаларды орнатуға рұқсат беріңіз, содан кейін оралып, «Жүктеп алу және орнату» таңдаңыз.</string>
     <string name="cc_update_storage_permission">Жаңартуды сақтау үшін бұл теледидарға жадқа кіруге рұқсат қажет. Файлдарға кіру сұрауын мақұлдап, «Жүктеп алу және орнату» түймесін қайта таңдаңыз.</string>
     <string name="cc_update_failed_download">Жүктеу аяқталмады (сайт та, GitHub та байқалды). Желіні тексеріп, қайталап көріңіз немесе төмендегі пәрменмен жаңартыңыз.</string>
     <string name="cc_update_failed_blocked">Бұл теледидар қолданбаларға басқа қолданбаларды орнатуға рұқсат бермейді. Төмендегі пәрменмен жаңартыңыз.</string>
-    <string name="cc_update_failed_signature">Бұл теледидардағы Aerial ресми нұсқадан басқаша қол қойылған, сондықтан оның үстінен жаңартуға болмайды.</string>
+    <string name="cc_update_failed_signature">Бұл теледидардағы xiaoheiDESK ресми нұсқадан басқаша қол қойылған, сондықтан оның үстінен жаңартуға болмайды.</string>
     <string name="cc_update_failed_older">Сайтта әзірге жаңа нұсқа жоқ. Кейінірек қайталап көріңіз.</string>
-    <string name="cc_self_compile">Aerial жұмысын тегістеу</string>
+    <string name="cc_self_compile">xiaoheiDESK жұмысын тегістеу</string>
     <string name="st_pin">Ата-аналық PIN-код</string>
     <string name="st_pin_off">Өшірулі</string>
     <string name="st_pin_on">Қосулы</string>
@@ -234,7 +234,7 @@
     <string name="ss_videos">Бейне</string>
     <string name="ss_videos_hint">Телефон бетінен MP4 немесе MOV қосыңыз. Интернетсіз ойнатылады; бейне болмаса, фотолар көрсетіледі.</string>
     <string name="ss_system">Жүйелік</string>
-    <string name="ss_system_hint">Теледидардың өз экран сақтағышы (мысалы, Xiaomi суреттері). Aerial өзінікін көрсетпейді.</string>
+    <string name="ss_system_hint">Теледидардың өз экран сақтағышы (мысалы, Xiaomi суреттері). xiaoheiDESK өзінікін көрсетпейді.</string>
     <string name="wp_videos_note">Телефоннан жіберілген өз бейнелеріңіз: дыбыссыз, бірінен соң бірі. Аэрожиын сияқты қозғалады және ағымдағы кадрда тоқтайды.</string>
     <string name="wp_videos_rotate">Бейнелерім кезекпен</string>
     <string name="wp_video_note">Телефоннан жіберілген өз бейнеңіз: дыбыссыз, қайталанып ойнайды. Аэрожиын сияқты қозғалады және ағымдағы кадрда тоқтайды.</string>
@@ -274,7 +274,7 @@
     <string name="kids_turn_off">Режимді өшіру</string>
     <string name="kids_apps">Қолданбалар · %d</string>
     <string name="kids_apps_hint">Таңдалған ретпен көрсетіледі. Жаңа қолданбалар өздігінен қосылмайды.</string>
-    <string name="kids_sources_note">Кіріс таңдалса, пульттегі кіріс түймесімен теледидардың басқа кірістеріне де ауысуға болады: олардың ойнатқышы ортақ, Aerial оларды ажырата алмайды.</string>
+    <string name="kids_sources_note">Кіріс таңдалса, пульттегі кіріс түймесімен теледидардың басқа кірістеріне де ауысуға болады: олардың ойнатқышы ортақ, xiaoheiDESK оларды ажырата алмайды.</string>
     <string name="kids_m">%d мин</string>
     <string name="kids_h">%d сағ</string>
     <string name="kids_hm">%1$d сағ %2$d мин</string>

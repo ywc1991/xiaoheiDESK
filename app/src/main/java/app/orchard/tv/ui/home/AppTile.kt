@@ -42,15 +42,18 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
@@ -61,6 +64,7 @@ import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
@@ -99,6 +103,7 @@ import app.orchard.tv.ui.components.smoothRectPath
 import app.orchard.tv.system.DiagLog
 import app.orchard.tv.ui.theme.LocalReducedMotion
 import app.orchard.tv.ui.theme.Motion
+import app.orchard.tv.ui.theme.Palette
 import app.orchard.tv.ui.theme.Type
 import app.orchard.tv.ui.components.DiagLayers
 import kotlinx.coroutines.Job
@@ -270,6 +275,38 @@ fun AppTile(
                 val shadow = tileShadow(size.width.roundToInt(), size.height.roundToInt(), Corner.toPx(), ShadowBlur.toPx())
                 translate(-shadow.ext, -shadow.ext) { drawImage(shadow.image) }
             }
+        }
+        // A focused app rests on a lit glass card: the same plate the corner controls wear when
+        // focused, grown just past the tile so it reads as a card instead of a hard white frame.
+        // It sits behind the artwork, so only its rim and the name's edge show through.
+        if (showShadow) {
+            Spacer(
+                Modifier
+                    .size(width + 20.dp, height + 20.dp)
+                    .align(Alignment.TopCenter)
+                    .offset(y = (-10).dp)
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                        alpha = lift * 0.9f * opacity()
+                        compositingStrategy = CompositingStrategy.ModulateAlpha
+                    }
+                    .drawBehind {
+                        val corner = CornerRadius((Corner + 8.dp).toPx())
+                        drawRoundRect(
+                            brush = Brush.verticalGradient(
+                                listOf(Palette.FocusGlassTop, Palette.FocusGlassBottom),
+                            ),
+                            cornerRadius = corner,
+                        )
+                        drawRoundRect(
+                            color = Palette.FocusGlassRim,
+                            cornerRadius = corner,
+                            style = Stroke(1.dp.toPx()),
+                            alpha = 0.75f,
+                        )
+                    },
+            )
         }
         Box(
             Modifier
@@ -468,6 +505,31 @@ fun AppTile(
                     }
                     // A focused tile's rim catches a little more light.
                     if (lift > 0.01f) drawImage(rim, dstSize = full, alpha = 0.08f * lift)
+                    // Glass face: a soft vertical sheen, a hairline highlight along the top edge
+                    // and a lit rim. Kept faint so the app's artwork still reads through it.
+                    if (lift > 0.01f) {
+                        val corner = CornerRadius(Corner.toPx())
+                        drawRoundRect(
+                            brush = Brush.verticalGradient(
+                                listOf(Palette.FocusGlassTop, Palette.FocusGlassBottom),
+                            ),
+                            cornerRadius = corner,
+                            alpha = 0.55f * lift,
+                        )
+                        drawLine(
+                            color = Color.White,
+                            start = Offset(Corner.toPx() * 2f, 1.5.dp.toPx()),
+                            end = Offset(size.width - Corner.toPx() * 2f, 1.5.dp.toPx()),
+                            strokeWidth = 1.5.dp.toPx(),
+                            alpha = 0.4f * lift,
+                        )
+                        drawRoundRect(
+                            color = Palette.FocusGlassRim,
+                            cornerRadius = corner,
+                            style = Stroke(1.5.dp.toPx()),
+                            alpha = 0.7f * lift,
+                        )
+                    }
                 }
             })
         }

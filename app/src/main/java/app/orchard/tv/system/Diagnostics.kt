@@ -72,10 +72,10 @@ object Diagnostics {
 
     fun report(context: Context): String = buildString {
         val pm = context.packageManager
-        appendLine("### Aerial diagnostics")
+        appendLine("### xiaoheiDESK diagnostics")
         appendLine()
         appendLine("```")
-        appendLine("Aerial      ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) ${BuildConfig.FLAVOR}, package ${context.packageName}, installer ${installer(context) ?: "-"}")
+        appendLine("xiaoheiDESK ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) ${BuildConfig.FLAVOR}, package ${context.packageName}, installer ${installer(context) ?: "-"}")
         appendLine("Device      ${Build.MANUFACTURER} / ${Build.BRAND} / ${Build.MODEL} (device ${Build.DEVICE}, product ${Build.PRODUCT}, hardware ${Build.HARDWARE}, board ${Build.BOARD})")
         appendLine("Android     ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})" + if (Build.VERSION.SDK_INT >= 23) ", patch ${Build.VERSION.SECURITY_PATCH}" else "")
         appendLine("Build       ${Build.DISPLAY}")
@@ -135,7 +135,7 @@ object Diagnostics {
         appendLine()
         appendLine("**Brightness**")
         appendLine("```")
-        appendLine("Aerial can set it: ${Brightness.level(context) != null}")
+        appendLine("xiaoheiDESK can set it: ${Brightness.level(context) != null}")
         appendLine("  global picture_backlight=${global(context, "picture_backlight")}  system screen_brightness=${system(context, Settings.System.SCREEN_BRIGHTNESS)} mode=${system(context, Settings.System.SCREEN_BRIGHTNESS_MODE)}")
         appendLine("```")
 

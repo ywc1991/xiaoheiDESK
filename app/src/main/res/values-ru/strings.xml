@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="guard_name">Aerial Home Guard</string>
-    <string name="guard_description">Оставляет Aerial главным экраном на телевизорах, где его нельзя сменить. Не читает содержимое экрана.</string>
+    <string name="guard_name">xiaoheiDESK Home Guard</string>
+    <string name="guard_description">Оставляет xiaoheiDESK главным экраном на телевизорах, где его нельзя сменить. Не читает содержимое экрана.</string>
     <string name="greeting_morning">Доброе утро</string>
     <string name="greeting_afternoon">Добрый день</string>
     <string name="greeting_evening">Добрый вечер</string>
@@ -11,11 +11,11 @@
     <string name="cc_settings">Настройки</string>
     <string name="cc_volume">Громкость</string>
     <string name="cc_muted">Звук выключен</string>
-    <string name="cc_home_default">Aerial — ваш главный экран</string>
+    <string name="cc_home_default">xiaoheiDESK — ваш главный экран</string>
     <string name="cc_home_guarded">Home Guard включён</string>
     <string name="cc_home_not_default">Не главный экран по умолчанию</string>
-    <string name="cc_setup_title">Сделайте Aerial главным экраном</string>
-    <string name="cc_setup_body">Если Aerial установлен только из APK, он открывается, но кнопка «Домой», включение и выход из ожидания по-прежнему ведут в прежний лаунчер.</string>
+    <string name="cc_setup_title">Сделайте xiaoheiDESK главным экраном</string>
+    <string name="cc_setup_body">Если xiaoheiDESK установлен только из APK, он открывается, но кнопка «Домой», включение и выход из ожидания по-прежнему ведут в прежний лаунчер.</string>
     <string name="cc_setup_guard">Включить Home Guard</string>
     <string name="cc_setup_guard_where">Специальные возможности</string>
     <string name="cc_setup_home">Выбрать приложение главного экрана по умолчанию</string>
@@ -111,7 +111,7 @@
     <string name="ss_quality_hd">1080p</string>
     <string name="ss_quality_uhd">4K</string>
     <string name="ss_quality_dv">4K Dolby Vision</string>
-    <string name="ss_aerial_keeps">Aerial хранит на телевизоре %2$d последних фильма (до %1$s); обои и заставка показывают их по очереди, каждый день добавляется новый. В заставке вправо — новый фильм, влево — предыдущий.</string>
+    <string name="ss_aerial_keeps">xiaoheiDESK хранит на телевизоре %2$d последних фильма (до %1$s); обои и заставка показывают их по очереди, каждый день добавляется новый. В заставке вправо — новый фильм, влево — предыдущий.</string>
     <string name="st_focus_style">Стиль фокуса</string>
     <string name="st_home_layout">Главный экран</string>
     <string name="st_layout">Раскладка</string>
@@ -138,9 +138,9 @@
     <string name="st_plate_none">Нет</string>
     <string name="st_sounds">Звуки</string>
     <string name="st_sounds_hint">Звук при перемещении фокуса, выборе и нажатии «Назад», как на Apple TV.</string>
-    <string name="st_sounds_tv_hint">Собственные звуки клавиш телевизора, как в его меню. Если они выключены в настройках телевизора, звука не будет: тогда выберите Aerial.</string>
+    <string name="st_sounds_tv_hint">Собственные звуки клавиш телевизора, как в его меню. Если они выключены в настройках телевизора, звука не будет: тогда выберите xiaoheiDESK.</string>
     <string name="st_sounds_tv">ТВ</string>
-    <string name="st_sounds_aerial">Aerial</string>
+    <string name="st_sounds_aerial">xiaoheiDESK</string>
     <string name="st_on">Вкл.</string>
     <string name="st_off">Выкл.</string>
     <string name="st_hidden_apps">Скрытые приложения</string>
@@ -160,8 +160,8 @@
     <string name="cc_inputs_settings">Настройки источников</string>
     <string name="cc_inputs_pin">Показывать на главном экране (любое число)</string>
     <string name="cc_inputs_boot">При включении телевизора (один)</string>
-    <string name="cc_inputs_boot_none">Ничего, оставаться в Aerial</string>
-    <string name="cc_inputs_boot_hint">Переключаться на этот источник при включении телевизора или выходе из ожидания. Кнопка «Домой» по-прежнему возвращает в Aerial.</string>
+    <string name="cc_inputs_boot_none">Ничего, оставаться в xiaoheiDESK</string>
+    <string name="cc_inputs_boot_hint">Переключаться на этот источник при включении телевизора или выходе из ожидания. Кнопка «Домой» по-прежнему возвращает в xiaoheiDESK.</string>
     <string name="cc_inputs_pin_hint">Закреплённые источники появляются плитками в начале главного экрана; выберите одну, чтобы сразу переключиться. Удерживайте плитку, чтобы переместить или убрать её.</string>
     <string name="menu_unpin_source">Убрать с главного экрана</string>
     <string name="menu_source_device">Подключённое устройство</string>
@@ -175,23 +175,23 @@
     <string name="device_set_top_box">ТВ-приставка</string>
     <string name="device_speaker">Саундбар</string>
     <string name="cc_update_available">Новая версия: %s</string>
-    <string name="cc_update_title">Aerial %s</string>
+    <string name="cc_update_title">xiaoheiDESK %s</string>
     <string name="cc_update_notes">Что нового в %s</string>
-    <string name="cc_update_current">На этом телевизоре установлен Aerial %s.</string>
+    <string name="cc_update_current">На этом телевизоре установлен xiaoheiDESK %s.</string>
     <string name="cc_update_keeps">Ваши приложения, раскладка, обои и настройки останутся без изменений.</string>
     <string name="cc_update_scan">Отсканируйте телефоном, чтобы узнать, как обновиться (скопировать команду установки или передать её ИИ-агенту).</string>
     <string name="cc_update_scan_else">Не получается установить? Отсканируйте телефоном, чтобы увидеть другие способы обновления.</string>
     <string name="cc_update_install">Скачать и установить</string>
     <string name="cc_update_waiting">Ожидание установки…</string>
     <string name="cc_update_downloading">Загрузка… %d%%</string>
-    <string name="cc_update_opened">Установщик открыт: подтвердите обновление в нём. Когда всё закончится, выберите «Готово», чтобы вернуться в Aerial со всеми сохранёнными настройками.</string>
-    <string name="cc_update_permission">Разрешите Aerial устанавливать приложения в открывшихся настройках, затем вернитесь и снова выберите «Скачать и установить».</string>
+    <string name="cc_update_opened">Установщик открыт: подтвердите обновление в нём. Когда всё закончится, выберите «Готово», чтобы вернуться в xiaoheiDESK со всеми сохранёнными настройками.</string>
+    <string name="cc_update_permission">Разрешите xiaoheiDESK устанавливать приложения в открывшихся настройках, затем вернитесь и снова выберите «Скачать и установить».</string>
     <string name="cc_update_storage_permission">Для сохранения обновления этому телевизору нужен доступ к хранилищу. Разрешите доступ к файлам в запросе, затем снова выберите «Скачать и установить».</string>
     <string name="cc_update_failed_download">Загрузка не завершилась (пробовали и сайт, и GitHub). Проверьте сеть и повторите попытку либо обновитесь командой ниже.</string>
     <string name="cc_update_failed_blocked">Этот телевизор не позволяет приложениям устанавливать другие приложения. Обновитесь командой ниже.</string>
-    <string name="cc_update_failed_signature">Aerial на этом телевизоре подписан иначе, чем официальный, поэтому обновить его поверх нельзя.</string>
+    <string name="cc_update_failed_signature">xiaoheiDESK на этом телевизоре подписан иначе, чем официальный, поэтому обновить его поверх нельзя.</string>
     <string name="cc_update_failed_older">Более новой версии на сайте пока нет. Повторите попытку позже.</string>
-    <string name="cc_self_compile">Сделать Aerial плавнее</string>
+    <string name="cc_self_compile">Сделать xiaoheiDESK плавнее</string>
     <string name="st_pin">Родительский PIN-код</string>
     <string name="st_pin_off">Выкл.</string>
     <string name="st_pin_on">Вкл.</string>
@@ -234,7 +234,7 @@
     <string name="ss_videos">Видео</string>
     <string name="ss_videos_hint">Добавьте MP4 или MOV со страницы на телефоне. Просмотр без сети; если видео недоступны, показываются фото.</string>
     <string name="ss_system">Системная</string>
-    <string name="ss_system_hint">Заставка самого телевизора, как задумал производитель (например, картины Xiaomi). Aerial свою не показывает.</string>
+    <string name="ss_system_hint">Заставка самого телевизора, как задумал производитель (например, картины Xiaomi). xiaoheiDESK свою не показывает.</string>
     <string name="wp_videos_note">Ваши видео, отправленные с телефона: без звука, одно за другим. Движутся как аэросъёмка и останавливаются на текущем кадре.</string>
     <string name="wp_videos_rotate">Мои видео по очереди</string>
     <string name="wp_video_note">Ваше видео, отправленное с телефона: без звука, по кругу. Движется как аэросъёмка и останавливается на текущем кадре.</string>
@@ -274,7 +274,7 @@
     <string name="kids_turn_off">Выключить режим</string>
     <string name="kids_apps">Приложения · %d</string>
     <string name="kids_apps_hint">Показываются в порядке выбора. Новые приложения сами не добавляются.</string>
-    <string name="kids_sources_note">Если выбран вход, кнопкой входов на пульте можно переключиться и на другие входы телевизора: у них общий плеер, и Aerial их не различает.</string>
+    <string name="kids_sources_note">Если выбран вход, кнопкой входов на пульте можно переключиться и на другие входы телевизора: у них общий плеер, и xiaoheiDESK их не различает.</string>
     <string name="kids_m">%d мин</string>
     <string name="kids_h">%d ч</string>
     <string name="kids_hm">%1$d ч %2$d мин</string>

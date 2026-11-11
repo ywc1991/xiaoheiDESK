@@ -43,7 +43,7 @@ object RevivalSync {
             val accountType = context.packageName
             val accounts = AccountManager.get(context)
             val account = accounts.getAccountsByType(accountType).firstOrNull()
-                ?: Account("Aerial", accountType).also {
+                ?: Account("xiaoheiDESK", accountType).also {
                     if (!accounts.addAccountExplicitly(it, null, null)) return
                     Log.i(TAG, "added the account that lets the sync framework revive Aerial")
                 }

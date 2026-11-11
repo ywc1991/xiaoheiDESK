@@ -40,5 +40,5 @@ object FontWarmup {
         }
     }
 
-    private const val SAMPLE = "Aerial 0123456789:° 设置天气相册应用 Настройки"
+    private const val SAMPLE = "小黑DESK 0123456789:° 设置天气相册应用 Настройки"
 }
