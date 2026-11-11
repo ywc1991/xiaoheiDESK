@@ -20,6 +20,7 @@ import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -61,6 +62,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.SpanStyle
@@ -772,6 +774,32 @@ private fun conditionName(kind: WeatherKind): Int = when (kind) {
 }
 
 /**
+ * The focused corner controls read as glass: a translucent plate with a lit rim, a soft sheen
+ * from above, and white text (not a solid white plate with dark text as tvOS uses). It fades in
+ * and out with the focus so the wallpaper stays visible underneath.
+ */
+@Composable
+private fun Modifier.focusGlass(focused: Boolean): Modifier {
+    val top by animateColorAsState(
+        if (focused) Palette.FocusGlassTop else Color.Transparent,
+        tween(160, easing = Motion.EaseOut), label = "glass-top",
+    )
+    val bottom by animateColorAsState(
+        if (focused) Palette.FocusGlassBottom else Color.Transparent,
+        tween(160, easing = Motion.EaseOut), label = "glass-bottom",
+    )
+    val rim by animateColorAsState(
+        if (focused) Palette.FocusGlassRim else Color.Transparent,
+        tween(160, easing = Motion.EaseOut), label = "glass-rim",
+    )
+    val shape = RoundedCornerShape(50)
+    return this
+        .clip(shape)
+        .background(Brush.verticalGradient(listOf(top, bottom)))
+        .border(1.dp, rim, shape)
+}
+
+/**
  * The small clock: the date with weekday and the time in one quiet line in the top left, level
  * with the status pill, so the wallpaper keeps the rest of the screen. A soft shadow keeps it
  * readable on photos. Focusable: selecting it opens the calendar (issue: mirror of the weather
@@ -810,23 +838,17 @@ fun CornerClock(
         modifier = modifier,
     ) { state ->
         LaunchedEffect(state.focused) { onFocused(state.focused) }
-        val bg by animateColorAsState(
-            if (state.focused) Palette.Focus else Color.Transparent,
-            tween(160, easing = Motion.EaseOut),
-            label = "clock-bg",
-        )
-        val fg = if (state.focused) Palette.OnFocus else dim
+        val fg = if (state.focused) Color.White else dim
         Row(
             Modifier
-                .clip(RoundedCornerShape(50))
-                .background(bg)
+                .focusGlass(state.focused)
                 .height(36.dp)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            BasicText(dateShortText(now), style = style.copy(color = fg, shadow = if (state.focused) null else shadow))
+            BasicText(dateShortText(now), style = style.copy(color = fg, shadow = shadow))
             BasicText(
-                timeText(now), style = style.copy(color = fg, shadow = if (state.focused) null else shadow),
+                timeText(now), style = style.copy(color = fg, shadow = shadow),
                 modifier = Modifier.padding(start = 12.dp).toSaverClock(toSaver, Type.Title.fontSize, Type.Title.fontSize.value.dp * CAP_TOP, drift),
             )
         }
@@ -858,16 +880,10 @@ fun CornerWeather(
             modifier = modifier,
         ) { state ->
             LaunchedEffect(state.focused) { onFocused(state.focused) }
-            val bg by animateColorAsState(
-                if (state.focused) Palette.Focus else Color.Transparent,
-                tween(160, easing = Motion.EaseOut),
-                label = "weather-bg",
-            )
-            val fg = if (state.focused) Palette.OnFocus else dim
+            val fg = if (state.focused) Color.White else dim
             Row(
                 Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(bg)
+                    .focusGlass(state.focused)
                     .height(36.dp)
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -877,7 +893,7 @@ fun CornerWeather(
                 val place = Weather.place?.takeIf { it.length <= 12 }
                 BasicText(
                     listOfNotNull(place, "${w.celsius}°").joinToString(" "),
-                    style = Type.Title.copy(color = fg, shadow = if (state.focused) null else shadow),
+                    style = Type.Title.copy(color = fg, shadow = shadow),
                     modifier = Modifier.padding(start = 6.dp),
                 )
             }
@@ -929,15 +945,11 @@ fun StatusPill(
         modifier = modifier,
     ) { state ->
         LaunchedEffect(state.focused) { onFocused(state.focused) }
-        val bg by animateColorAsState(
-            if (state.focused) Palette.Focus else Color.Transparent,
-            tween(160, easing = Motion.EaseOut), label = "pill-bg",
-        )
-        val fg = if (state.focused) Palette.OnFocus else Color.White.copy(alpha = 0.9f)
+        val fg = if (state.focused) Color.White else Color.White.copy(alpha = 0.9f)
+        val shadow = Shadow(Color.Black.copy(alpha = 0.45f), blurRadius = 12f)
         Row(
             Modifier
-                .clip(RoundedCornerShape(50))
-                .drawBehind { drawRect(bg) }
+                .focusGlass(state.focused)
                 .height(36.dp)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -951,7 +963,7 @@ fun StatusPill(
             GlyphIcon(glyph, fg, 17.dp, level = network.level)
             if (network.vpn) VpnBadge(fg)
             if (showTime) {
-                BasicText(timeText(now), style = Type.Headline.copy(color = fg))
+                BasicText(timeText(now), style = Type.Headline.copy(color = fg, shadow = shadow))
             }
             GlyphIcon(Glyph.Switches, fg, 17.dp)
         }

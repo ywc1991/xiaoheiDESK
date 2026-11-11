@@ -42,6 +42,11 @@ object Palette {
     /** tvOS draws a focused control as a near-white plate with dark content. */
     val Focus = Color(0xFFF5F5F7)
     val OnFocus = Color(0xFF1D1D1F)
+
+    /** The corner controls instead keep white text on a lit glass plate when focused. */
+    val FocusGlassTop = Color(0x52FFFFFF)
+    val FocusGlassBottom = Color(0x1AFFFFFF)
+    val FocusGlassRim = Color(0x8FFFFFFF)
 }
 
 object Motion {
