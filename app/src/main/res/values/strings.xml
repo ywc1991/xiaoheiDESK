@@ -336,9 +336,6 @@
 <string name="wx_c_95">Thunderstorms</string>
 <string name="wx_c_96">Thunderstorms with hail</string>
 <string name="wx_c_99">Severe thunderstorms with hail</string>
-<string name="wx_clear">Clear</string>
-<string name="wx_cloudy">Cloudy</string>
-<string name="wx_fog">Fog</string>
 <string name="wx_hour">%1$d:00</string>
 <string name="wx_k_clear">Clear</string>
 <string name="wx_k_cloudy">Cloudy</string>
@@ -349,13 +346,10 @@
 <string name="wx_k_thunder">Thunderstorms</string>
 <string name="wx_loading">Getting the forecast…</string>
 <string name="wx_now">%1$d°, %2$s</string>
-<string name="wx_partly_cloudy">Partly Cloudy</string>
-<string name="wx_rain">Rain</string>
 <string name="wx_range">%1$d° ~ %2$d°</string>
-<string name="wx_snow">Snow</string>
-<string name="wx_thunder">Thunderstorm</string>
 <string name="wx_today">Today</string>
 <string name="wx_today_short">Today</string>
 <string name="wx_unknown_place">Unknown place</string>
 <string name="wx_week">Next 7 Days</string>
+<string name="date_hint">← → change month · ↓ jump to today · Back to close</string>
 </resources>

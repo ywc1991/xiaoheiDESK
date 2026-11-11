@@ -773,7 +773,8 @@ private fun conditionName(kind: WeatherKind): Int = when (kind) {
 /**
  * The small clock: the date with weekday and the time in one quiet line in the top left, level
  * with the status pill, so the wallpaper keeps the rest of the screen. A soft shadow keeps it
- * readable on photos. Where it is focusable, selecting it opens the lunar calendar.
+ * readable on photos. Focusable: selecting it opens the calendar (issue: mirror of the weather
+ * corner, #date-panel).
  */
 @Composable
 fun CornerClock(

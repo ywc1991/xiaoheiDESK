@@ -306,6 +306,7 @@ fun HomeScreen(
         SystemProbe.tclInputPanel(appContext) != null || SystemProbe.coocaaInputPanel(appContext)
     }
     val weatherRequester = remember { FocusRequester() }
+    val dateRequester = remember { FocusRequester() }
 
     var focusedKey by remember { mutableStateOf<String?>(null) }
     // Where focus goes when the overlay closes, when that is not the tile it was on. Kept apart
@@ -582,7 +583,9 @@ fun HomeScreen(
 
         // The folder open, or under its app's menu.
         val openFolder = (overlay as? Overlay.Folder)?.id ?: (overlay as? Overlay.AppMenu)?.inFolder
-        val folderOpen = overlay is Overlay.HiddenApps || openFolder != null
+        // Custom: the weather and the calendar open on Home frosted too, the way folders do.
+        val folderOpen = overlay is Overlay.HiddenApps || openFolder != null ||
+            overlay is Overlay.Weather || overlay is Overlay.Date
         val ccOpen = overlay is Overlay.ControlCenter
         var sheetIn by remember { mutableStateOf(false) }
         var sheetWarm by remember { mutableStateOf(false) }
@@ -769,6 +772,10 @@ fun HomeScreen(
                 } else if (!clockRight) {
                     CornerClock(
                         now = now,
+                        onClick = { vm.overlay = Overlay.Date },
+                        enabled = gridEnabled && moving == null,
+                        focusRequester = dateRequester,
+                        onFocused = { gained -> if (gained) pillFocused = false },
                         modifier = Modifier
                             .diagLayer("clock")
                             .padding(start = metrics.margin, top = 28.dp)
@@ -895,6 +902,10 @@ fun HomeScreen(
             if (!AerialSettings.largeClock && AerialSettings.clockRight) {
                 CornerClock(
                     now = now,
+                    onClick = { vm.overlay = Overlay.Date },
+                    enabled = gridEnabled && moving == null,
+                    focusRequester = dateRequester,
+                    onFocused = { gained -> if (gained) pillFocused = false },
                     modifier = Modifier
                         .diagLayer("clock")
                         .padding(end = 14.dp)
@@ -1132,6 +1143,11 @@ fun HomeScreen(
 
         WeatherPanel(
             visible = overlay is Overlay.Weather,
+            onClose = { vm.overlay = Overlay.None },
+        )
+
+        DatePanel(
+            visible = overlay is Overlay.Date,
             onClose = { vm.overlay = Overlay.None },
         )
 

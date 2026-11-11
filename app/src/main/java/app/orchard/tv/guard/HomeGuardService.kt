@@ -49,6 +49,10 @@ import app.orchard.tv.system.SystemProbe
  * 2. The viewer can still open the stock launcher on purpose (its tile in Aerial's grid, for the
  *    maker's own content). While it is in front the Home key is answered with Aerial, since
  *    pressing Home there would otherwise just stay put.
+ * 3. The Home key toggles between the two: pressed in Aerial it opens the stock launcher (through
+ *    the system Home action, the way the tile does), pressed with the stock launcher in front it
+ *    brings Aerial back. See homeKey: firmwares that take the key themselves still announce it
+ *    with the "homekey" dialog reason, which is the only place the press is visible.
  *
  * Keys are filtered only up to Android 11 (see updateKeyFilter). With the filter on, every key
  * press on the TV detours through this service; some apps then see a press as held and move twice
@@ -120,6 +124,9 @@ class HomeGuardService : AccessibilityService() {
         DiagLog.i("guard: stock launcher left on screen at boot (${if (bootStockShown) "it showed" else "it never said so"}); taking Home")
         takeOverOnceSettled("after the stock launcher showed at boot", woke = true)
     }
+
+    /** When the guard last answered a Home press; see homeKey. */
+    private var lastHomeKeyAt = 0L
 
     /**
      * Mi TV 4 (MiTV4-ANSM0, Android 6.0.1) covers Aerial some 20 s into a boot with PatchWall's
@@ -443,12 +450,18 @@ class HomeGuardService : AccessibilityService() {
      * in front, Home starts the launcher over itself and no window change follows. With the front
      * unknown too: the guard leaves an unknown front alone when Aerial keeps being stopped, but a
      * Home press says what the viewer wants. Elsewhere the window change does it.
+     * The Home key, told by the system closing its dialogs with reason "homekey". It toggles
+     * between the two home screens: pressed in Aerial it opens the stock launcher (the way the
+     * tile in Aerial's grid does, through the system Home action, which firmwares answer with
+     * their own launcher) and lets it stay; pressed with the stock launcher in front it brings
+     * Aerial back. Acts whether or not Aerial is the resolved Home: firmwares that answer Home
+     * with their own launcher leave the viewer sitting there otherwise (Xiaomi PatchWall), and
+     * where Aerial is Home the system does the same thing anyway. An unknown front is answered
+     * with Aerial too; a third-party app in front is left to the system, whose Home goes to the
+     * default launcher as usual.
      */
     private val homeKey = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            // Not skipped where Aerial is the default Home: Panasonic DX01C (Skyworth-made, Tianci,
-            // Android 6) answers the Home key by starting its own launcher by component, and Home
-            // resolution never happens.
             if (intent.getStringExtra("reason") != "homekey") return
             // The guard's own press for the stock launcher's tile, not the viewer's.
             if (SystemClock.uptimeMillis() - ownHomeAt < OWN_HOME_MS) return
@@ -458,7 +471,21 @@ class HomeGuardService : AccessibilityService() {
                 BootOpen.noteHomeKey(this@HomeGuardService)
             }
             if (backOnPause) noteHomeInAerial()
+            // One press of the key comes as a burst: the firmware announces it more than once, and
+            // every system Home action the guard takes starts another burst. Answering each echo
+            // would undo the answer before it (the front changes to the launcher being opened, and
+            // the next echo then takes Home straight back), so one press is answered once.
+            val now = SystemClock.uptimeMillis()
+            if (now - lastHomeKeyAt < HOME_KEY_ECHO_MS) return
+            lastHomeKeyAt = now
             val front = lastWindow?.first
+            if (front == packageName) {
+                Log.i(TAG, "Home pressed in Aerial; opening the stock launcher")
+                val pkg = stockHomes.keys.firstOrNull()
+                if (pkg != null) openStockLauncher(pkg) { false }
+                else performGlobalAction(GLOBAL_ACTION_HOME)
+                return
+            }
             if (front != null && front !in stockHomes) {
                 windowsAtHome = windowsSeen
                 homePressedAt = SystemClock.uptimeMillis()
@@ -1963,6 +1990,8 @@ class HomeGuardService : AccessibilityService() {
 
         @Volatile
         private var deafRetried = false
+        /** One press of Home comes as a burst of "homekey" dialog closures; see homeKey. */
+        private const val HOME_KEY_ECHO_MS = 800L
 
         /** Accessibility switched off and on for a deaf guard once already in this process; see frontAfterHome. */
         @Volatile

@@ -335,9 +335,6 @@
 <string name="wx_c_95">雷阵雨</string>
 <string name="wx_c_96">雷阵雨伴冰雹</string>
 <string name="wx_c_99">强雷阵雨伴冰雹</string>
-<string name="wx_clear">晴</string>
-<string name="wx_cloudy">阴</string>
-<string name="wx_fog">雾</string>
 <string name="wx_hour">%1$d时</string>
 <string name="wx_k_clear">晴</string>
 <string name="wx_k_cloudy">阴</string>
@@ -348,13 +345,10 @@
 <string name="wx_k_thunder">雷阵雨</string>
 <string name="wx_loading">正在获取天气预报…</string>
 <string name="wx_now">%1$d° %2$s</string>
-<string name="wx_partly_cloudy">多云</string>
-<string name="wx_rain">雨</string>
 <string name="wx_range">%1$d° ~ %2$d°</string>
-<string name="wx_snow">雪</string>
-<string name="wx_thunder">雷雨</string>
 <string name="wx_today">今日天气</string>
 <string name="wx_today_short">今天</string>
 <string name="wx_unknown_place">未知地点</string>
 <string name="wx_week">未来一周</string>
+<string name="date_hint">← → 切换月份 · ↓ 回到今天 · 返回键关闭</string>
 </resources>

@@ -9,7 +9,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,8 +20,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -43,6 +40,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.orchard.tv.R
@@ -151,8 +149,11 @@ private fun Header() {
             )
             val now = Weather.now
             if (now != null) {
+                val nowText = stringResource(R.string.wx_now, now.celsius, wxNameOf(now.code, now.kind))
+                val rangeText = if (now.high != null && now.low != null)
+                    stringResource(R.string.weather_high_low, now.high, now.low) else null
                 BasicText(
-                    stringResource(R.string.wx_now, now.celsius, wxNameOf(now.code, now.kind)),
+                    if (rangeText != null) "$nowText  ·  $rangeText" else nowText,
                     style = Type.Callout.copy(color = Palette.SecondaryLabel),
                 )
             }
@@ -174,7 +175,12 @@ private fun Loading() {
     BasicText(stringResource(R.string.wx_loading), style = Type.Callout.copy(color = Palette.SecondaryLabel))
 }
 
-/** The rest of today, hour by hour; late in the day the small hours of tomorrow fill it out. */
+/**
+ * The rest of today, hour by hour; late in the day the small hours of tomorrow fill it out. Every
+ * hour takes an equal slice of the same width the week's columns share below, inset the same way,
+ * so the first hour starts where the first day column does and the last hour ends where the last
+ * one does.
+ */
 @Composable
 private fun Hours() {
     val hours = Weather.forecast?.hours.orEmpty()
@@ -190,39 +196,62 @@ private fun Hours() {
         withFrameNanos { }
         runCatching { first.requestFocus() }
     }
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        items(hours, key = { it.hour }) { hour ->
-            HourCell(hour, focusRequester = if (hour == hours.first()) first else null)
+    Row(Modifier.fillMaxWidth().padding(horizontal = RowInset)) {
+        hours.forEachIndexed { index, hour ->
+            HourCell(
+                hour,
+                focusRequester = if (index == 0) first else null,
+                // The strip's ends sit where the week's first and last columns put their text:
+                // left flush at the row's inset, right flush at its end.
+                align = when (index) {
+                    0 -> TextAlign.Start
+                    hours.lastIndex -> TextAlign.End
+                    else -> TextAlign.Center
+                },
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }
 
 @Composable
-private fun HourCell(hour: HourPoint, focusRequester: FocusRequester?) {
-    Pressable(onClick = {}, focusRequester = focusRequester, focusedScale = 1.05f) { state ->
+private fun HourCell(
+    hour: HourPoint,
+    focusRequester: FocusRequester?,
+    align: TextAlign = TextAlign.Center,
+    modifier: Modifier = Modifier,
+) {
+    Pressable(onClick = {}, focusRequester = focusRequester, focusedScale = 1.05f, modifier = modifier) { state ->
         val bg by animateColorAsState(
             if (state.focused) Palette.Focus else Palette.Fill, tween(140, easing = Motion.EaseOut), label = "hour-bg",
         )
         val fg = if (state.focused) Palette.OnFocus else Palette.Label
         Column(
             Modifier
-                .width(62.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(8.dp))
                 .background(bg)
-                .padding(vertical = 8.dp, horizontal = 2.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(vertical = 8.dp, horizontal = 1.dp),
+            horizontalAlignment = when (align) {
+                TextAlign.Start -> Alignment.Start
+                TextAlign.End -> Alignment.End
+                else -> Alignment.CenterHorizontally
+            },
         ) {
-            BasicText(stringResource(R.string.wx_hour, hour.hour), style = Type.Caption.copy(color = fg))
+            BasicText(
+                stringResource(R.string.wx_hour, hour.hour),
+                style = Type.Caption.copy(color = fg, textAlign = align),
+                softWrap = false,
+            )
             Spacer(Modifier.height(5.dp))
             GlyphIcon(glyphFor(hour.kind, day = hour.hour in 6..17), fg, 18.dp, level = rainLevel(hour.code))
             Spacer(Modifier.height(5.dp))
-            BasicText("${hour.celsius}°", style = Type.Callout.copy(color = fg))
+            BasicText("${hour.celsius}°", style = Type.Callout.copy(color = fg, textAlign = align), softWrap = false)
         }
     }
 }
 
-/** The gap on either side of a day's glyph, so the date and the word sit equally far from it. */
-private val GAP = 14.dp
+/** How far a row's content sits in from the panel's edge; the hours and the days share it. */
+private val RowInset = 10.dp
 
 @Composable
 private fun DayRow(day: DayPoint, today: Boolean) {
@@ -236,29 +265,40 @@ private fun DayRow(day: DayPoint, today: Boolean) {
             Modifier
                 .clip(RoundedCornerShape(10.dp))
                 .background(bg)
-                .padding(horizontal = 10.dp, vertical = 7.dp),
+                .padding(horizontal = RowInset, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Five equal-width columns, so every day of the week lines up under the same columns.
+            // The first sits left flush and the last right flush, the edges the hourly strip above
+            // starts and ends on; the rest are centred in between.
             BasicText(
                 if (today) stringResource(R.string.wx_today_short) else weekdayLabel(day.date),
-                style = Type.Callout.copy(color = fg),
-                modifier = Modifier.width(76.dp),
+                style = Type.Callout.copy(color = fg, textAlign = TextAlign.Start),
+                maxLines = 1,
+                modifier = Modifier.weight(1f),
             )
             BasicText(
                 day.date.substring(5).replace('-', '/'),
-                style = Type.Caption.copy(color = dim),
+                style = Type.Caption.copy(color = dim, textAlign = TextAlign.Center),
+                maxLines = 1,
+                modifier = Modifier.weight(1f),
             )
-            Spacer(Modifier.width(GAP))
-            GlyphIcon(glyphFor(day.kind, day = true), fg, 18.dp, level = rainLevel(day.code))
-            Spacer(Modifier.width(GAP))
+            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                GlyphIcon(glyphFor(day.kind, day = true), fg, 18.dp, level = rainLevel(day.code))
+            }
             BasicText(
                 wxNameOf(day.code, day.kind),
-                style = Type.Caption.copy(color = dim),
+                style = Type.Caption.copy(color = dim, textAlign = TextAlign.Center),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
             )
-            Spacer(Modifier.weight(1f))
-            BasicText(stringResource(R.string.wx_range, day.min, day.max), style = Type.Callout.copy(color = fg))
+            BasicText(
+                stringResource(R.string.wx_range, day.min, day.max),
+                style = Type.Callout.copy(color = fg, textAlign = TextAlign.End),
+                maxLines = 1,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }

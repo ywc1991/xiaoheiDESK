@@ -64,6 +64,8 @@ sealed interface Overlay {
     data object Wallpaper : Overlay
     /** Today hour by hour and the coming week, opened from the weather on Home. */
     data object Weather : Overlay
+    /** A month calendar with lunar dates, opened from the clock on Home. */
+    data object Date : Overlay
     data class Pin(val mode: PinMode, val onDone: () -> Unit) : Overlay
     /** Setting up Kids and Elders mode (Restricted), from Personalize. */
     data object Kids : Overlay
