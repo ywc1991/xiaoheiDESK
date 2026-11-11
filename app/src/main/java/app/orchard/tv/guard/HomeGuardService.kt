@@ -2286,6 +2286,18 @@ class HomeGuardService : AccessibilityService() {
             aerialPausedAt = SystemClock.uptimeMillis()
             val s = instance ?: return false
             s.updateKeyFilter()
+            // When we just opened the stock launcher on purpose (HOME pressed in Aerial, or the grid
+            // tile), leave it in front: Aerial must stay paused instead of snapping straight back
+            // over it. Without this, the bounce-back below undid the toggle on Android 12+ Xiaomi
+            // where Aerial is not the resolved Home (PatchWall is the default, MiTV-MFTR0-style):
+            // the "homekey" broadcast is delivered, openStockLauncher sets allowStockUntil and
+            // starts PatchWall, Aerial pauses ~30-80 ms later, and the bounce-back reclaimed the
+            // front before PatchWall's window came up. onAccessibilityEvent already honours
+            // allowStockUntil the same way; this makes the HOME-in-Aerial path consistent with it.
+            if (s.backOnPause && SystemClock.uptimeMillis() < s.allowStockUntil) {
+                Log.i(TAG, "Aerial paused into the stock launcher on purpose; leaving it in front")
+                return false
+            }
             // Within the pause Home itself makes, not one the viewer makes after it by opening an app.
             if (s.backOnPause && SystemClock.uptimeMillis() - s.homeInAerialAt < HOME_PAUSE_MS) {
                 s.homeInAerialAt = Long.MIN_VALUE / 2

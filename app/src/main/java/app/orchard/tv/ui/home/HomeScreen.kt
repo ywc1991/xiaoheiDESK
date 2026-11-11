@@ -914,7 +914,6 @@ fun HomeScreen(
                             compositingStrategy = CompositingStrategy.ModulateAlpha
                         },
                     toSaver = { toSaver.value },
-                    saving = vm.screensaverVisible,
                 )
             }
             StatusPill(
