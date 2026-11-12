@@ -1,0 +1,42 @@
+{
+  "releases": [
+    {
+      "v": "1.0.1",
+      "zh": [
+        "更新检测改用小黑DESK 自己的版本线：只比较自己的 GitHub Release，不再把上游 Aerial 的新版本误报为可升级版本，也不会下载官方安装包。",
+        "控制中心「更新」页常驻显示各版本新特性，中英文随系统语言切换，离线也能查看。",
+        "有新版本时从自己的 Release 下载安装；二维码直达小黑DESK 版本下载页。",
+        "更新提示、下载失败提示与文案全部改为自有版本说明。"
+      ],
+      "en": [
+        "Update checks now follow the xiaoheiDESK version line: only our own GitHub releases are compared, so an upstream Aerial release is never offered or downloaded.",
+        "The Control Center update page always lists what each version brings, in Chinese or English, even offline.",
+        "New releases are downloaded from our own release assets; the QR code opens our release page.",
+        "Update and download-failure messages now describe our own release channel."
+      ]
+    },
+    {
+      "v": "1.0.0",
+      "zh": [
+        "正式版首发，App 与仓库可见名统一为「小黑DESK / xiaoheiDESK」。",
+        "全新图标：黑玻底 + 两只白色三角猫耳 + 一条卷尾，同步替换桌面图标、adaptive icon 与 TV 横幅。",
+        "桌面日期 / 天气 / 设置获得焦点时改为白字 + Quiet Glass 玻璃高光；选中 App 时仅在名称文字下显示玻璃胶囊，图标保持原样。",
+        "日历 / 天气 / 设置三个面板统一为与桌面焦点同款的玻璃材质。",
+        "农历日历：初一显示农历月名，节日标注优先（含清明），农历与公历节日同屏。",
+        "天气面板：城市设为杭州，支持雨量、12 小时预报；小时图标等宽，与未来一周左右对齐。",
+        "HOME 键双向切换自定义桌面与系统桌面，带防抖与前台守护。",
+        "苹果航拍屏保、照片库、控制中心、诊断导出等完整功能保留。"
+      ],
+      "en": [
+        "First official release, branded 小黑DESK / xiaoheiDESK throughout.",
+        "New icon: dark glass with two small white cat ears and a curled tail, applied to the launcher icon, adaptive icon and TV banner.",
+        "Focus styling: white text on glass for date, weather and settings; a glass capsule under an app's name only, with the icon untouched.",
+        "Calendar, weather and settings panels share the same glass finish as the home focus.",
+        "Lunar calendar: month name on the first day, festival labels take priority (including Qingming), lunar and solar holidays together.",
+        "Weather panel: Hangzhou, rainfall, 12-hour forecast, evenly spaced hour icons aligned with the weekly rows.",
+        "HOME toggles between this desk and the stock launcher in both directions, with debounce and a foreground guard.",
+        "Apple aerial screensavers, photo library, Control Center and diagnostics export all kept."
+      ]
+    }
+  ]
+}

@@ -361,13 +361,13 @@ private fun MainPage(vm: HomeViewModel, now: LocalDateTime, takeFocus: Boolean, 
                 trailing = "$name ›",
             )
         }
-        Updates.available?.let { latest ->
-            MenuRow(
-                Glyph.Info,
-                stringResource(R.string.cc_update_available, latest),
-                onClick = { vm.overlay = Overlay.ControlCenter(CcPage.Update) },
-            )
-        }
+        // Always reachable: the page also lists what this build brings, even with no update due.
+        MenuRow(
+            Glyph.Info,
+            Updates.available?.let { latest -> stringResource(R.string.cc_update_available, latest) }
+                ?: stringResource(R.string.cc_version_features),
+            onClick = { vm.overlay = Overlay.ControlCenter(CcPage.Update) },
+        )
 
         // Android 9 to 11, Aerial running uncompiled: reinstalling itself has the system compile it,
         // which needs the owner's confirmation there (SelfCompile; 12+ does it by itself).
@@ -397,11 +397,11 @@ private fun MainPage(vm: HomeViewModel, now: LocalDateTime, takeFocus: Boolean, 
 }
 
 /**
- * How to move to the new version: "Download and Install" fetches the APK and opens the system
- * installer (Updates.install). For TVs whose firmware lets no app install another (see
- * Updates.Failure), and for copies older than the button, a QR code opens the website's update
- * page on a phone, with the install command for this TV to copy: typing it off the screen was
- * too much. The TV's address rides in the fragment, which the browser does not send.
+ * How to move to a new xiaoheiDESK release: "Download and Install" fetches the APK from our own
+ * release and opens the system installer (Updates.install). For TVs whose firmware lets no app
+ * install another (see Updates.Failure), and for copies older than the button, a QR code opens
+ * the release page on a phone. The TV's address rides in the fragment, which the browser does
+ * not send. The features below the button are always shown, even when there is nothing to update.
  */
 @Composable
 private fun UpdatePage(vm: HomeViewModel, takeFocus: Boolean) {
@@ -414,19 +414,20 @@ private fun UpdatePage(vm: HomeViewModel, takeFocus: Boolean) {
     }
     DisposableEffect(Unit) { onDispose { Updates.resetInstall() } }
     val canInstall = remember { Updates.canInstall(context) }
+    val canUpdate = canInstall && Updates.available != null
     var qr by remember { mutableStateOf<ImageBitmap?>(null) }
     LaunchedEffect(Unit) {
         val ip = PhoneServer.lanAddress(context)
-        val url = "https://aerial.qust.me/update/#v=${Updates.upstream}&f=${BuildConfig.FLAVOR}" + (ip?.let { "&tv=$it" } ?: "")
+        val url = "${Updates.RELEASE_PAGE}?v=${Updates.current}&f=${BuildConfig.FLAVOR}" + (ip?.let { "&tv=$it" } ?: "")
         qr = withContext(Dispatchers.Default) { PhoneServer.qr(url).asImageBitmap() }
     }
     Column {
         MenuRow(
             Glyph.ChevronLeft, stringResource(R.string.cc_update_title, Updates.available ?: Updates.current),
-            focusRequester = if (canInstall) null else first,
+            focusRequester = if (canUpdate) null else first,
             onClick = { vm.overlay = Overlay.ControlCenter(CcPage.Main) },
         )
-        if (canInstall) {
+        if (canUpdate) {
             val state = Updates.install
             MenuRow(
                 Glyph.Download,
@@ -472,7 +473,7 @@ private fun UpdatePage(vm: HomeViewModel, takeFocus: Boolean) {
                 }
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
-                    BasicText(stringResource(if (canInstall) R.string.cc_update_scan_else else R.string.cc_update_scan), style = Type.Body)
+                    BasicText(stringResource(if (canUpdate) R.string.cc_update_scan_else else R.string.cc_update_scan), style = Type.Body)
                     Spacer(Modifier.height(6.dp))
                     BasicText(stringResource(R.string.cc_update_keeps), style = Type.Caption)
                 }

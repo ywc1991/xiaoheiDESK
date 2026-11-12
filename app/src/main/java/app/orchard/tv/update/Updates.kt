@@ -29,18 +29,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.File
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
 
 /**
- * Whether a newer release is out (issues #24, #76). Most owners stay on the version they installed
- * and report bugs fixed long ago. Aerial reads the latest release's tag from the
- * website (reachable in China, unlike GitHub); Control Center then names the new version and says
- * how to update. Nothing is downloaded or installed in the background: only when the owner picks
- * "Download and Install" does Aerial fetch the new APK and hand it to the system installer
- * ([install]).
+ * Whether a newer xiaoheiDESK release is out. This build has its own version line (1.0.x),
+ * independent of the upstream Aerial releases it is based on, so an upstream version such as
+ * 1.95 must never be offered: installing it would replace this desk with the stock launcher.
+ *
+ * The latest tag comes from our own GitHub release, with a plain version.txt in the repo (served
+ * by a CDN reachable in China) as a second source. Every reachable source is asked and the
+ * highest version wins, so a stale CDN copy cannot hide a new release. What each release brings
+ * is read from our notes.json, plus the copy baked into the APK ([NOTES_ASSET]) so the update
+ * page still lists this build's features offline. Nothing is downloaded or installed in the
+ * background: only when the owner picks "Download and Install" does the app fetch the APK and
+ * hand it to the system installer ([install]).
  *
  * Home and network events check at most every three hours; opening Control Center shortens that
  * to ten minutes. Failed checks retry while Home is in front (#912).
@@ -48,8 +55,18 @@ import java.util.Locale
 object Updates {
     private const val TAG = "AerialUpdates"
     private const val PREFS = "updates"
-    private const val VERSION_URL = "https://aerial.qust.me/download/version.txt"
-    private const val NOTES_URL = "https://aerial.qust.me/download/notes.json"
+    private const val REPO = "ywc1991/xiaoheiDESK"
+    /** The page the QR code in Control Center opens on a phone. */
+    const val RELEASE_PAGE = "https://github.com/ywc1991/xiaoheiDESK/releases/latest"
+    private const val LATEST_API = "https://api.github.com/repos/ywc1991/xiaoheiDESK/releases/latest"
+    private const val CDN = "https://cdn.jsdelivr.net/gh/ywc1991/xiaoheiDESK@main/update"
+    private const val CDN_ALT = "https://fastly.jsdelivr.net/gh/ywc1991/xiaoheiDESK@main/update"
+    private const val RAW = "https://raw.githubusercontent.com/ywc1991/xiaoheiDESK/main/update"
+    private const val APK_NAME = "xiaoheiDESK.apk"
+    /** Features of every release up to this build, kept in assets for offline display. */
+    private const val NOTES_ASSET = "release-notes.json"
+    private val VERSION_SOURCES = listOf("$CDN/version.txt", "$CDN_ALT/version.txt", LATEST_API, "$RAW/version.txt")
+    private val NOTES_SOURCES = listOf("$CDN/notes.json", "$CDN_ALT/notes.json", "$RAW/notes.json")
 
     /**
      * A source that delivers less than [STALL_BYTES] in [STALL_MS] is given up for the next one
@@ -59,24 +76,22 @@ object Updates {
     private const val STALL_BYTES = 256 * 1024L
     const val CONTROL_CENTER_MAX_AGE_MS = UpdateCheck.PANEL_MAX_AGE_MS
 
-    /** This build's product version, shown in Control Center, e.g. "1.0.0" (flavor suffix left off). */
+    /** This build's version, shown in Control Center and used as the update comparison baseline. */
     val current: String = BuildConfig.VERSION_NAME.substringBefore('-')
 
     /**
-     * The upstream Aerial release this build is based on. xiaoheiDESK has its own version line,
-     * so comparing [current] with the upstream version.txt would make 1.83 look newer than
-     * 1.0.0 and offer to replace this build with a stock Aerial APK. Update checks, release
-     * notes and the website's `v=` parameter therefore use the upstream baseline; [current]
-     * is only the version we show the owner. Bump this when the custom build is rebased.
+     * The upstream Aerial release this build is based on. Only the website's setup guide QR code
+     * uses it (its `v=` parameter): update checks, release notes and APK downloads all follow our
+     * own version line. Bump this when the custom build is rebased.
      */
     const val upstream = "1.83"
 
-    /** The newer release's version, or null when this is the latest (or nothing is known yet). */
+    /** A newer xiaoheiDESK release's version, or null when this is the latest (or nothing is known yet). */
     var available by mutableStateOf<String?>(null); private set
 
     /**
-     * What the update brings: each release after this one up to [available], newest first. Empty
-     * until read, and when the website has no notes (sites deployed before notes.json).
+     * What each release brings, newest first. The features of this build are always present from
+     * [NOTES_ASSET]; releases after it are added from the repo's notes.json when one is found.
      */
     var notes by mutableStateOf<List<ReleaseNotes>>(emptyList()); private set
     private var readingNotes = false
@@ -95,14 +110,15 @@ object Updates {
         started = true
         appContext = context.applicationContext
         prefs = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        available = prefs.getString("latest", null)?.takeIf { newer(it, upstream) }
+        // "latest_own" and friends: a value saved by a stock build (e.g. "1.95") is not ours.
+        available = prefs.getString("latest_own", null)?.takeIf { newer(it, current) }
         checker = UpdateCheck(
             scope = scope,
-            lastSuccess = { prefs.getLong("checked_at", 0) },
-            read = { withContext(Dispatchers.IO) { read(VERSION_URL) } },
+            lastSuccess = { prefs.getLong("checked_at_own", 0) },
+            read = { withContext(Dispatchers.IO) { readVersion() } },
             save = { latest, checkedAt ->
-                prefs.edit { putString("latest", latest); putLong("checked_at", checkedAt) }
-                available = latest.takeIf { newer(it, upstream) }
+                prefs.edit { putString("latest_own", latest); putLong("checked_at_own", checkedAt) }
+                available = latest.takeIf { newer(it, current) }
                 loadNotes()
             },
             log = { Log.i(TAG, it); DiagLog.i("update check: $it") },
@@ -133,34 +149,70 @@ object Updates {
     }
 
     fun diagnostics(): String = if (!started) "not initialized" else
-        "known=${prefs.getString("latest", null) ?: "unknown"}; notes=${notes.size}; ${checker?.diagnostics}"
+        "known=${prefs.getString("latest_own", null) ?: "unknown"}; notes=${notes.size}; ${checker?.diagnostics}"
 
     /**
-     * The release notes for [available], from the copy kept with the version it was read for, else
-     * from the website (once per new version; the update page asks again while it has none). The
-     * file is about 30 KB. A missing or bad file leaves the page as it was, without notes.
+     * The features shown on the update page: the copies baked into this APK, plus (when a newer
+     * release is known) any later releases from the repo's notes.json. A cached copy is used until
+     * a new version arrives; failing to reach the repo simply leaves this build's own features.
      */
     fun loadNotes() {
         if (!started) return
-        val latest = available ?: run { notes = emptyList(); return }
         val zh = Locale.getDefault().language == "zh"
-        if (prefs.getString("notes_for", null) == latest) {
-            prefs.getString("notes", null)?.let { json ->
-                runCatching { ReleaseNotesParser.parse(json, upstream, latest, zh) }.getOrNull()?.let { notes = it; return }
-            }
-        }
+        val local = builtIn(zh)
+        val latest = available
+        if (latest == null) { notes = local; return }
+        val cached = prefs.getString("notes_own", null)
+            ?.takeIf { prefs.getString("notes_for_own", null) == latest }
+            ?.let { runCatching { ReleaseNotesParser.parse(it, current, latest, zh) }.getOrNull() }
+        if (cached != null) { notes = merge(local, cached); return }
+        notes = local
         if (readingNotes) return
         readingNotes = true
         scope.launch {
-            val json = runCatching { withContext(Dispatchers.IO) { read(NOTES_URL) } }
+            val json = runCatching { withContext(Dispatchers.IO) { readNotes() } }
                 .onFailure { Log.i(TAG, "release notes: ${it.javaClass.simpleName}") }.getOrNull()
             readingNotes = false
-            val parsed = json?.let { runCatching { ReleaseNotesParser.parse(it, upstream, latest, zh) }.getOrNull() }
-            // Only notes that already have this release: the site's file may be a deploy behind.
-            if (parsed.isNullOrEmpty() || parsed.first().version != latest || available != latest) return@launch
-            prefs.edit { putString("notes", json); putString("notes_for", latest) }
-            notes = parsed
+            val parsed = json?.let { runCatching { ReleaseNotesParser.parse(it, current, latest, zh) }.getOrNull() }
+            if (!parsed.isNullOrEmpty() && available == latest) {
+                prefs.edit { putString("notes_own", json); putString("notes_for_own", latest) }
+                notes = merge(builtIn(zh), parsed)
+            }
         }
+    }
+
+    private fun builtIn(zh: Boolean): List<ReleaseNotes> = runCatching {
+        appContext.assets.open(NOTES_ASSET).use { it.readBytes().decodeToString() }
+    }.getOrNull()?.let { runCatching { ReleaseNotesParser.parseAll(it, zh) }.getOrNull() }.orEmpty()
+
+    private fun merge(local: List<ReleaseNotes>, remote: List<ReleaseNotes>): List<ReleaseNotes> =
+        (local + remote).distinctBy { it.version }.sortedWith { a, b ->
+            if (newer(a.version, b.version)) -1 else if (newer(b.version, a.version)) 1 else 0
+        }
+
+    /** Highest version any of our sources reports; one stale CDN copy must not hide a release. */
+    private fun readVersion(): String {
+        var best: String? = null
+        var last: Exception? = null
+        for (url in VERSION_SOURCES) {
+            try {
+                val text = read(url)
+                val v = if (url == LATEST_API) JSONObject(text).optString("tag_name") else text
+                val clean = v.trim().removePrefix("v")
+                if (clean.matches(Regex("\\d+(\\.\\d+)*")) && (best == null || newer(clean, best!!))) best = clean
+            } catch (e: Exception) {
+                last = e
+            }
+        }
+        return best ?: throw last ?: IOException("no update source")
+    }
+
+    private fun readNotes(): String {
+        var last: Exception? = null
+        for (url in NOTES_SOURCES) {
+            try { return read(url) } catch (e: Exception) { last = e }
+        }
+        throw last ?: IOException("no notes source")
     }
 
     /** Whether version [a] comes after [b], comparing dotted numbers ("1.10" after "1.9"). */
@@ -177,9 +229,13 @@ object Updates {
     private fun read(url: String): String {
         val c = URL(url).openConnection() as HttpURLConnection
         LegacyUpdateTls.configure(appContext, c)
+        // GitHub's API answers 403 without a User-Agent.
+        c.setRequestProperty("User-Agent", "xiaoheiDESK/${BuildConfig.VERSION_NAME}")
+        if (url == LATEST_API) c.setRequestProperty("Accept", "application/vnd.github+json")
         c.connectTimeout = 8_000
         c.readTimeout = 10_000
         return try {
+            if (c.responseCode != HttpURLConnection.HTTP_OK) error("HTTP ${c.responseCode}")
             c.inputStream.use { it.readBytes().decodeToString() }
         } finally {
             c.disconnect()
@@ -203,7 +259,7 @@ object Updates {
     }
 
     enum class Failure {
-        /** Neither the website nor GitHub gave a complete APK. */
+        /** Neither of our two release links gave a complete APK. */
         Download,
         /** The TV lets no app hand an APK to its installer, or has no installer to hand it to. */
         Blocked,
@@ -571,7 +627,7 @@ object Updates {
      */
     @Volatile var testApk: File? = null
 
-    /** The website first (reachable in China), then GitHub. Returns the APK's info once it parses. */
+    /** The fixed-name asset on the latest release first, then the versioned asset. */
     private suspend fun downloadFrom(context: Context, file: File): PackageInfo? {
         testApk?.takeIf { it.isFile }?.let { test ->
             file.parentFile?.mkdirs()
@@ -579,10 +635,10 @@ object Updates {
             if (Build.VERSION.SDK_INT < 24) file.setReadable(true, false)
             return verify(context, file)
         }
-        val name = "aerial-${BuildConfig.FLAVOR}.apk"
+        val v = available ?: current
         val sources = listOf(
-            "https://aerial.qust.me/download/$name",
-            "https://github.com/pengchujin/aerial-tv/releases/latest/download/$name",
+            "https://github.com/$REPO/releases/latest/download/$APK_NAME",
+            "https://github.com/$REPO/releases/download/v$v/xiaoheiDESK-$v.apk",
         )
         for (url in sources) {
             val ok = runCatching { download(url, file) }
@@ -601,6 +657,7 @@ object Updates {
         val part = File(directory, file.name + ".part")
         val c = URL(url).openConnection() as HttpURLConnection
         LegacyUpdateTls.configure(appContext, c)
+        c.setRequestProperty("User-Agent", "xiaoheiDESK/${BuildConfig.VERSION_NAME}")
         c.connectTimeout = 10_000
         c.readTimeout = 20_000
         // A throttled route can keep the TLS handshake up and deliver a byte now and then, so no
