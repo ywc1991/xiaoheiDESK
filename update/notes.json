@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.0.2",
+      "zh": [
+        "桌面左上角日期由「11/12 周四」改为「11 / 12 周四」：月、日之间加入两侧留白的斜杠，字距更舒展，与后面的时间层次更清晰。",
+        "仅调整左上角小日期的排版，时间、周几、屏保大时钟、日历与天气面板均保持原样。"
+      ],
+      "en": [
+        "The corner date now reads 11 / 12 周四 instead of 11/12 周四: a spaced slash gives the month and day more breathing room and separates the date from the time.",
+        "Typography-only change; the clock, weekday, screensaver clock, calendar and weather panels are untouched."
+      ]
+    },
+    {
       "v": "1.0.1",
       "zh": [
         "更新检测改用小黑DESK 自己的版本线：只比较自己的 GitHub Release，不再把上游 Aerial 的新版本误报为可升级版本，也不会下载官方安装包。",

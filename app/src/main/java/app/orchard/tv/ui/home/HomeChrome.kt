@@ -192,7 +192,7 @@ fun dateText(now: LocalDateTime): String {
     return SimpleDateFormat(pattern, locale).format(Date(millis))
 }
 
-/** Short date with weekday, e.g. "10/22 周四", for the corner clock. */
+/** Short date with weekday, e.g. "10 / 22 周四", for the corner clock. */
 @Composable
 fun dateShortText(now: LocalDateTime): String {
     val weekday = when (now.dayOfWeek) {
@@ -204,7 +204,9 @@ fun dateShortText(now: LocalDateTime): String {
         DayOfWeek.SATURDAY -> "六"
         DayOfWeek.SUNDAY -> "日"
     }
-    return "${now.monthValue}/${now.dayOfMonth} 周$weekday"
+    // A slash with air on both sides keeps the month and day from reading as one tight figure
+    // on a TV, and sets the date apart from the time that follows it.
+    return "${now.monthValue} / ${now.dayOfMonth} 周$weekday"
 }
 
 /**
