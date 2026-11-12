@@ -259,7 +259,7 @@ object Updates {
     }
 
     enum class Failure {
-        /** Neither of our two release links gave a complete APK. */
+        /** None of the download sources gave a complete APK. */
         Download,
         /** The TV lets no app hand an APK to its installer, or has no installer to hand it to. */
         Blocked,
@@ -627,7 +627,13 @@ object Updates {
      */
     @Volatile var testApk: File? = null
 
-    /** The fixed-name asset on the latest release first, then the versioned asset. */
+    /**
+     * The APK is kept in the repo's update/ folder as well as on the release. On Chinese TVs
+     * api.github.com answers the version check, while a 3 MB download from github.com's release
+     * host times out (seen on the MiTV at 192.168.31.250, 11-12). So the two jsDelivr nodes and
+     * raw are tried first, with the release links left as a fallback. The file is named for its
+     * version: a CDN never has a stale copy of a path it has not served before.
+     */
     private suspend fun downloadFrom(context: Context, file: File): PackageInfo? {
         testApk?.takeIf { it.isFile }?.let { test ->
             file.parentFile?.mkdirs()
@@ -636,9 +642,13 @@ object Updates {
             return verify(context, file)
         }
         val v = available ?: current
+        val versioned = "xiaoheiDESK-$v.apk"
         val sources = listOf(
+            "$CDN_ALT/$versioned",
+            "$CDN/$versioned",
+            "$RAW/$versioned",
             "https://github.com/$REPO/releases/latest/download/$APK_NAME",
-            "https://github.com/$REPO/releases/download/v$v/xiaoheiDESK-$v.apk",
+            "https://github.com/$REPO/releases/download/v$v/$versioned",
         )
         for (url in sources) {
             val ok = runCatching { download(url, file) }

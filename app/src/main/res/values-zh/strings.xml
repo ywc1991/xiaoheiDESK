@@ -196,7 +196,7 @@
     <string name="cc_update_opened">已打开安装程序，按提示确认更新（小米上是「继续更新」）。装好后按「完成」，会回到 小黑DESK，设置都保留。</string>
     <string name="cc_update_permission">请在刚打开的设置里允许 小黑DESK 安装应用，然后回来再点一次「下载并安装」。</string>
     <string name="cc_update_storage_permission">这台电视需要存储权限才能保存更新。请允许弹出的文件权限请求，再点一次「下载并安装」。</string>
-    <string name="cc_update_failed_download">下载没有成功（两个下载地址都试过了）。检查网络后再试，或者扫下面的二维码手动下载。</string>
+    <string name="cc_update_failed_download">下载没有成功（国内 CDN 镜像和 GitHub 都试过了）。检查网络后再试，或者扫下面的二维码手动下载。</string>
     <string name="cc_update_failed_blocked">这台电视不让 App 安装别的 App，请扫下面的二维码在手机上下载安装。</string>
     <string name="cc_update_failed_signature">这台电视上的 小黑DESK 和下载的安装包签名不同，不能直接覆盖。</string>
     <string name="cc_update_failed_older">版本页上还没有更新的版本，过一会儿再试。</string>

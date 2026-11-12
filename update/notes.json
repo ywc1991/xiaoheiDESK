@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "v": "1.0.3",
+      "zh": [
+        "修复 App 内「下载并安装」失败：部分电视能查到新版本，但连不上 GitHub 的下载域名，导致安装包一直下载不下来。",
+        "安装包现在同时放在仓库里，优先从国内可达的 CDN 镜像下载，GitHub Release 作为备用；版本化文件名避免 CDN 缓存到旧包。",
+        "下载失败提示改为说明「CDN 与 GitHub 都试过了」，其余界面与 1.0.2 一致。"
+      ],
+      "en": [
+        "Fixed 'Download and Install' failing on TVs that can reach the version check but cannot connect to github.com's release download host.",
+        "The APK is now mirrored in the repo and fetched from China-friendly CDN nodes first, with the GitHub release as fallback; versioned file names keep the CDN from serving a stale APK.",
+        "The download-failure message now says the CDN mirrors and GitHub were tried. Everything else is unchanged from 1.0.2."
+      ]
+    },
+    {
       "v": "1.0.2",
       "zh": [
         "桌面左上角日期由「11/12 周四」改为「11 / 12 周四」：月、日之间加入两侧留白的斜杠，字距更舒展，与后面的时间层次更清晰。",
