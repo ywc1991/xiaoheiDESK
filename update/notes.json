@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.0.4",
+      "zh": [
+        "角落时钟的「日期 / 星期 / 时间」改为两段等距：日期与星期之间、星期与时间之间都用 12dp 间距，读起来更整齐。",
+        "仅调整这一行的排版，日期的「11 / 12」样式、时间格式与其他界面保持不变。"
+      ],
+      "en": [
+        "The corner clock's date, weekday and time now have equal 12dp gaps on both sides of the weekday, so the line reads evenly.",
+        "Typography-only change: the 11 / 12 date, time format and every other screen are untouched."
+      ]
+    },
+    {
       "v": "1.0.3",
       "zh": [
         "修复 App 内「下载并安装」失败：部分电视能查到新版本，却连不上 github.com 的下载域名，安装包一直下载不下来。",

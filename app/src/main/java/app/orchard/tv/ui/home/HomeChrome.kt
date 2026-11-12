@@ -192,9 +192,18 @@ fun dateText(now: LocalDateTime): String {
     return SimpleDateFormat(pattern, locale).format(Date(millis))
 }
 
-/** Short date with weekday, e.g. "10 / 22 周四", for the corner clock. */
+/** Short date, e.g. "10 / 22", for the corner clock. The weekday is a separate text so both gaps
+ * in "date — weekday — time" can be the same width (see [CornerClock]). */
 @Composable
 fun dateShortText(now: LocalDateTime): String {
+    // A slash with air on both sides keeps the month and day from reading as one tight figure
+    // on a TV, and sets the date apart from the weekday that follows it.
+    return "${now.monthValue} / ${now.dayOfMonth}"
+}
+
+/** Weekday for the corner clock, e.g. "周四". */
+@Composable
+fun weekdayShortText(now: LocalDateTime): String {
     val weekday = when (now.dayOfWeek) {
         DayOfWeek.MONDAY -> "一"
         DayOfWeek.TUESDAY -> "二"
@@ -204,9 +213,7 @@ fun dateShortText(now: LocalDateTime): String {
         DayOfWeek.SATURDAY -> "六"
         DayOfWeek.SUNDAY -> "日"
     }
-    // A slash with air on both sides keeps the month and day from reading as one tight figure
-    // on a TV, and sets the date apart from the time that follows it.
-    return "${now.monthValue} / ${now.dayOfMonth} 周$weekday"
+    return "周$weekday"
 }
 
 /**
@@ -801,6 +808,9 @@ private fun Modifier.focusGlass(focused: Boolean): Modifier {
         .border(1.dp, rim, shape)
 }
 
+/** One width for both gaps in the corner clock's "date — weekday — time" line. */
+private val CornerGap = 12.dp
+
 /**
  * The small clock: the date with weekday and the time in one quiet line in the top left, level
  * with the status pill, so the wallpaper keeps the rest of the screen. A soft shadow keeps it
@@ -825,9 +835,10 @@ fun CornerClock(
     if (onClick == null) {
         Row(modifier.height(36.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText(dateShortText(now), style = style)
+            BasicText(weekdayShortText(now), style = style, modifier = Modifier.padding(start = CornerGap))
             BasicText(
                 timeText(now), style = style,
-                modifier = Modifier.padding(start = 12.dp).toSaverClock(toSaver, Type.Title.fontSize, Type.Title.fontSize.value.dp * CAP_TOP, drift),
+                modifier = Modifier.padding(start = CornerGap).toSaverClock(toSaver, Type.Title.fontSize, Type.Title.fontSize.value.dp * CAP_TOP, drift),
             )
         }
         return
@@ -849,9 +860,10 @@ fun CornerClock(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BasicText(dateShortText(now), style = style.copy(color = fg, shadow = shadow))
+            BasicText(weekdayShortText(now), style = style.copy(color = fg, shadow = shadow), modifier = Modifier.padding(start = CornerGap))
             BasicText(
                 timeText(now), style = style.copy(color = fg, shadow = shadow),
-                modifier = Modifier.padding(start = 12.dp).toSaverClock(toSaver, Type.Title.fontSize, Type.Title.fontSize.value.dp * CAP_TOP, drift),
+                modifier = Modifier.padding(start = CornerGap).toSaverClock(toSaver, Type.Title.fontSize, Type.Title.fontSize.value.dp * CAP_TOP, drift),
             )
         }
     }
