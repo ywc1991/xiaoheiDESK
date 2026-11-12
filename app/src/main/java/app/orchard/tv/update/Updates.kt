@@ -63,6 +63,8 @@ object Updates {
     private const val CDN_ALT = "https://fastly.jsdelivr.net/gh/ywc1991/xiaoheiDESK@main/update"
     private const val RAW = "https://raw.githubusercontent.com/ywc1991/xiaoheiDESK/main/update"
     private const val APK_NAME = "xiaoheiDESK.apk"
+    /** The fixed-name APK's API endpoint, learned from the latest-release JSON (see [readVersion]). */
+    private const val KEY_ASSET_API = "asset_api_own"
     /** Features of every release up to this build, kept in assets for offline display. */
     private const val NOTES_ASSET = "release-notes.json"
     private val VERSION_SOURCES = listOf("$CDN/version.txt", "$CDN_ALT/version.txt", LATEST_API, "$RAW/version.txt")
@@ -197,7 +199,21 @@ object Updates {
         for (url in VERSION_SOURCES) {
             try {
                 val text = read(url)
-                val v = if (url == LATEST_API) JSONObject(text).optString("tag_name") else text
+                val json = if (url == LATEST_API) JSONObject(text) else null
+                // The release JSON names the fixed-name APK's API endpoint. api.github.com answers
+                // on TVs where github.com:443 times out, and its asset host still delivers the 3 MB
+                // file. Keep the URL for install(), which may run after a restart.
+                json?.optJSONArray("assets")?.let { assets ->
+                    for (i in 0 until assets.length()) {
+                        val asset = assets.optJSONObject(i) ?: continue
+                        if (asset.optString("name") != APK_NAME) continue
+                        asset.optString("url").takeIf { it.startsWith("https://api.github.com/") }?.let {
+                            prefs.edit { putString(KEY_ASSET_API, it) }
+                        }
+                        break
+                    }
+                }
+                val v = json?.optString("tag_name") ?: text
                 val clean = v.trim().removePrefix("v")
                 if (clean.matches(Regex("\\d+(\\.\\d+)*")) && (best == null || newer(clean, best!!))) best = clean
             } catch (e: Exception) {
@@ -628,11 +644,11 @@ object Updates {
     @Volatile var testApk: File? = null
 
     /**
-     * The APK is kept in the repo's update/ folder as well as on the release. On Chinese TVs
-     * api.github.com answers the version check, while a 3 MB download from github.com's release
-     * host times out (seen on the MiTV at 192.168.31.250, 11-12). So the two jsDelivr nodes and
-     * raw are tried first, with the release links left as a fallback. The file is named for its
-     * version: a CDN never has a stale copy of a path it has not served before.
+     * On some TVs (the MiTV here, 11-12) api.github.com answers the version check, while
+     * github.com:443 times out and takes both release download links with it. So the release's
+     * asset API endpoint comes first: it redirects to GitHub's asset CDN, which is reachable.
+     * A copy of the APK in the repo's update/ folder is next, then the two release links. The
+     * versioned file name keeps any cache from serving an older build.
      */
     private suspend fun downloadFrom(context: Context, file: File): PackageInfo? {
         testApk?.takeIf { it.isFile }?.let { test ->
@@ -643,9 +659,7 @@ object Updates {
         }
         val v = available ?: current
         val versioned = "xiaoheiDESK-$v.apk"
-        val sources = listOf(
-            "$CDN_ALT/$versioned",
-            "$CDN/$versioned",
+        val sources = listOfNotNull(prefs.getString(KEY_ASSET_API, null)) + listOf(
             "$RAW/$versioned",
             "https://github.com/$REPO/releases/latest/download/$APK_NAME",
             "https://github.com/$REPO/releases/download/v$v/$versioned",
@@ -668,6 +682,8 @@ object Updates {
         val c = URL(url).openConnection() as HttpURLConnection
         LegacyUpdateTls.configure(appContext, c)
         c.setRequestProperty("User-Agent", "xiaoheiDESK/${BuildConfig.VERSION_NAME}")
+        // Without this the asset endpoint answers with its JSON metadata instead of the APK.
+        if (url.startsWith("https://api.github.com/")) c.setRequestProperty("Accept", "application/octet-stream")
         c.connectTimeout = 10_000
         c.readTimeout = 20_000
         // A throttled route can keep the TLS handshake up and deliver a byte now and then, so no
