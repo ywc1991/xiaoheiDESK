@@ -9,6 +9,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +28,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import app.orchard.tv.system.Sounds
 import app.orchard.tv.ui.theme.LocalReducedMotion
 import app.orchard.tv.ui.theme.Motion
+
+/**
+ * False inside a panel shown only as a peek from Home's focus. The very same composables are
+ * drawn, but their controls must not be focusable or clickable while the remote is still on Home;
+ * otherwise a Down press would land inside the panel instead of on the next app. Everything
+ * outside such a panel keeps the default true.
+ */
+val LocalPanelInteractive = compositionLocalOf { true }
 
 fun KeyEvent.isSelect(): Boolean = when (nativeKeyEvent.keyCode) {
     NativeKeyEvent.KEYCODE_DPAD_CENTER, NativeKeyEvent.KEYCODE_ENTER, NativeKeyEvent.KEYCODE_NUMPAD_ENTER,
@@ -74,6 +83,8 @@ fun Pressable(
     content: @Composable BoxScope.(PressState) -> Unit,
 ) {
     val state = remember { PressState() }
+    // A peek panel draws these controls but must never take focus from Home.
+    val usable = enabled && LocalPanelInteractive.current
     val ownRequester = remember { FocusRequester() }
     val requester = focusRequester ?: ownRequester
     val click by rememberUpdatedState(onClick)
@@ -99,8 +110,8 @@ fun Pressable(
                     state.byKey = false
                 }
             }
-            .pointerInput(enabled) {
-                if (!enabled) return@pointerInput
+            .pointerInput(usable) {
+                if (!usable) return@pointerInput
                 detectTapGestures(
                     onPress = {
                         state.pressed = true
@@ -115,6 +126,7 @@ fun Pressable(
                 )
             }
             .onKeyEvent { e ->
+                if (!usable) return@onKeyEvent false
                 if (onKey?.invoke(e) == true) return@onKeyEvent true
                 if (!e.isSelect()) return@onKeyEvent false
                 when (e.type) {
@@ -138,7 +150,7 @@ fun Pressable(
                     else -> false
                 }
             }
-            .focusable(enabled)
+            .focusable(usable)
             // After the focusable: the bounds a scroll container brings into view are then the
             // card's own, not the 8% larger ones of the focus animation, which made a sheet or
             // list shift a few pixels with every move of focus and settle back.

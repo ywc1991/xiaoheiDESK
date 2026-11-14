@@ -71,13 +71,15 @@ import java.time.LocalDate
 fun WeatherPanel(
     visible: Boolean,
     onClose: () -> Unit,
+    /** False while the forecast is only a peek from Home's focus: no focus, keys, scrim or taps. */
+    interactive: Boolean = true,
 ) {
-    BackHandler(enabled = visible) { onClose() }
+    BackHandler(enabled = visible && interactive) { onClose() }
     Box(
         Modifier
             .fillMaxSize()
             .then(
-                if (visible) {
+                if (visible && interactive) {
                     Modifier.onPreviewKeyEvent { e ->
                         if (e.nativeKeyEvent.action == NativeKeyEvent.ACTION_DOWN && e.nativeKeyEvent.keyCode == NativeKeyEvent.KEYCODE_BACK) {
                             onClose()
@@ -97,7 +99,11 @@ fun WeatherPanel(
             exit = fadeOut(tween(180)),
             modifier = Modifier.fillMaxSize(),
         ) {
-            Box(Modifier.fillMaxSize().dismissOnTap(onClose).background(Color.Black.copy(alpha = 0.28f)))
+            Box(
+                Modifier.fillMaxSize()
+                    .then(if (interactive) Modifier.dismissOnTap(onClose) else Modifier)
+                    .background(if (interactive) Color.Black.copy(alpha = 0.28f) else Color.Transparent)
+            )
         }
 
         val maxHeight = (LocalConfiguration.current.screenHeightDp - 48).dp
@@ -121,7 +127,7 @@ fun WeatherPanel(
                     item { Spacer(Modifier.height(16.dp)) }
                     item { SectionLabel(stringResource(R.string.wx_today)) }
                     item { Spacer(Modifier.height(8.dp)) }
-                    item { Hours() }
+                    item { Hours(interactive) }
                     item { Spacer(Modifier.height(16.dp)) }
                     item { SectionLabel(stringResource(R.string.wx_week)) }
                     item { Spacer(Modifier.height(8.dp)) }
@@ -184,7 +190,7 @@ private fun Loading() {
  * one does.
  */
 @Composable
-private fun Hours() {
+private fun Hours(interactive: Boolean) {
     val hours = Weather.forecast?.hours.orEmpty()
     if (hours.isEmpty()) {
         Loading()
@@ -192,9 +198,10 @@ private fun Hours() {
     }
     val first = remember { FocusRequester() }
     // The forecast arrives after the panel opens; take focus then, so the weather on Home (which
-    // keeps focus behind the scrim) is not what a press of OK lands on.
-    LaunchedEffect(hours.firstOrNull()?.hour) {
-        if (hours.isEmpty()) return@LaunchedEffect
+    // keeps focus behind the scrim) is not what a press of OK lands on. A peek never takes it:
+    // when OK turns the peek into the real panel, the changed key asks for focus again.
+    LaunchedEffect(hours.firstOrNull()?.hour, interactive) {
+        if (!interactive || hours.isEmpty()) return@LaunchedEffect
         withFrameNanos { }
         runCatching { first.requestFocus() }
     }

@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "v": "1.0.6",
+      "zh": [
+        "焦点落在左上角的日期、右上角的天气或设置上时，自动弹出对应面板（日历、逐小时天气、控制中心），不必再按一次确认键。",
+        "面板弹出时焦点仍留在桌面：左右键继续在日期、天气、设置之间切换，面板跟着换；按上下键回到应用时面板自动收起。想操作面板（翻月份、调设置）再按 OK，进入后的行为与之前完全一致。",
+        "预览时面板不加全屏遮罩、不抢焦点，也不截获方向键和返回键，壁纸与其余桌面保持原样。",
+        "其余界面与 1.0.5 一致，包含天气双源容灾与自有版本更新检测。"
+      ],
+      "en": [
+        "The date (top left), weather and settings (top right) now open their panels as soon as focus lands on them: calendar, hourly forecast and Control Center, with no extra OK press.",
+        "Focus stays on Home while a panel is showing: Left/Right keeps moving between the corners and the panel follows; Up/Down returns to the apps and the panel closes. Press OK to enter the panel itself (step months, change settings), which behaves exactly as before.",
+        "A peek adds no scrim, takes no focus and swallows no direction or Back keys, so the wallpaper and the rest of Home are untouched.",
+        "Everything else is unchanged from 1.0.5, including the weather fallback and the self-hosted update channel."
+      ]
+    },
+    {
       "v": "1.0.5",
       "zh": [
         "修复天气获取失败：电视网络短暂抖动或 Open-Meteo 连不上时，天气与逐小时预报会一直空白，要等下一次刷新才恢复。",

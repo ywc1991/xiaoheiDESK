@@ -59,6 +59,12 @@ import java.time.LocalDate
 fun DatePanel(
     visible: Boolean,
     onClose: () -> Unit,
+    /**
+     * True only when the panel was opened with OK. Focus lands on the corner control first and
+     * the panel is a peek: it draws, but takes no focus, keys, scrim or taps, so Left/Right keep
+     * moving between the corners.
+     */
+    interactive: Boolean = true,
 ) {
     val today = remember { LocalDate.now() }
     var viewY by remember { mutableStateOf(today.year) }
@@ -74,12 +80,12 @@ fun DatePanel(
         viewM = m
     }
 
-    BackHandler(enabled = visible) { onClose() }
+    BackHandler(enabled = visible && interactive) { onClose() }
     Box(
         Modifier
             .fillMaxSize()
             .then(
-                if (visible) {
+                if (visible && interactive) {
                     Modifier.onPreviewKeyEvent { e ->
                         if (e.nativeKeyEvent.action != NativeKeyEvent.ACTION_DOWN) return@onPreviewKeyEvent false
                         when (e.nativeKeyEvent.keyCode) {
@@ -98,7 +104,8 @@ fun DatePanel(
         // what lets its key handler see Back and the month keys, and it hands focus back to the
         // clock on Home when the panel closes.
         val panelFocus = remember { FocusRequester() }
-        LaunchedEffect(visible) { if (visible) panelFocus.requestFocus() }
+        // A peek has no focus anchor: the remote stays on the corner control behind it.
+        LaunchedEffect(visible, interactive) { if (visible && interactive) runCatching { panelFocus.requestFocus() } }
         AnimatedVisibility(
             visible = visible,
             enter = fadeIn(tween(220)),
@@ -109,9 +116,9 @@ fun DatePanel(
                 Modifier
                     .fillMaxSize()
                     .focusRequester(panelFocus)
-                    .focusable()
-                    .dismissOnTap(onClose)
-                    .background(Color.Black.copy(alpha = 0.28f)),
+                    .then(if (interactive) Modifier.focusable() else Modifier)
+                    .then(if (interactive) Modifier.dismissOnTap(onClose) else Modifier)
+                    .background(if (interactive) Color.Black.copy(alpha = 0.28f) else Color.Transparent),
             )
         }
 

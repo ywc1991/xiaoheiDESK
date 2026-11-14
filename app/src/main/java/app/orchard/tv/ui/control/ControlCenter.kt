@@ -4,6 +4,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.focusable
+import app.orchard.tv.ui.components.LocalPanelInteractive
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.drawWithContent
@@ -137,8 +138,10 @@ fun ControlCenter(
     warm: Boolean = false,
     /** Home is on its top row: no tiles under the panel, only the wallpaper (see liquidGlass). */
     onShelf: Boolean = false,
+    /** False while the panel is only a peek from Home's focus: it draws but takes no focus or taps. */
+    interactive: Boolean = true,
 ) {
-    BackHandler(enabled = visible) {
+    BackHandler(enabled = visible && interactive) {
         when (page) {
             CcPage.Main -> onClose()
             CcPage.Inputs -> vm.overlay = Overlay.ControlCenter(CcPage.Main)
@@ -160,8 +163,12 @@ fun ControlCenter(
         exit = fadeOut(tween(180, easing = Motion.EaseOut)),
         modifier = Modifier.fillMaxSize(),
     ) {
-        // A tap outside the panel closes Control Center.
-        Box(Modifier.fillMaxSize().dismissOnTap(onClose).background(Color.Black.copy(alpha = 0.28f)))
+        // A tap outside the panel closes Control Center. A peek has no scrim: Home stays as it is.
+        Box(
+            Modifier.fillMaxSize()
+                .then(if (interactive) Modifier.dismissOnTap(onClose) else Modifier)
+                .background(if (interactive) Color.Black.copy(alpha = 0.28f) else Color.Transparent)
+        )
     }
 
     Box(Modifier.fillMaxSize().padding(top = 24.dp, end = 32.dp), contentAlignment = Alignment.TopEnd) {
@@ -203,11 +210,11 @@ fun ControlCenter(
                     // Closing sets the page back to Main while the panel fades out; that page must
                     // not take focus from the tile Home has just put it back on.
                     when (p) {
-                        CcPage.Main -> if (Restricted.active) KidsPage(vm, now, visible) else MainPage(vm, now, visible, onOpen)
-                        CcPage.Inputs -> InputsPage(vm, visible, onOpen)
-                        CcPage.InputSettings -> InputSettingsPage(vm, visible)
-                        CcPage.Update -> UpdatePage(vm, visible)
-                        CcPage.Setup -> SetupPage(vm, visible, onOpen)
+                        CcPage.Main -> if (Restricted.active) KidsPage(vm, now, interactive) else MainPage(vm, now, interactive, onOpen)
+                        CcPage.Inputs -> InputsPage(vm, interactive, onOpen)
+                        CcPage.InputSettings -> InputSettingsPage(vm, interactive)
+                        CcPage.Update -> UpdatePage(vm, interactive)
+                        CcPage.Setup -> SetupPage(vm, interactive, onOpen)
                     }
                 }
             }
@@ -222,7 +229,7 @@ fun ControlCenter(
 @Composable
 private fun KidsPage(vm: HomeViewModel, now: LocalDateTime, takeFocus: Boolean) {
     val first = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(takeFocus) {
         if (!takeFocus) return@LaunchedEffect
         withFrameNanos { }
         runCatching { first.requestFocus() }
@@ -266,7 +273,7 @@ private fun MainPage(vm: HomeViewModel, now: LocalDateTime, takeFocus: Boolean, 
             delay(3000)
         }
     }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(takeFocus) {
         if (!takeFocus) return@LaunchedEffect
         withFrameNanos { }
         runCatching { first.requestFocus() }
@@ -407,7 +414,7 @@ private fun MainPage(vm: HomeViewModel, now: LocalDateTime, takeFocus: Boolean, 
 private fun UpdatePage(vm: HomeViewModel, takeFocus: Boolean) {
     val context = LocalContext.current
     val first = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(takeFocus) {
         if (!takeFocus) return@LaunchedEffect
         withFrameNanos { }
         runCatching { first.requestFocus() }
@@ -493,6 +500,7 @@ private fun UpdateNotes(notes: List<ReleaseNotes>) {
     val scroll = rememberScrollState()
     val scope = rememberCoroutineScope()
     var focused by remember { mutableStateOf(false) }
+    val panelInteractive = LocalPanelInteractive.current
     val step = with(LocalDensity.current) { 64.dp.toPx() }
     val glow by animateFloatAsState(if (focused) 1f else 0f, tween(140, easing = Motion.EaseOut), label = "notes-focus")
     val scrollable = scroll.maxValue > 0
@@ -516,8 +524,8 @@ private fun UpdateNotes(notes: List<ReleaseNotes>) {
                     }
                     true
                 }
-                .focusProperties { canFocus = scrollable }
-                .focusable()
+                .focusProperties { canFocus = scrollable && panelInteractive }
+                .focusable(panelInteractive)
                 .drawWithContent {
                     drawContent()
                     if (scroll.maxValue <= 0) return@drawWithContent
@@ -559,7 +567,7 @@ private fun UpdateNotes(notes: List<ReleaseNotes>) {
 private fun SetupPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.content.Intent) -> Unit) {
     val context = LocalContext.current
     val first = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(takeFocus) {
         if (!takeFocus) return@LaunchedEffect
         withFrameNanos { }
         runCatching { first.requestFocus() }
@@ -747,7 +755,7 @@ private fun BrightnessRow(vm: HomeViewModel) {
 @Composable
 private fun InputsPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.content.Intent) -> Unit) {
     val first = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(takeFocus) {
         if (!takeFocus) return@LaunchedEffect
         withFrameNanos { }
         runCatching { first.requestFocus() }
@@ -791,7 +799,7 @@ private fun InputsPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.c
 @Composable
 private fun InputSettingsPage(vm: HomeViewModel, takeFocus: Boolean) {
     val first = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(takeFocus) {
         if (!takeFocus) return@LaunchedEffect
         withFrameNanos { }
         runCatching { first.requestFocus() }

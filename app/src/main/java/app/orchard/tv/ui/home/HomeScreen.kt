@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -89,6 +90,7 @@ import app.orchard.tv.wallpaper.AerialFormats
 import app.orchard.tv.wallpaper.ScreensaverMode
 import app.orchard.tv.wallpaper.Wallpapers
 import app.orchard.tv.ui.components.liquidGlass
+import app.orchard.tv.ui.components.LocalPanelInteractive
 import app.orchard.tv.ui.theme.LocalReducedMotion
 import app.orchard.tv.ui.theme.Motion
 import app.orchard.tv.ui.theme.Type
@@ -281,6 +283,12 @@ private const val HOME_SHOT_AFTER_MS = 450L
 /** How often that picture is taken again while Control Center stays open, for the clock. */
 private const val HOME_SHOT_EVERY_MS = 30_000L
 
+/** The corner the remote is on: its panel shows up as a peek while focus stays on Home. */
+private enum class CornerPanel { Date, Weather, Control }
+
+/** Wait before hiding a peek, so moving from one corner to the next does not blink it off. */
+private const val PEEK_CLOSE_MS = 160L
+
 @Composable
 fun HomeScreen(
     vm: HomeViewModel,
@@ -321,6 +329,16 @@ fun HomeScreen(
     // Kids mode's lock covers Home: nothing under it takes focus.
     val kidsLock = if (Restricted.active) Restricted.lock else null
     val gridEnabled = overlay == Overlay.None && kidsLock == null
+    // Which corner the remote is on. Its panel is shown as a peek: overlay stays None, so the
+    // grid keeps its focus and Left/Right keep moving between the corners instead of entering a panel.
+    var focusedCorner by remember { mutableStateOf<CornerPanel?>(null) }
+    fun cornerLost(which: CornerPanel) {
+        // Give the next corner a moment to claim focus; otherwise the peek blinks off between them.
+        scope.launch {
+            delay(PEEK_CLOSE_MS)
+            if (focusedCorner == which) focusedCorner = null
+        }
+    }
 
     // The aerial wallpaper's film, and how far it shows through.
     val filmCover = remember { Animatable(0f) }
@@ -458,6 +476,11 @@ fun HomeScreen(
         runCatching { requester(key).requestFocus() }
     }
     val windowFocused = LocalWindowInfo.current.isWindowFocused
+    // A peek is purely visual: it never becomes an overlay, so the grid keeps its focus and the
+    // backdrop stays as it is. Pressing OK on the corner opens the real, interactive panel.
+    val peekPanel = focusedCorner.takeIf {
+        overlay == Overlay.None && moving == null && kidsLock == null && windowFocused && !vm.screensaverVisible
+    }
     LaunchedEffect(windowFocused, vm.homeResetPending, vm.loaded) {
         if (windowFocused && vm.homeResetPending && vm.loaded) {
             withFrameNanos { }
@@ -775,7 +798,12 @@ fun HomeScreen(
                         onClick = { vm.overlay = Overlay.Date },
                         enabled = gridEnabled && moving == null,
                         focusRequester = dateRequester,
-                        onFocused = { gained -> if (gained) pillFocused = false },
+                        onFocused = { gained ->
+                            if (gained) {
+                                pillFocused = false
+                                focusedCorner = CornerPanel.Date
+                            } else cornerLost(CornerPanel.Date)
+                        },
                         modifier = Modifier
                             .diagLayer("clock")
                             .padding(start = metrics.margin, top = 28.dp)
@@ -818,6 +846,7 @@ fun HomeScreen(
                                 focusedKey = app.key
                                 lastFocusedIndex = index
                                 pillFocused = false
+                                focusedCorner = null
                             },
                             onClick = { bounds ->
                                 val mover = moving
@@ -893,7 +922,12 @@ fun HomeScreen(
                     onClick = { vm.overlay = Overlay.Weather },
                     enabled = gridEnabled && moving == null,
                     focusRequester = weatherRequester,
-                    onFocused = { gained -> if (gained) pillFocused = false },
+                    onFocused = { gained ->
+                        if (gained) {
+                            pillFocused = false
+                            focusedCorner = CornerPanel.Weather
+                        } else cornerLost(CornerPanel.Weather)
+                    },
                     modifier = Modifier
                         .padding(end = 14.dp)
                         .graphicsLayer { alpha = 1f - (scroll.value / collapsePx * 1.6f).coerceIn(0f, 1f) },
@@ -905,7 +939,12 @@ fun HomeScreen(
                     onClick = { vm.overlay = Overlay.Date },
                     enabled = gridEnabled && moving == null,
                     focusRequester = dateRequester,
-                    onFocused = { gained -> if (gained) pillFocused = false },
+                    onFocused = { gained ->
+                        if (gained) {
+                            pillFocused = false
+                            focusedCorner = CornerPanel.Date
+                        } else cornerLost(CornerPanel.Date)
+                    },
                     modifier = Modifier
                         .diagLayer("clock")
                         .padding(end = 14.dp)
@@ -942,8 +981,9 @@ fun HomeScreen(
                             if (apps.isNotEmpty()) focusApp(0)
                         } else {
                             pillFocused = true
+                            focusedCorner = CornerPanel.Control
                         }
-                    }
+                    } else cornerLost(CornerPanel.Control)
                 },
                 onClick = {
                     // A tap focuses the pill and opens Control Center in the same frame, before
@@ -994,16 +1034,19 @@ fun HomeScreen(
             repeat(3) { withFrameNanos { } }
             sheetWarm = false
         }
-        ControlCenter(
-            visible = overlay is Overlay.ControlCenter,
-            page = (overlay as? Overlay.ControlCenter)?.page ?: CcPage.Main,
-            vm = vm,
-            now = now,
-            onOpen = { vm.overlay = Overlay.None; onOpen(it) },
-            onClose = { vm.overlay = Overlay.None },
-            warm = ccWarm,
-            onShelf = !pastShelf,
-        )
+        CompositionLocalProvider(LocalPanelInteractive provides (overlay is Overlay.ControlCenter)) {
+            ControlCenter(
+                visible = overlay is Overlay.ControlCenter || peekPanel == CornerPanel.Control,
+                interactive = overlay is Overlay.ControlCenter,
+                page = (overlay as? Overlay.ControlCenter)?.page ?: CcPage.Main,
+                vm = vm,
+                now = now,
+                onOpen = { vm.overlay = Overlay.None; onOpen(it) },
+                onClose = { vm.overlay = Overlay.None },
+                warm = ccWarm,
+                onShelf = !pastShelf,
+            )
+        }
 
         FolderView(
             name = openFolder?.let { id -> apps.firstOrNull { it.folder?.id == id }?.label },
@@ -1140,15 +1183,21 @@ fun HomeScreen(
 
         NoticeBanner(vm.notice, Modifier.align(Alignment.TopCenter).padding(top = 24.dp), vm.noticeGlyph)
 
-        WeatherPanel(
-            visible = overlay is Overlay.Weather,
-            onClose = { vm.overlay = Overlay.None },
-        )
+        CompositionLocalProvider(LocalPanelInteractive provides (overlay is Overlay.Weather)) {
+            WeatherPanel(
+                visible = overlay is Overlay.Weather || peekPanel == CornerPanel.Weather,
+                interactive = overlay is Overlay.Weather,
+                onClose = { vm.overlay = Overlay.None },
+            )
+        }
 
-        DatePanel(
-            visible = overlay is Overlay.Date,
-            onClose = { vm.overlay = Overlay.None },
-        )
+        CompositionLocalProvider(LocalPanelInteractive provides (overlay is Overlay.Date)) {
+            DatePanel(
+                visible = overlay is Overlay.Date || peekPanel == CornerPanel.Date,
+                interactive = overlay is Overlay.Date,
+                onClose = { vm.overlay = Overlay.None },
+            )
+        }
 
         Screensaver(visible = vm.screensaverVisible, apps = apps, now = now, skips = vm.screensaverSkips, carry = when {
                 filmSaver -> SaverCarry.Film(liveFilm)
