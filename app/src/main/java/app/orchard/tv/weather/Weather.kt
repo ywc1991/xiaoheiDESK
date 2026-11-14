@@ -13,10 +13,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.net.ssl.SSLException
 import kotlin.math.roundToInt
@@ -52,6 +57,12 @@ data class WeatherForecast(val hours: List<HourPoint>, val days: List<DayPoint>)
  * The guess is often wrong behind a proxy (a whole home behind one shows another country), which
  * is why the phone page shows it and lets the owner correct it.
  *
+ * A home network can drop one host for a while without dropping the rest: on 11-14 the TV timed
+ * out during Open-Meteo's TLS handshake while NTP and smart-home push also failed. So the
+ * forecast is read from Open-Meteo first and, if that fails, from Norway's MET Locationforecast
+ * (api.met.no, also keyless and reachable from China). MET's timeseries is converted to the
+ * same JSON shape Open-Meteo returns, so the parsing below and the weather UI stay unchanged.
+ *
  * Fetched when Home comes to the front, at most once an hour; nothing runs while the TV is idle.
  * Compose state, written on the main thread only.
  */
@@ -61,8 +72,12 @@ object Weather {
     private const val REFRESH_MS = 60 * 60 * 1000L
     private const val RETRY_MS = 10 * 60 * 1000L
     private const val RELOCATE_MS = 24 * 60 * 60 * 1000L
-    /** A reading older than this is not shown at all. */
-    private const val STALE_MS = 3 * 60 * 60 * 1000L
+    /** A reading older than this is not shown at all. Long enough to survive a night offline. */
+    private const val STALE_MS = 12 * 60 * 60 * 1000L
+    /** MET asks clients to cache; never hit it twice inside this window. */
+    private const val METNO_CACHE_MS = 10 * 60 * 1000L
+    private const val METNO_URL = "https://api.met.no/weatherapi/locationforecast/2.0/compact"
+    private const val METNO_UA = "xiaoheiDESK/1.0.5 (https://github.com/ywc1991/xiaoheiDESK)"
     /** Stands for "no high or low" in the prefs. */
     private const val NONE = Int.MIN_VALUE
 
@@ -84,6 +99,9 @@ object Weather {
     private var lastAttempt = 0L
     private var job: Job? = null
     private var forecastJob: Job? = null
+    /** Last MET response, already converted; shared by the clock and the forecast panel. */
+    @Volatile
+    private var metNoCache: Pair<Long, String>? = null
 
     fun init(context: Context) {
         if (started) return
@@ -132,6 +150,9 @@ object Weather {
                     putInt("high", reading.high ?: NONE)
                     putInt("low", reading.low ?: NONE)
                 }
+                // The panel's forecast is not persisted. If it was lost to an earlier outage,
+                // fetch it again now that the network is answering.
+                if (forecast == null) loadForecast()
             }
         }
     }
@@ -139,7 +160,10 @@ object Weather {
     /** Off the main thread. */
     private fun fetch(): WeatherNow {
         val (lat, lon) = coordinates()
-        val json = JSONObject(get("https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto"))
+        val primary = "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon" +
+            "&current=temperature_2m,weather_code,is_day" +
+            "&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto"
+        val json = JSONObject(forecastJson(primary, lat, lon))
         val current = json.getJSONObject("current")
         val daily = json.optJSONObject("daily")
         fun today(key: String) = daily?.optJSONArray(key)?.optDouble(0)?.takeIf { !it.isNaN() }?.roundToInt()
@@ -197,7 +221,7 @@ object Weather {
         forecastJob?.cancel()
         forecastJob = scope.launch {
             val f = runCatching { withContext(Dispatchers.IO) { fetchForecast() } }
-                .onFailure { Log.w(TAG, "could not fetch the forecast", it) }
+                .onFailure { Log.w(TAG, "could not fetch the forecast", it); failed = true }
                 .getOrNull() ?: return@launch
             forecast = f
         }
@@ -205,11 +229,11 @@ object Weather {
 
     private fun fetchForecast(): WeatherForecast {
         val (lat, lon) = coordinates()
-        val json = JSONObject(get(
-            "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon" +
-                "&current=weather_code&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min" +
-                "&timezone=auto&forecast_days=7",
-        ))
+        val primary = "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon" +
+            "&current=weather_code&hourly=temperature_2m,weather_code" +
+            "&daily=weather_code,temperature_2m_max,temperature_2m_min" +
+            "&timezone=auto&forecast_days=7"
+        val json = JSONObject(forecastJson(primary, lat, lon))
         val hourly = json.getJSONObject("hourly")
         val times = hourly.getJSONArray("time")
         val temps = hourly.getJSONArray("temperature_2m")
@@ -242,6 +266,119 @@ object Weather {
             )
         }
         return WeatherForecast(hours, days)
+    }
+
+    /**
+     * The forecast as the Open-Meteo JSON both callers already parse. A short timeout on the
+     * primary host keeps a brief outage from stalling the clock; MET then answers instead.
+     */
+    private fun forecastJson(primary: String, lat: Double, lon: Double): String {
+        val own = runCatching { get(primary, connectMs = 5_000, readMs = 8_000) }
+            .onFailure { Log.i(TAG, "Open-Meteo unavailable (${it.javaClass.simpleName})") }
+            .getOrNull()
+        // A captive portal or an error page is 200 with HTML; do not hand that to the parser.
+        if (own != null && own.trimStart().startsWith("{") && own.contains("\"current\"")) return own
+        Log.i(TAG, "using met.no fallback")
+        return metNoAsOpenMeteo(lat, lon)
+    }
+
+    /** MET's Locationforecast, reshaped once and reused by both readers for ten minutes. */
+    private fun metNoAsOpenMeteo(lat: Double, lon: Double): String {
+        metNoCache?.let { (at, json) ->
+            if (System.currentTimeMillis() - at < METNO_CACHE_MS) return json
+        }
+        val json = convertMetNo(readMetNo("$METNO_URL?lat=$lat&lon=$lon"))
+        metNoCache = System.currentTimeMillis() to json
+        return json
+    }
+
+    /** MET requires a recognisable User-Agent and answers 403 without one. */
+    private fun readMetNo(url: String): String {
+        val c = URL(url).openConnection() as HttpURLConnection
+        c.setRequestProperty("User-Agent", METNO_UA)
+        c.setRequestProperty("Accept", "application/json")
+        c.connectTimeout = 8_000
+        c.readTimeout = 12_000
+        return try {
+            c.inputStream.use { it.readBytes().decodeToString() }
+        } finally {
+            c.disconnect()
+        }
+    }
+
+    /**
+     * MET reports a UTC timeseries (hourly at first, then six-hourly) with a symbol code per
+     * period. Turn it into the current/hourly/daily object Open-Meteo sends, in the device's
+     * local time, so the existing parsing and the hourly threshold keep working unchanged.
+     */
+    private fun convertMetNo(raw: String): String {
+        val series = JSONObject(raw).getJSONObject("properties").getJSONArray("timeseries")
+        val zone = ZoneId.systemDefault()
+        val fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+        data class P(val at: LocalDateTime, val temp: Double, val code: Int)
+        val points = ArrayList<P>(series.length())
+        for (i in 0 until series.length()) {
+            val e = series.getJSONObject(i)
+            val at = Instant.parse(e.getString("time")).atZone(zone).toLocalDateTime()
+            val data = e.getJSONObject("data")
+            val temp = data.getJSONObject("instant").getJSONObject("details")
+                .optDouble("air_temperature", Double.NaN)
+            if (temp.isNaN()) continue
+            val symbol = data.optJSONObject("next_1_hours")?.optJSONObject("summary")
+                ?.optString("symbol_code")
+                ?: data.optJSONObject("next_6_hours")?.optJSONObject("summary")?.optString("symbol_code")
+                ?: "cloudy"
+            points.add(P(at, temp, metNoCode(symbol)))
+        }
+        if (points.isEmpty()) throw IllegalArgumentException("empty MET timeseries")
+
+        val hourNow = LocalDateTime.now(zone).withMinute(0).withSecond(0).withNano(0)
+        val fromNow = points.filter { !it.at.isBefore(hourNow) }
+            .ifEmpty { listOf(points.first()) }.take(24)
+
+        val hTime = JSONArray(); val hTemp = JSONArray(); val hCode = JSONArray()
+        for (p in fromNow) {
+            hTime.put(p.at.format(fmt)); hTemp.put(p.temp); hCode.put(p.code)
+        }
+
+        val byDay = LinkedHashMap<String, MutableList<P>>()
+        for (p in points) byDay.getOrPut(p.at.toLocalDate().toString()) { mutableListOf() }.add(p)
+        val dTime = JSONArray(); val dMax = JSONArray(); val dMin = JSONArray(); val dCode = JSONArray()
+        for ((date, list) in byDay.entries.take(7)) {
+            dTime.put(date)
+            dMax.put(list.maxOf { it.temp }); dMin.put(list.minOf { it.temp })
+            dCode.put(list.first().code)
+        }
+
+        val first = fromNow.first()
+        val current = JSONObject()
+            .put("time", first.at.format(fmt))
+            .put("temperature_2m", first.temp)
+            .put("weather_code", first.code)
+            .put("is_day", if (hourNow.hour in 6..17) 1 else 0)
+        return JSONObject()
+            .put("current", current)
+            .put("hourly", JSONObject().put("time", hTime)
+                .put("temperature_2m", hTemp).put("weather_code", hCode))
+            .put("daily", JSONObject().put("time", dTime).put("weather_code", dCode)
+                .put("temperature_2m_max", dMax).put("temperature_2m_min", dMin))
+            .toString()
+    }
+
+    /** MET's symbol codes are names; the WMO codes below are what the UI expects. */
+    private fun metNoCode(symbol: String): Int = when {
+        symbol.startsWith("clearsky") -> 0
+        symbol.startsWith("fair") -> 1
+        symbol.startsWith("partlycloudy") -> 2
+        symbol.startsWith("cloudy") -> 3
+        symbol.startsWith("fog") -> 45
+        symbol.contains("thunder") -> 95
+        symbol.contains("sleet") -> 56
+        symbol.contains("heavyrain") -> 65
+        symbol.contains("rain") -> 61
+        symbol.contains("heavysnow") -> 75
+        symbol.contains("snow") -> 71
+        else -> 3
     }
 
     /**
@@ -354,16 +491,16 @@ object Weather {
      * Android before 7.1 does not trust the Let's Encrypt root these hosts use; they answer the
      * same over plain HTTP (allowed for them in network_security_config.xml).
      */
-    private fun get(url: String): String = try {
-        read(url)
+    private fun get(url: String, connectMs: Int = 8_000, readMs: Int = 10_000): String = try {
+        read(url, connectMs, readMs)
     } catch (e: SSLException) {
-        read(url.replaceFirst("https://", "http://"))
+        read(url.replaceFirst("https://", "http://"), connectMs, readMs)
     }
 
-    private fun read(url: String): String {
+    private fun read(url: String, connectMs: Int = 8_000, readMs: Int = 10_000): String {
         val c = URL(url).openConnection() as HttpURLConnection
-        c.connectTimeout = 8_000
-        c.readTimeout = 10_000
+        c.connectTimeout = connectMs
+        c.readTimeout = readMs
         return try {
             c.inputStream.use { it.readBytes().decodeToString() }
         } finally {

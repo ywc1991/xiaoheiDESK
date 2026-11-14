@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "v": "1.0.5",
+      "zh": [
+        "修复天气获取失败：电视网络短暂抖动或 Open-Meteo 连不上时，天气与逐小时预报会一直空白，要等下一次刷新才恢复。",
+        "新增备用天气源（挪威气象局 api.met.no，同样免密钥）。主源超时或返回异常时自动切换，数据会转换成原有格式，天气面板的布局、图标与间距完全不变。",
+        "主源超时缩短到 5 秒，失败即刻走备用源；备用结果缓存 10 分钟，避免重复请求。断网时保留最近一次读数的时间从 3 小时延长到 12 小时，重启后也不会立刻空白。",
+        "逐小时预报失败后也会参与自动重试，网络恢复时随当前天气一起补上；其余界面与 1.0.4 一致。"
+      ],
+      "en": [
+        "Fixed weather failing to load: a brief network outage or an unreachable Open-Meteo left the clock and hourly forecast blank until the next hourly refresh.",
+        "Added a fallback source (Norway's MET Locationforecast, api.met.no, also keyless). When the primary host times out or answers badly the app switches automatically, converting the data into the existing shape so the weather panel's layout, icons and spacing are untouched.",
+        "The primary timeout is now 5 seconds, so a failure falls through quickly; fallback responses are cached for 10 minutes. The last good reading now survives 12 hours instead of 3, so a restart during an outage still shows the weather.",
+        "A failed hourly forecast now joins the automatic retry and is refetched together with the current weather when the network returns. Everything else is unchanged from 1.0.4."
+      ]
+    },
+    {
       "v": "1.0.4",
       "zh": [
         "角落时钟的「日期 / 星期 / 时间」改为两段等距：日期与星期之间、星期与时间之间都用 12dp 间距，读起来更整齐。",
