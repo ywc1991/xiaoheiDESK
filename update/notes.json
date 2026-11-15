@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "v": "1.0.8",
+      "zh": [
+        "新增 Android 4.0–4.4 支持：单独的小黑DESK Lite（包名 app.orchard.tv.lite，minSdk 14），用原生 View 重写界面，和完整版并存、分开升级。",
+        "Lite 保留了应用网格与文件夹、时钟/农历/天气、控制中心、个性化、航拍与照片屏保、手机配置页和家长模式；没有桌面守护、航拍壁纸、信号源磁贴和应用内升级。",
+        "Lite 同步了 1.0.5 的天气容灾：Open-Meteo 失败自动切挪威气象局，断网保留最近读数 12 小时。",
+        "完整版本身支持 Android 5.0–6.0，本次界面与功能无改动，只需在设置里确认版本号为 1.0.8。"
+      ],
+      "en": [
+        "Android 4.0–4.4 is now supported by a separate xiaoheiDESK Lite (package app.orchard.tv.lite, minSdk 14), rewritten with plain Views and upgraded independently from the full app.",
+        "Lite keeps the app grid and folders, clock with lunar calendar and weather, Control Center, personalisation, aerial and photo screensavers, the phone page and kids mode. It has no Home guard, no aerial wallpaper, no source tiles and no in-app update.",
+        "Lite also gets the 1.0.5 weather fallback: when Open-Meteo fails it switches to Norway's MET, and the last reading survives 12 hours offline.",
+        "The full app already supported Android 5.0–6.0; its UI and features are unchanged in this release."
+      ]
+    },
+    {
       "v": "1.0.7",
       "zh": [
         "日历、天气、控制中心三个面板换成深色烟熏玻璃卡片：壁纸清晰透出，细亮描边、大圆角、白字，比原来的浅白玻璃更透、更安静。",

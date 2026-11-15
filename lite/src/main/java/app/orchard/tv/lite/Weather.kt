@@ -3,15 +3,20 @@ package app.orchard.tv.lite
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
+import java.util.TimeZone
 import javax.net.ssl.SSLException
 import kotlin.math.roundToInt
 
 /**
  * The weather beside the clock, as the full app's weather/Weather.kt: Open-Meteo (no key, reachable
  * from China) for a place guessed from the network's address (ipinfo.io), named in Chinese from the
- * city list when the TV speaks Chinese. Lite has no phone page, so the place is always the guess.
+ * city list when the TV speaks Chinese. Open-Meteo failing over to Norway's MET Locationforecast,
+ * as the full app does since 1.0.5. Lite has no phone page, so the place is always the guess.
  * Fetched when Home comes to the front, at most once an hour; nothing runs while the TV is idle.
  */
 object Weather {
@@ -19,7 +24,12 @@ object Weather {
     private const val REFRESH_MS = 60 * 60 * 1000L
     private const val RETRY_MS = 10 * 60 * 1000L
     private const val RELOCATE_MS = 24 * 60 * 60 * 1000L
-    private const val STALE_MS = 3 * 60 * 60 * 1000L
+    // Twelve hours, as the full app: a TV that lost the network overnight still shows a reading.
+    private const val STALE_MS = 12 * 60 * 60 * 1000L
+    // MET asks clients to cache; never hit it twice inside this window.
+    private const val METNO_CACHE_MS = 10 * 60 * 1000L
+    private const val METNO_URL = "https://api.met.no/weatherapi/locationforecast/2.0/compact"
+    private const val METNO_UA = "xiaoheiDESK-lite/1.0.0 (+https://github.com/ywc1991/xiaoheiDESK)"
     private const val NONE = Int.MIN_VALUE
 
     enum class Kind { Clear, PartlyCloudy, Cloudy, Fog, Rain, Snow, Thunder }
@@ -34,6 +44,8 @@ object Weather {
     private lateinit var app: Context
     private var lastAttempt = 0L
     private var failed = false
+    /** Last MET response, already converted; the clock reads it when Open-Meteo is down. */
+    @Volatile private var metNoCache: Pair<Long, String>? = null
 
     fun init(context: Context) {
         if (::prefs.isInitialized) return
@@ -92,7 +104,9 @@ object Weather {
             prefs.edit().putFloat("lat", lat).putFloat("lon", lon).putString("place", zh ?: city)
                 .putLong("located_at", System.currentTimeMillis()).apply()
         }
-        val json = JSONObject(get("https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto"))
+        val primary = "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon" +
+            "&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto"
+        val json = JSONObject(forecastJson(primary, lat.toDouble(), lon.toDouble()))
         val current = json.getJSONObject("current")
         val daily = json.optJSONObject("daily")
         fun today(key: String) = daily?.optJSONArray(key)?.optDouble(0)?.takeIf { !it.isNaN() }?.roundToInt()
@@ -165,10 +179,135 @@ object Weather {
         return null
     }
 
-    private fun get(url: String): String = try {
-        Net.text(url)
+    /**
+     * Open-Meteo first, MET Norway after it, as the full app since 1.0.5: the short timeout on the
+     * primary host keeps a brief outage from stalling the clock. A captive portal or an error page
+     * is 200 with HTML, so the body is checked before it reaches the parser.
+     */
+    private fun forecastJson(primary: String, lat: Double, lon: Double): String {
+        val own = runCatching { get(primary, connectMs = 5_000, readMs = 8_000) }
+            .onFailure { Log.i(TAG, "Open-Meteo unavailable (${it.javaClass.simpleName})") }
+            .getOrNull()
+        if (own != null && own.trimStart().startsWith("{") && own.contains("\"current\"")) return own
+        Log.i(TAG, "using met.no fallback")
+        return metNoAsOpenMeteo(lat, lon)
+    }
+
+    /** MET's Locationforecast, reshaped once and reused for ten minutes (its terms ask for a cache). */
+    private fun metNoAsOpenMeteo(lat: Double, lon: Double): String {
+        metNoCache?.let { (at, json) ->
+            if (System.currentTimeMillis() - at < METNO_CACHE_MS) return json
+        }
+        val json = convertMetNo(readMetNo("$METNO_URL?lat=$lat&lon=$lon"))
+        metNoCache = System.currentTimeMillis() to json
+        return json
+    }
+
+    /** MET requires a recognisable User-Agent and answers 403 without one. */
+    private fun readMetNo(url: String): String {
+        val c = Net.open(url).apply {
+            connectTimeout = 8_000
+            readTimeout = 12_000
+            setRequestProperty("User-Agent", METNO_UA)
+            setRequestProperty("Accept", "application/json")
+        }
+        try {
+            if (c.responseCode !in 200..299) error("HTTP ${c.responseCode}")
+            return c.inputStream.use { it.readBytes().toString(Charsets.UTF_8) }
+        } finally {
+            c.disconnect()
+        }
+    }
+
+    /**
+     * MET sends a UTC timeseries with a symbol code per period; turn it into the current/daily
+     * object Open-Meteo sends, in the device's local time, so the parsing above stays as it is.
+     * java.time is not on Android 4.x without desugaring, so Calendar does the date work here.
+     */
+    private fun convertMetNo(raw: String): String {
+        val series = JSONObject(raw).getJSONObject("properties").getJSONArray("timeseries")
+        val zone = TimeZone.getDefault()
+        val iso = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }
+        val day = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply { timeZone = zone }
+        class P(val at: Long, val temp: Double, val code: Int)
+        val points = ArrayList<P>(series.length())
+        for (i in 0 until series.length()) {
+            val e = series.getJSONObject(i)
+            val at = runCatching { iso.parse(e.getString("time").trim().removeSuffix("Z"))?.time }.getOrNull() ?: continue
+            val data = e.getJSONObject("data")
+            val temp = data.getJSONObject("instant").getJSONObject("details")
+                .optDouble("air_temperature", Double.NaN)
+            if (temp.isNaN()) continue
+            val symbol = data.optJSONObject("next_1_hours")?.optJSONObject("summary")?.optString("symbol_code")
+                ?: data.optJSONObject("next_6_hours")?.optJSONObject("summary")?.optString("symbol_code")
+                ?: "cloudy"
+            points.add(P(at, temp, metNoCode(symbol)))
+        }
+        if (points.isEmpty()) error("empty MET timeseries")
+
+        val cal = Calendar.getInstance(zone).apply {
+            set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+        }
+        val hourNow = cal.timeInMillis
+        val fromNow = points.filter { it.at >= hourNow }.ifEmpty { listOf(points.first()) }
+
+        val byDay = LinkedHashMap<String, MutableList<P>>()
+        for (p in points) byDay.getOrPut(day.format(java.util.Date(p.at))) { mutableListOf() }.add(p)
+        val dTime = JSONArray(); val dMax = JSONArray(); val dMin = JSONArray(); val dCode = JSONArray()
+        for ((date, list) in byDay.entries.take(7)) {
+            dTime.put(date)
+            dMax.put(list.maxOf { it.temp }); dMin.put(list.minOf { it.temp })
+            dCode.put(list.first().code)
+        }
+
+        val first = fromNow.first()
+        val hour = Calendar.getInstance(zone).apply { timeInMillis = first.at }.get(Calendar.HOUR_OF_DAY)
+        val time = SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US).apply { timeZone = zone }
+        val current = JSONObject()
+            .put("time", time.format(java.util.Date(first.at)))
+            .put("temperature_2m", first.temp)
+            .put("weather_code", first.code)
+            .put("is_day", if (hour in 6..17) 1 else 0)
+        return JSONObject()
+            .put("current", current)
+            .put("daily", JSONObject().put("time", dTime).put("weather_code", dCode)
+                .put("temperature_2m_max", dMax).put("temperature_2m_min", dMin))
+            .toString()
+    }
+
+    /** MET's symbol codes are names; the WMO codes below are what the UI expects. */
+    private fun metNoCode(symbol: String): Int = when {
+        symbol.startsWith("clearsky") -> 0
+        symbol.startsWith("fair") -> 1
+        symbol.startsWith("partlycloudy") -> 2
+        symbol.startsWith("cloudy") -> 3
+        symbol.startsWith("fog") -> 45
+        symbol.contains("thunder") -> 95
+        symbol.contains("sleet") -> 56
+        symbol.contains("heavyrain") -> 65
+        symbol.contains("rain") -> 61
+        symbol.contains("heavysnow") -> 75
+        symbol.contains("snow") -> 71
+        else -> 3
+    }
+
+    private fun get(url: String, connectMs: Int = 8_000, readMs: Int = 10_000): String = try {
+        text(url, connectMs, readMs)
     } catch (e: SSLException) {
-        Net.text(url.replaceFirst("https://", "http://"))
+        text(url.replaceFirst("https://", "http://"), connectMs, readMs)
+    }
+
+    private fun text(url: String, connectMs: Int, readMs: Int): String {
+        val c = Net.open(url).apply {
+            this.connectTimeout = connectMs
+            this.readTimeout = readMs
+        }
+        try {
+            if (c.responseCode !in 200..299) error("HTTP ${c.responseCode}")
+            return c.inputStream.use { it.readBytes().toString(Charsets.UTF_8) }
+        } finally {
+            c.disconnect()
+        }
     }
 
     /** The clock's weather line: glyph, temperature, and "place · condition · high low", as the full app's. */

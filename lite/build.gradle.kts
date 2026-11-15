@@ -19,8 +19,10 @@ android {
         // Android 4.0.
         minSdk = 14
         targetSdk = 34
-        versionCode = 21
-        versionName = "1.19"
+        // xiaoheiDESK Lite's own line, like the full app's. Starts well above upstream Lite's 1.19
+        // (versionCode 21) so a build here can replace it in place.
+        versionCode = 1000
+        versionName = "1.0.0"
     }
 
     // Signed with the same key as Aerial (see app/build.gradle.kts and docs/HANDOFF.md).

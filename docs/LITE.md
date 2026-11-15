@@ -1,6 +1,6 @@
-# Aerial Lite（Android 4.0–4.4）
+# 小黑DESK Lite（Android 4.0–4.4）
 
-给 Android 4.x 老电视用的精简版桌面，模块是 `lite/`，包名 `app.orchard.tv.lite`，minSdk 14（Android 4.0），和完整版用同一把签名。
+给 Android 4.x 老电视用的精简版桌面，模块是 `lite/`，包名 `app.orchard.tv.lite`，minSdk 14（Android 4.0），和完整版用同一把签名，版本线独立（1.0.0 起）。
 
 ## 为什么是单独的 App
 

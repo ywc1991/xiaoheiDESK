@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/brand/icon.png" width="96" alt="Aerial 图标">
+<img src="docs/brand/icon.png" width="96" alt="小黑DESK 图标">
 
-# Aerial
+# 小黑DESK
 
 **给国产电视的一块干净桌面。**
 
@@ -135,9 +135,8 @@ Windows 用 Agent 装，或照[安装说明](site/agent.md)里的 Windows 步骤
 
 | 下载 | 用在 |
 |---|---|
-| [aerial-standard.apk](https://aerial.qust.me/download/aerial-standard.apk) | Android 5.0 及以上，先装这个 |
-| [aerial-guard.apk](https://aerial.qust.me/download/aerial-guard.apk) | standard 装不上、提示不允许安装桌面类 App 时 |
-| [aerial-lite.apk](https://aerial.qust.me/download/aerial-lite.apk) | Android 4.0–4.4（见下面的 [Aerial Lite](#lite)） |
+| [xiaoheiDESK-1.0.8.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest) | Android 5.0 及以上（含 5.0、5.1、6.0），先装这个 |
+| [xiaoheiDESK-lite-1.0.0.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest) | Android 4.0–4.4 的老电视、老盒子（见下面的 [小黑DESK Lite](#lite)） |
 
 装好后按主页键：系统问「使用哪个应用」时选 Aerial、再选「始终」就设好了（原生 Android TV 一般是这样）。直接回到原桌面、不问（国产电视大多这样）时，从「我的应用」打开 Aerial，它会弹出「设为主屏幕」，按里面的入口去电视设置里打开桌面守护（无障碍）和通知使用权；电视设置里没有这些入口时，Aerial 只能当普通 App 用，要接管主页键还得用上面的命令或 Agent 设置一次（覆盖安装，不丢设置）。
 
@@ -145,34 +144,28 @@ Windows 用 Agent 装，或照[安装说明](site/agent.md)里的 Windows 步骤
 
 <a id="lite"></a>
 
-### Android 4.0–4.4 老电视：Aerial Lite（测试版）
+### Android 4.0–4.4 老电视：小黑DESK Lite
 
-Android 4.0–4.4 的老电视、老盒子装不了完整版（界面框架最低要 Android 5.0），所以有一个单独的 **Aerial Lite**：包名 `app.orchard.tv.lite`，外观和完整版一样。
+Android 4.0–4.4 的老电视、老盒子装不了完整版（界面框架最低要 Android 5.0），所以有一个单独的 **小黑DESK Lite**：包名 `app.orchard.tv.lite`，和完整版并存、分开升级。
 
-> **Lite 现在是第一版（1.0），属于测试版。** 只在 Android 4.0.4 / 4.4.4 虚拟机，以及小米、TCL 的新电视上测过，还没在真实的 4.x 电视上用过，可能有不少小问题。**只适配 Android 4.0–4.4**；Android 5.0 及以上请用上面的完整版。遇到问题请用[机型适配模板](https://github.com/pengchujin/aerial-tv/issues/new?template=device.yml)反馈，标题写上 Lite。
+> **Lite 基于上游 Aerial Lite 1.19，界面用原生 View 重写。** 它在 Android 4.0.4 / 4.4.4 虚拟机上跑过，没有在真实的 4.x 电视上长期使用，可能还有小问题。**只适配 Android 4.0–4.4**；Android 5.0 及以上请用完整版。遇到问题到 [Issues](https://github.com/ywc1991/xiaoheiDESK/issues) 反馈，标题写上 Lite。
 
-**一行命令（macOS / Linux）**：和完整版是同一条命令，脚本发现电视是 Android 4.x 会自动装 Lite；也可以明确指定：
-
-```bash
-curl -fsSL https://aerial.qust.me/install.sh | TV=192.168.1.20 bash -s lite
-```
-
-**手动**：下载 [aerial-lite.apk](https://aerial.qust.me/download/aerial-lite.apk)，然后：
+**手动**：下载 [xiaoheiDESK-lite-1.0.0.apk](https://github.com/ywc1991/xiaoheiDESK/releases/download/v1.0.8/xiaoheiDESK-lite-1.0.0.apk)，然后：
 
 ```bash
 adb connect 192.168.1.20:5555
-adb install -r aerial-lite.apk
+adb install -r xiaoheiDESK-lite-1.0.0.apk
 adb shell pm grant app.orchard.tv.lite android.permission.WRITE_SECURE_SETTINGS   # 调亮度用；Android 4.0 会报错，可以忽略
 adb shell am start -n app.orchard.tv.lite/.HomeActivity
 ```
 
-**U 盘**：把 `aerial-lite.apk` 拷进 U 盘，用电视的文件管理器打开安装。
+**U 盘**：把 `xiaoheiDESK-lite-1.0.0.apk` 拷进 U 盘，用电视的文件管理器打开安装。
 
-**装好以后**：按遥控器的**主页键**，系统问「使用哪个应用」时选 **Aerial Lite**，再选「**始终**」。不弹出选择、直接回到原桌面，说明固件把主页键锁在了自家桌面，这时只能从应用列表打开 Lite。
+**装好以后**：按遥控器的**主页键**，系统问「使用哪个应用」时选 **小黑DESK Lite**，再选「**始终**」。不弹出选择、直接回到原桌面，说明固件把主页键锁在了自家桌面，这时只能从应用列表打开 Lite。
 
 **和完整版的区别**：没有桌面守护（无障碍接管），开机和主页键全靠系统的默认桌面；没有航拍壁纸、「我的视频」壁纸、信号源磁贴（4.x 没有电视输入框架，信号源按钮打开电视自己的信号源面板）、应用内升级（升级就是再装一次，设置保留）。航拍屏保、照片和每日一图、时钟、文件夹、长按菜单、控制中心、个性化、手机配置页都有。详细说明见 [docs/LITE.md](docs/LITE.md)。
 
-**还原**：电视上 设置 → 应用 → Aerial Lite → 清除默认设置，再按主页键选原来的桌面；或者直接卸载：`adb uninstall app.orchard.tv.lite`（一行命令的 `bash -s restore --uninstall` 也会卸载它）。
+**还原**：电视上 设置 → 应用 → 小黑DESK Lite → 清除默认设置，再按主页键选原来的桌面；或者直接卸载：`adb uninstall app.orchard.tv.lite`。
 
 ### 还原
 

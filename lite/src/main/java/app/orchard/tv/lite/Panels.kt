@@ -260,7 +260,7 @@ class ControlCenter(
         status.addView(Dot(context, if (home) Ui.GREEN else 0xFFFF9F0A.toInt()), LinearLayout.LayoutParams(Ui.pxi(7f), Ui.pxi(7f)))
         status.addView(context.label(context.getString(if (home) R.string.cc_home_default else R.string.cc_home_not_default), 11f, 500, Ui.SECONDARY),
             LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { leftMargin = Ui.pxi(8f) })
-        status.addView(context.label("Aerial Lite " + version(context), 11f, 500, Ui.TERTIARY))
+        status.addView(context.label(context.getString(R.string.app_name) + " " + version(context), 11f, 500, Ui.TERTIARY))
         col.add(status, top = 8f)
     }
 
