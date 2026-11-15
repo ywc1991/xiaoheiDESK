@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import android.view.KeyEvent as NativeKeyEvent
 import androidx.compose.ui.res.stringResource
@@ -41,8 +42,8 @@ import androidx.compose.ui.unit.dp
 import app.orchard.tv.R
 import app.orchard.tv.ui.components.consumeTaps
 import app.orchard.tv.ui.components.dismissOnTap
-import app.orchard.tv.ui.components.liquidGlass
-import app.orchard.tv.ui.components.focusGlassSurface
+import app.orchard.tv.ui.components.panelPreview
+import app.orchard.tv.ui.components.smokeGlassPanel
 import app.orchard.tv.ui.theme.Motion
 import app.orchard.tv.ui.theme.Palette
 import app.orchard.tv.ui.theme.Type
@@ -122,7 +123,7 @@ fun DatePanel(
             )
         }
 
-        Box(Modifier.fillMaxSize().padding(top = 24.dp, start = 32.dp), contentAlignment = Alignment.TopStart) {
+        Box(Modifier.fillMaxSize().padding(top = if (interactive) 24.dp else 64.dp, start = 32.dp), contentAlignment = Alignment.TopStart) {
             AnimatedVisibility(
                 visible = visible,
                 enter = fadeIn(tween(200)) + scaleIn(tween(340, easing = Motion.Drawer), initialScale = 0.9f, transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)),
@@ -131,9 +132,9 @@ fun DatePanel(
                 Column(
                     Modifier
                         .width(430.dp)
+                        .panelPreview(interactive, 0f, 0f)
                         .consumeTaps()
-                        .liquidGlass(30.dp)
-                        .focusGlassSurface(30.dp)
+                        .smokeGlassPanel(dense = !interactive)
                         .padding(24.dp),
                 ) {
                     Header(viewY, viewM, today)

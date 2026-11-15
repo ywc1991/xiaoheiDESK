@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "v": "1.0.7",
+      "zh": [
+        "日历、天气、控制中心三个面板换成深色烟熏玻璃卡片：壁纸清晰透出，细亮描边、大圆角、白字，比原来的浅白玻璃更透、更安静。",
+        "焦点预览时三块面板缩到同一高度，天气与日历不再压住下方的应用图标；按 OK 展开后仍是原来的完整尺寸与全部内容。",
+        "其余功能与 1.0.6 一致：焦点即弹面板、方向键继续在角落间切换、天气双源容灾、自有版本更新检测。"
+      ],
+      "en": [
+        "The calendar, weather and Control Center panels now use dark smoke-glass cards: the wallpaper shows clearly through them, with a fine lit rim, large corners and white type, quieter and more see-through than the old pale glass.",
+        "Focus previews are scaled to one common height, so the weather and calendar no longer cover the app row below. Opening a panel with OK still shows it at full size with all of its content.",
+        "Everything else is unchanged from 1.0.6: panels follow focus, direction keys keep moving between corners, dual-source weather fallback and the self-hosted update channel."
+      ]
+    },
+    {
       "v": "1.0.6",
       "zh": [
         "焦点落在左上角的日期、右上角的天气或设置上时，自动弹出对应面板（日历、逐小时天气、控制中心），不必再按一次确认键。",

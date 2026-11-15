@@ -47,8 +47,8 @@ import app.orchard.tv.R
 import app.orchard.tv.ui.components.Pressable
 import app.orchard.tv.ui.components.consumeTaps
 import app.orchard.tv.ui.components.dismissOnTap
-import app.orchard.tv.ui.components.liquidGlass
-import app.orchard.tv.ui.components.focusGlassSurface
+import app.orchard.tv.ui.components.panelPreview
+import app.orchard.tv.ui.components.smokeGlassPanel
 import app.orchard.tv.ui.theme.Glyph
 import app.orchard.tv.ui.theme.GlyphIcon
 import app.orchard.tv.ui.theme.Motion
@@ -108,7 +108,7 @@ fun WeatherPanel(
 
         val maxHeight = (LocalConfiguration.current.screenHeightDp - 48).dp
         LaunchedEffect(visible) { if (visible) Weather.loadForecast() }
-        Box(Modifier.fillMaxSize().padding(top = 24.dp, end = 32.dp), contentAlignment = Alignment.TopEnd) {
+        Box(Modifier.fillMaxSize().padding(top = if (interactive) 24.dp else 64.dp, end = 32.dp), contentAlignment = Alignment.TopEnd) {
             AnimatedVisibility(
                 visible = visible,
                 enter = fadeIn(tween(200)) + scaleIn(tween(340, easing = Motion.Drawer), initialScale = 0.9f, transformOrigin = TransformOrigin(1f, 0f)),
@@ -118,9 +118,9 @@ fun WeatherPanel(
                     Modifier
                         .width(430.dp)
                         .heightIn(max = maxHeight)
+                        .panelPreview(interactive, 1f, 0f)
                         .consumeTaps()
-                        .liquidGlass(30.dp)
-                        .focusGlassSurface(30.dp)
+                        .smokeGlassPanel(dense = !interactive)
                         .padding(22.dp),
                 ) {
                     item { Header() }

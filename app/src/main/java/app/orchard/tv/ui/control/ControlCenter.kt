@@ -105,8 +105,8 @@ import app.orchard.tv.system.SystemProbe
 import app.orchard.tv.ui.components.Pressable
 import app.orchard.tv.ui.components.consumeTaps
 import app.orchard.tv.ui.components.dismissOnTap
-import app.orchard.tv.ui.components.liquidGlass
-import app.orchard.tv.ui.components.focusGlassSurface
+import app.orchard.tv.ui.components.panelPreview
+import app.orchard.tv.ui.components.smokeGlassPanel
 import app.orchard.tv.ui.home.MenuRow
 import app.orchard.tv.ui.home.VpnBadge
 import app.orchard.tv.ui.home.dateText
@@ -171,13 +171,13 @@ fun ControlCenter(
         )
     }
 
-    Box(Modifier.fillMaxSize().padding(top = 24.dp, end = 32.dp), contentAlignment = Alignment.TopEnd) {
+    Box(Modifier.fillMaxSize().padding(top = if (interactive) 24.dp else 64.dp, end = 32.dp), contentAlignment = Alignment.TopEnd) {
         // The first opening composed the panel and then, frame after frame, gave the GPU its
         // pictures, glyphs and shaders for the first time: 55-95 ms a frame for the whole drop-in,
         // against about 26 ms on the second opening (Xiaomi MiTV-MFTR0, release build). Drawn once
         // at 1% while Home is idle, without focus, the first opening is like the second.
         if (warm && !visible) {
-            Column(Modifier.graphicsLayer { alpha = 0.01f }.width(300.dp).liquidGlass(24.dp).padding(16.dp)) {
+            Column(Modifier.graphicsLayer { alpha = 0.01f }.width(300.dp).smokeGlassPanel().padding(16.dp)) {
                 MainPage(vm, now, false, onOpen)
             }
         }
@@ -190,9 +190,9 @@ fun ControlCenter(
             Column(
                 Modifier
                     .width(300.dp)
+                    .panelPreview(interactive, 1f, 0f)
                     .consumeTaps()
-                    .liquidGlass(24.dp, seeThroughFilm = onShelf)
-                    .focusGlassSurface(24.dp)
+                    .smokeGlassPanel(dense = !interactive)
                     .padding(16.dp),
             ) {
                 AnimatedContent(

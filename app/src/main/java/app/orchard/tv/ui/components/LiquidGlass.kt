@@ -6,6 +6,7 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Shader
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -32,6 +34,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asImageBitmap
@@ -41,6 +44,7 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -300,4 +304,80 @@ fun Modifier.focusGlassSurface(corner: Dp): Modifier {
         .clip(shape)
         .background(Brush.verticalGradient(listOf(Palette.FocusGlassTop, Palette.FocusGlassBottom)), shape)
         .border(1.dp, Palette.FocusGlassRim, shape)
+}
+
+/**
+ * The card the three corner panels wear: smoke glass. The live wallpaper (not a baked, frosted
+ * copy of it) stays visible through a dark tint, with a fine lit rim and a faint sheen from above.
+ * White type reads on it whatever picture is behind. Unlike [liquidGlass] there is no baked
+ * bitmap, so the panel is cheap to draw and genuinely see-through.
+ */
+fun Modifier.smokeGlassPanel(corner: Dp = 32.dp, dense: Boolean = false): Modifier {
+    val shape = RoundedCornerShape(corner)
+    // A focus preview has no scrim behind it, so it needs a slightly deeper tint and a brighter
+    // rim to read as a card on a bright wallpaper. The full panel already sits under the scrim.
+    val top = if (dense) 0.72f else 0.62f
+    val middle = if (dense) 0.60f else 0.50f
+    val bottom = if (dense) 0.68f else 0.58f
+    val rim = if (dense) 0.70f else 0.52f
+    return this
+        .clip(shape)
+        .background(
+            Brush.verticalGradient(
+                listOf(
+                    Color.Black.copy(alpha = top),
+                    Color.Black.copy(alpha = middle),
+                    Color.Black.copy(alpha = bottom),
+                )
+            ),
+            shape,
+        )
+        // The lit rim, plus a whisper of light caught along the top edge.
+        .background(
+            Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.08f), Color.Transparent)),
+            shape,
+        )
+        .border(1.2.dp, Color.White.copy(alpha = rim), shape)
+}
+
+/** How tall every corner panel's focus preview is drawn, so all three line up and the app row below stays clear. */
+val PanelPeekHeight = 300.dp
+
+/**
+ * A peek (the panel that follows focus, before OK): scaled down around its own corner to
+ * [PanelPeekHeight], leaving the natural layout and all of its content intact. Opening the panel
+ * with OK grows it back to full size. Without this the calendar and forecast panels covered the
+ * app row whenever the focus sat on a corner control.
+ */
+fun Modifier.panelPreview(interactive: Boolean, anchorX: Float, anchorY: Float): Modifier = composed {
+    val targetPx = with(LocalDensity.current) { PanelPeekHeight.toPx() }
+    var naturalPx by remember { mutableStateOf(0f) }
+    val scale by animateFloatAsState(
+        targetValue = when {
+            interactive -> 1f
+            naturalPx <= 0f -> 0.72f
+            else -> (targetPx / naturalPx).coerceIn(0.40f, 1f)
+        },
+        animationSpec = tween(200, easing = Motion.EaseOut),
+        label = "panel-peek-scale",
+    )
+    this
+        .onGloballyPositioned { naturalPx = it.size.height.toFloat() }
+        // Draw the whole node (glass, rim and type) through one scaled draw pass. A separate
+        // graphicsLayer dropped the glass fill on some devices, leaving only the type and rim.
+        .drawWithContent {
+            if (scale == 1f) {
+                drawContent()
+            } else {
+                val px = anchorX * size.width
+                val py = anchorY * size.height
+                val canvas = drawContext.canvas
+                canvas.save()
+                canvas.translate(px, py)
+                canvas.scale(scale, scale)
+                canvas.translate(-px, -py)
+                drawContent()
+                canvas.restore()
+            }
+        }
 }
