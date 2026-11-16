@@ -146,6 +146,8 @@
     <string name="st_plate_none">None</string>
     <string name="st_desk_cat">Desk Cat</string>
     <string name="st_desk_cat_hint">A little black cat sits on the wallpaper and reacts when you press OK on it. It never gets in the way of the apps or the corners.</string>
+    <string name="st_corner_peek">Corner Panel Preview</string>
+    <string name="st_corner_peek_hint">Show a panel preview when focus rests on the date, weather or settings. Off: panels open only when you press OK.</string>
     <string name="st_sounds">Sounds</string>
     <string name="st_sounds_hint">A sound as focus moves, and on select and Back, as on Apple TV.</string>
     <string name="st_sounds_tv_hint">The TV\'s own key sounds, as in its menus. Silent if key sounds are off in the TV\'s settings: choose xiaoheiDESK then.</string>

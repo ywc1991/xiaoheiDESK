@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "v": "1.1.2",
+      "zh": [
+        "桌面小黑猫换成了真正会动的样子：直接从你家猫的视频里逐帧抠出来，眨眼、歪头、探头都是原片动作。",
+        "角落里日历、天气、设置不再自动弹出面板了，想看的时候按遥控器选中再打开；个性化里有开关可以改回来。",
+        "小黑猫身上的白色焦点圈去掉了：它探出头本身就表示被选中，画面更干净。"
+      ],
+      "en": [
+        "The desk cat is now the real animation: every frame was cut out of your cat video, so the blinks, head tilts and peeks are the original motion.",
+        "The calendar, weather and settings corners no longer pop their panels open by themselves — select one with the remote to open it. A switch in Personalisation brings the old behaviour back.",
+        "The white focus ring around the cat is gone: it being out of hiding is the selection cue, so the wallpaper stays clean."
+      ]
+    },
+    {
       "v": "1.1.1",
       "zh": [
         "修复了桌面小黑猫会挡住焦点的问题：现在方向键可以正常到达左上角的日历、右上角的天气和设置了。",

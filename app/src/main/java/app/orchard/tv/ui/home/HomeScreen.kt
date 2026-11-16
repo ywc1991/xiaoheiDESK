@@ -483,7 +483,8 @@ fun HomeScreen(
     // A peek is purely visual: it never becomes an overlay, so the grid keeps its focus and the
     // backdrop stays as it is. Pressing OK on the corner opens the real, interactive panel.
     val peekPanel = focusedCorner.takeIf {
-        overlay == Overlay.None && moving == null && kidsLock == null && windowFocused && !vm.screensaverVisible
+        AerialSettings.cornerAutoPeek &&
+            overlay == Overlay.None && moving == null && kidsLock == null && windowFocused && !vm.screensaverVisible
     }
     LaunchedEffect(windowFocused, vm.homeResetPending, vm.loaded) {
         if (windowFocused && vm.homeResetPending && vm.loaded) {

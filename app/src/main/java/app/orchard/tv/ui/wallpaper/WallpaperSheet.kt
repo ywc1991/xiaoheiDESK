@@ -225,6 +225,11 @@ fun WallpaperSheet(
                         listOf(true to R.string.st_on, false to R.string.st_off),
                         AerialSettings.showDeskCat, AerialSettings::chooseShowDeskCat,
                     )
+                    Choices(
+                        R.string.st_corner_peek, stringResource(R.string.st_corner_peek_hint), note,
+                        listOf(false to R.string.st_off, true to R.string.st_on),
+                        AerialSettings.cornerAutoPeek, AerialSettings::chooseCornerAutoPeek,
+                    )
                     // Apps taken off Home are kept with the rest of how Home looks.
                     SettingRow(R.string.st_hidden_apps, stringResource(R.string.st_hidden_apps_hint), note) {
                         ActionChip(

@@ -117,6 +117,9 @@ object AerialSettings {
     /** The little black-cat companion that sits on the wallpaper and reacts to OK. */
     var showDeskCat by mutableStateOf(true); private set
 
+    /** Pop a corner panel preview while focus rests on date/weather/settings. Off by default. */
+    var cornerAutoPeek by mutableStateOf(false); private set
+
     /** The clock, with the date and weather, in the top right instead of the top left. */
     var clockRight by mutableStateOf(false); private set
 
@@ -209,6 +212,7 @@ object AerialSettings {
         largeClock = prefs.getBoolean("large_clock", false)
         homePlate = prefs.getBoolean("home_plate", true)
         showDeskCat = prefs.getBoolean("show_desk_cat", true)
+        cornerAutoPeek = prefs.getBoolean("corner_auto_peek", false)
         chosenAllNames = prefs.getBoolean("show_all_names", false)
         wallpaperAlwaysMoves = prefs.getBoolean("wallpaper_always_moves", false)
         showWeather = prefs.getBoolean("show_weather", true)
@@ -302,6 +306,11 @@ object AerialSettings {
     fun chooseShowDeskCat(on: Boolean) {
         showDeskCat = on
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("show_desk_cat", on) }
+    }
+
+    fun chooseCornerAutoPeek(on: Boolean) {
+        cornerAutoPeek = on
+        app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("corner_auto_peek", on) }
     }
 
     fun chooseLargeClock(on: Boolean) {
