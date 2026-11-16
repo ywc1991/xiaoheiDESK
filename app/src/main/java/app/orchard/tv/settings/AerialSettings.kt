@@ -114,6 +114,9 @@ object AerialSettings {
     /** The Liquid Glass plate under the top row; some prefer the apps straight on the wallpaper (#151). */
     var homePlate by mutableStateOf(true); private set
 
+    /** The little black-cat companion that sits on the wallpaper and reacts to OK. */
+    var showDeskCat by mutableStateOf(true); private set
+
     /** The clock, with the date and weather, in the top right instead of the top left. */
     var clockRight by mutableStateOf(false); private set
 
@@ -205,6 +208,7 @@ object AerialSettings {
         clockRight = prefs.getBoolean("clock_right", false)
         largeClock = prefs.getBoolean("large_clock", false)
         homePlate = prefs.getBoolean("home_plate", true)
+        showDeskCat = prefs.getBoolean("show_desk_cat", true)
         chosenAllNames = prefs.getBoolean("show_all_names", false)
         wallpaperAlwaysMoves = prefs.getBoolean("wallpaper_always_moves", false)
         showWeather = prefs.getBoolean("show_weather", true)
@@ -293,6 +297,11 @@ object AerialSettings {
     fun chooseClockRight(on: Boolean) {
         clockRight = on
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("clock_right", on) }
+    }
+
+    fun chooseShowDeskCat(on: Boolean) {
+        showDeskCat = on
+        app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("show_desk_cat", on) }
     }
 
     fun chooseLargeClock(on: Boolean) {

@@ -315,6 +315,7 @@ fun HomeScreen(
     }
     val weatherRequester = remember { FocusRequester() }
     val dateRequester = remember { FocusRequester() }
+    val catRequester = remember { FocusRequester() }
 
     var focusedKey by remember { mutableStateOf<String?>(null) }
     // Where focus goes when the overlay closes, when that is not the tile it was on. Kept apart
@@ -898,6 +899,36 @@ fun HomeScreen(
                             nameOnPlate = plate != null && index < columns * metrics.shelfRows,
                         )
                     }
+                }
+
+                // The desk cat: a small companion on the wallpaper, between the corners and the
+                // shelf. It is focusable so the remote can reach it, but its four directions all
+                // point back to a middle tile, so it never joins the corner <-> shelf navigation
+                // chain (Home toggle / corner-panel focus stay exactly as before).
+                if (AerialSettings.showDeskCat) {
+                    CatCompanion(
+                        modifier = Modifier
+                            .diagLayer("cat")
+                            .align(Alignment.Center)
+                            .offset(x = 148.dp)
+                            .focusProperties {
+                                val back = apps.getOrNull(columns / 2) ?: apps.firstOrNull()
+                                if (back != null) {
+                                    up = requester(back.key)
+                                    down = requester(back.key)
+                                    left = requester(back.key)
+                                    right = requester(back.key)
+                                }
+                            },
+                        enabled = gridEnabled && moving == null && !vm.screensaverVisible && apps.isNotEmpty(),
+                        focusRequester = catRequester,
+                        onFocused = { gained ->
+                            if (gained) {
+                                pillFocused = false
+                                focusedCorner = null
+                            }
+                        },
+                    )
                 }
             }
         }

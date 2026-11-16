@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "v": "1.0.9",
+      "zh": [
+        "桌面迎来一只小黑猫玩偶：琥珀色的眼睛、竖起的耳朵、白胡须和卷尾巴，按你家小黑猫的样子画成了 Q 版，坐在壁纸上有呼吸、眨眼、甩尾巴的小动作。",
+        "用遥控器选中它按 OK，它会蹦一下并冒出一句台词（喵～、摸摸我呀…）。玩偶不会挡住应用和角落，也不影响方向键在角落与应用之间切换。",
+        "在「个性化 → 桌面布局」里可以随时开关玩偶。"
+      ],
+      "en": [
+        "A little black cat now sits on the wallpaper: amber eyes, upright ears, white whiskers and a curled tail, drawn in a rounded style after the owner's own cat. It breathes, blinks and swishes its tail while it waits.",
+        "Focus it with the remote and press OK: it hops and says a short line (meow, pet me…). It never covers the apps or the corners, and direction keys still move between corners and apps exactly as before.",
+        "Turn the cat on or off any time in Personalize → Home Layout."
+      ]
+    },
+    {
       "v": "1.0.8",
       "zh": [
         "新增 Android 4.0–4.4 支持：单独的小黑DESK Lite（包名 app.orchard.tv.lite，minSdk 14），用原生 View 重写界面，和完整版并存、分开升级。",

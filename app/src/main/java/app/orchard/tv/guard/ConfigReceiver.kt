@@ -121,6 +121,7 @@ class ConfigReceiver : BroadcastReceiver() {
             "peek_next_row" to AerialSettings::choosePeekNextRow,
             "home_plate" to AerialSettings::chooseHomePlate,
             "show_all_names" to AerialSettings::chooseShowAllNames,
+            "show_desk_cat" to AerialSettings::chooseShowDeskCat,
         ).filterKeys { intent.hasExtra(it) }
         if (layout.isNotEmpty()) {
             AerialSettings.init(context)
