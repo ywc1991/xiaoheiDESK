@@ -80,6 +80,11 @@ fun CatCompanion(
 
     // The cat sprite sheet is decoded once and shared; drawing a frame is just a source rect.
     val sheet = ImageBitmap.imageResource(R.drawable.cat_sheet)
+    // One cell of the sheet. Frames must be drawn at their own aspect ratio — squeezing the 240x213
+    // cell into a square box made the cat's face 13% too wide.
+    val cellW = sheet.width / CAT_COLS
+    val cellH = sheet.height / ((CAT_FRAMES + CAT_COLS - 1) / CAT_COLS)
+    val cellAspect = cellH.toFloat() / cellW.toFloat()
 
     // Which animation frame is showing, advanced on a timer while Home is usable.
     var frame by remember { mutableIntStateOf(0) }
@@ -190,7 +195,7 @@ fun CatCompanion(
             }
             Canvas(
                 Modifier
-                    .size(size)
+                    .size(width = size, height = size * cellAspect)
                     .offset {
                         IntOffset(0, (-(hop.value * 24f) * density.density).roundToInt())
                     },
@@ -199,21 +204,20 @@ fun CatCompanion(
                 // lambda, so always reach the canvas extent through `this.size`.
                 val canvasW = this.size.width
                 val canvasH = this.size.height
-                val fw = sheet.width / CAT_COLS
-                val fh = sheet.height / ((CAT_FRAMES + CAT_COLS - 1) / CAT_COLS)
                 val f = frame.coerceIn(0, CAT_FRAMES - 1)
-                val srcX = (f % CAT_COLS) * fw
-                val srcY = (f / CAT_COLS) * fh
-                // Contact shadow under the cat.
+                val srcX = (f % CAT_COLS) * cellW
+                val srcY = (f / CAT_COLS) * cellH
+                // Contact shadow under the cat. Its bottom already fades out in the sheet, so a
+                // faint oval here is what plants it on the wallpaper instead of floating.
                 drawOval(
-                    Color(0x26000000),
-                    topLeft = Offset(canvasW * 0.24f, canvasH * 0.88f),
-                    size = Size(canvasW * 0.52f, canvasH * 0.06f),
+                    Color(0x30000000),
+                    topLeft = Offset(canvasW * 0.20f, canvasH * 0.90f),
+                    size = Size(canvasW * 0.60f, canvasH * 0.07f),
                 )
                 drawImage(
                     image = sheet,
                     srcOffset = IntOffset(srcX, srcY),
-                    srcSize = IntSize(fw, fh),
+                    srcSize = IntSize(cellW, cellH),
                     dstSize = IntSize(canvasW.roundToInt(), canvasH.roundToInt()),
                 )
             }
