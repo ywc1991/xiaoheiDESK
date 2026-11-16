@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.1.4",
+      "zh": [
+        "桌面小黑猫换回之前那版手绘形象：圆脑袋、竖耳、大琥珀眼加竖瞳、白胡须、卷尾，肚子上那颗金色小铃铛也回来了。",
+        "焦点提示改成落在猫肚子那颗铃铛上：用遥控器选中它时，铃铛外面亮起一圈金环，不再有整只猫的白色光圈，也不会被放大。"
+      ],
+      "en": [
+        "The desk cat is back to the hand-drawn look: round head, upright ears, big amber eyes with upright pupils, white whiskers, curled tail — and the little gold bell on its belly.",
+        "Focus now lands on that bell: selecting the cat lights a gold ring around it, with no white halo around the whole cat and no zoom."
+      ]
+    },
+    {
       "v": "1.1.3",
       "zh": [
         "修好了小黑猫的身材：之前它的脸被横向拉宽了 13%，现在按原片比例显示，脸型和视频里一致。",

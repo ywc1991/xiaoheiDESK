@@ -1,8 +1,12 @@
 package app.orchard.tv.ui.home
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -25,46 +29,58 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import app.orchard.tv.R
 import app.orchard.tv.system.Sounds
 import app.orchard.tv.ui.components.Pressable
-import app.orchard.tv.ui.theme.InterText
 import app.orchard.tv.ui.theme.LocalReducedMotion
 import app.orchard.tv.ui.theme.Motion
-import app.orchard.tv.ui.theme.Type
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
+
+/** The desk cat's palette: the owner's black cat, rounded off for a TV screen. */
+/** The desk cat's palette: the owner's black cat, rounded off for a TV screen. */
+private object CatLook {
+    val Fur = Color(0xFF1B1C1F)
+    val FurSoft = Color(0xFF35373E)
+    val FurEdge = Color(0xFF0A0B0D)
+    val EarInner = Color(0xFF5A4049)
+    val Eye = Color(0xFFE8C64E)
+    val EyeRim = Color(0xFF96751C)
+    val Pupil = Color(0xFF0E0F12)
+    val EyeGlint = Color(0xFFFFFFFF)
+    val Nose = Color(0xFFCE8E96)
+    val Whisker = Color(0xD9F2F2F7)
+    val Mouth = Color(0xB3F2F2F7)
+    val Collar = Color(0xFFDCAF4C)
+    val Shadow = Color(0x33000000)
+}
 
 private val CatLines = listOf(
     "喵～", "摸摸我呀", "今天也陪着你", "要出去玩吗?",
     "呼噜呼噜…", "看什么呢?", "喵呜!", "最喜欢这里了",
 )
 
-/** Sprite sheet made from the owner's black-cat video: [COLS] columns of [FW]x[FH] frames. */
-private const val CAT_COLS = 8
-private const val CAT_FRAMES = 74
-private const val CAT_FPS = 8
-
 /**
  * A desk cat that dozes behind the right edge of the wallpaper and sneaks out when the remote is
  * used: [activityTick] is bumped on every key press in Home; the cat slides in, watches for a few
- * quiet seconds, then retreats. The cat itself is a real, blinking/breathing animation cut out of
- * the owner's cat video (a sprite sheet), so it looks exactly like their cat rather than a drawing.
+ * quiet seconds, then retreats. While it is out the remote can land on it and OK gives a hop and a
+ * short line in a bubble. No network, no state outside this composable.
  *
- * [enabled] mirrors Home's gridEnabled, so the cat steps aside under overlays. [onFocused] lets
- * Home clear any focus bookkeeping when the remote lands here. The cat stays in the focus graph so
- * the remote can reach it and pass through it to the top corners.
+ * [enabled] mirrors Home's gridEnabled, so the cat steps aside under overlays and while an app is
+ * being moved. [onFocused] lets Home clear the corner-panel peek when the remote lands here.
  */
 @Composable
 fun CatCompanion(
@@ -73,35 +89,34 @@ fun CatCompanion(
     activityTick: Long = 0L,
     focusRequester: FocusRequester? = null,
     onFocused: (Boolean) -> Unit = {},
-    size: Dp = 148.dp,
+    size: Dp = 138.dp,
 ) {
     val reduced = LocalReducedMotion.current
     val density = LocalDensity.current
 
-    // The cat sprite sheet is decoded once and shared; drawing a frame is just a source rect.
-    val sheet = ImageBitmap.imageResource(R.drawable.cat_sheet)
-    // One cell of the sheet. Frames must be drawn at their own aspect ratio — squeezing the 240x213
-    // cell into a square box made the cat's face 13% too wide.
-    val cellW = sheet.width / CAT_COLS
-    val cellH = sheet.height / ((CAT_FRAMES + CAT_COLS - 1) / CAT_COLS)
-    val cellAspect = cellH.toFloat() / cellW.toFloat()
-
-    // Which animation frame is showing, advanced on a timer while Home is usable.
-    var frame by remember { mutableIntStateOf(0) }
-    LaunchedEffect(enabled, reduced) {
-        if (reduced) {
-            frame = 0
-            return@LaunchedEffect
-        }
-        while (enabled) {
-            delay(1000L / CAT_FPS)
-            frame = (frame + 1) % CAT_FRAMES
-        }
-    }
-
     // Wake on any remote key or when the remote lands on us; doze after a quiet spell.
     var awake by remember { mutableStateOf(false) }
     var heldFocus by remember { mutableStateOf(false) }
+
+    // Pure phase drivers for the idle motion; frozen at their midpoint when motion is reduced.
+    val infinite = rememberInfiniteTransition(label = "cat-idle")
+    val breath by infinite.animateFloat(
+        0f, 1f,
+        infiniteRepeatable(tween(2600, easing = Motion.EaseInOut), RepeatMode.Reverse),
+        label = "cat-breath",
+    )
+    val tail by infinite.animateFloat(
+        0f, 1f,
+        infiniteRepeatable(tween(2400, easing = Motion.EaseInOut), RepeatMode.Reverse),
+        label = "cat-tail",
+    )
+    val blink by infinite.animateFloat(
+        0f, 1f,
+        infiniteRepeatable(tween(4600), RepeatMode.Restart),
+        label = "cat-blink",
+    )
+
+    // Any remote activity wakes the cat for a few quiet seconds; staying focused keeps it out.
     LaunchedEffect(activityTick) {
         if (activityTick <= 0L) return@LaunchedEffect
         awake = true
@@ -133,17 +148,17 @@ fun CatCompanion(
         targetValue = if (enabled) 1f else 0f,
         animationSpec = tween(180, easing = Motion.EaseOut), label = "cat-presence",
     )
+    // Asleep: tucked behind the right edge with one ear showing. Awake or focused: fully in view.
     val out = awake || heldFocus
     val peekX by animateDpAsState(
         targetValue = if (out && enabled) (-10).dp else size * 0.72f,
         animationSpec = spring(dampingRatio = 0.72f, stiffness = 170f),
         label = "cat-peek",
     )
+    // Always focusable while Home is usable: a stable spot in the focus graph, so the remote can
+    // always reach it (and pass through it to the corners) regardless of the doze animation.
     val usable = enabled
 
-    // The owner asked for the focus ring on the cat to be invisible: the cat itself is the
-    // highlight. It still slides out and stays out while focused (heldFocus), and still squashes
-    // a little when pressed, so the remote never feels lost on it.
     Pressable(
         onClick = { pressTick++ },
         enabled = usable,
@@ -156,21 +171,24 @@ fun CatCompanion(
                 heldFocus = it.isFocused
                 onFocused(it.isFocused)
             },
-    ) { _ ->
+    ) { state ->
         Box(contentAlignment = Alignment.TopCenter) {
             val bubble = line
             if (bubble != null) {
                 androidx.compose.foundation.text.BasicText(
                     bubble,
                     style = TextStyle(
-                        fontFamily = InterText,
+                        fontFamily = app.orchard.tv.ui.theme.InterText,
                         fontWeight = FontWeight.W600,
-                        fontSize = Type.Caption.fontSize,
+                        fontSize = app.orchard.tv.ui.theme.Type.Caption.fontSize,
                         color = Color(0xFFF7F7FA),
                     ),
                     modifier = Modifier
                         .offset {
-                            IntOffset(0, (-(30f + hop.value * 14f) * density.density).roundToInt())
+                            IntOffset(
+                                0,
+                                (-(30f + hop.value * 14f) * density.density).roundToInt(),
+                            )
                         }
                         .drawBehind {
                             val padX = 11.dp.toPx()
@@ -195,32 +213,142 @@ fun CatCompanion(
             }
             Canvas(
                 Modifier
-                    .size(width = size, height = size * cellAspect)
+                    .size(size)
                     .offset {
                         IntOffset(0, (-(hop.value * 24f) * density.density).roundToInt())
                     },
             ) {
-                // NB: the composable's `size: Dp` parameter wins name resolution inside this
-                // lambda, so always reach the canvas extent through `this.size`.
-                val canvasW = this.size.width
-                val canvasH = this.size.height
-                val f = frame.coerceIn(0, CAT_FRAMES - 1)
-                val srcX = (f % CAT_COLS) * cellW
-                val srcY = (f / CAT_COLS) * cellH
-                // Contact shadow under the cat. Its bottom already fades out in the sheet, so a
-                // faint oval here is what plants it on the wallpaper instead of floating.
-                drawOval(
-                    Color(0x30000000),
-                    topLeft = Offset(canvasW * 0.20f, canvasH * 0.90f),
-                    size = Size(canvasW * 0.60f, canvasH * 0.07f),
-                )
-                drawImage(
-                    image = sheet,
-                    srcOffset = IntOffset(srcX, srcY),
-                    srcSize = IntSize(cellW, cellH),
-                    dstSize = IntSize(canvasW.roundToInt(), canvasH.roundToInt()),
+                drawCat(
+                    focused = state.focused,
+                    pressed = state.pressed,
+                    breathe = if (reduced) 0.5f else breath,
+                    tail = if (reduced) 0.5f else tail,
+                    eyeOpen = if (reduced) 1f else eyelid(blink),
                 )
             }
         }
     }
+}
+
+/** Eyelid height: 1 fully open, ~0.07 closed. One quick blink per cycle of [p] (0..1). */
+private fun eyelid(p: Float): Float = when {
+    p < 0.90f -> 1f
+    p < 0.935f -> 1f - ((p - 0.90f) / 0.035f) * 0.93f
+    p < 0.965f -> 0.07f
+    p < 1f -> 0.07f + ((p - 0.965f) / 0.035f) * 0.93f
+    else -> 1f
+}.coerceIn(0.07f, 1f)
+
+/**
+ * Draws the chunky desk-cat the owner picked: black head with tall ears, big amber eyes with
+ * upright pupils, white whiskers, a gold collar, the little bell on its belly, and a curled tail.
+ *
+ * Focus is shown *on the bell*: a gold ring swells around the circle on the cat's belly instead of
+ * a white halo around the whole cat, so the wallpaper keeps its own light.
+ */
+private fun DrawScope.drawCat(
+    focused: Boolean,
+    pressed: Boolean,
+    breathe: Float,
+    tail: Float,
+    eyeOpen: Float,
+) {
+    val k = size.minDimension / 100f // draw in a local 100x100 space
+    // Every transform must use Offset.Zero as pivot: after translate() the local origin is the
+    // canvas centre, but DrawScope.scale()/rotate() default to the *canvas* centre, which would
+    // fling the body away from the head.
+    translate(size.width / 2f, size.height / 2f) {
+        scale(k, k, pivot = Offset.Zero) {
+            val squash = 1f + (breathe - 0.5f) * 0.04f
+            scale(1f, squash, pivot = Offset.Zero) {
+                drawOval(CatLook.Shadow, topLeft = Offset(-28f, 44f), size = Size(56f, 9f))
+                // Tail behind the body, swishing.
+                rotate((tail - 0.5f) * 24f, pivot = Offset.Zero) {
+                    val tailPath = Path().apply {
+                        moveTo(20f, 20f)
+                        cubicTo(42f, 32f, 48f, 4f, 34f, -4f)
+                        cubicTo(26f, -9f, 19f, 1f, 26f, 6f)
+                    }
+                    drawPath(tailPath, CatLook.Fur, style = Stroke(width = 9f))
+                    drawPath(tailPath, CatLook.FurEdge, style = Stroke(width = 1f))
+                }
+                // Body.
+                ellipse(CatLook.Fur, Offset(0f, 21f), 26f, 25f)
+                ellipse(CatLook.FurSoft, Offset(-8f, 15f), 8f, 13f, 0.30f)
+                // Collar: a thin band under the chin with a small bell, not a wide arc (which read
+                // as a smile on the dark head).
+                drawArc(
+                    CatLook.Collar, 20f, 140f, false,
+                    topLeft = Offset(-22f, 10f), size = Size(44f, 32f), style = Stroke(width = 2f),
+                )
+                // The bell on the belly is also the focus indicator.
+                drawCircle(CatLook.Collar, radius = 3.2f, center = Offset(0f, 24f))
+                drawCircle(CatLook.FurEdge, radius = 1f, center = Offset(0f, 24f))
+                if (focused) {
+                    drawCircle(Color(0x2EDCAF4C), radius = 10.5f, center = Offset(0f, 24f))
+                    drawCircle(
+                        CatLook.Collar, radius = 7.4f, center = Offset(0f, 24f),
+                        style = Stroke(width = 1.5f),
+                    )
+                }
+                // Ears.
+                val earL = Path().apply { moveTo(-25f, -17f); lineTo(-27f, -41f); lineTo(-6f, -26f); close() }
+                val earR = Path().apply { moveTo(25f, -17f); lineTo(27f, -41f); lineTo(6f, -26f); close() }
+                drawPath(earL, CatLook.Fur); drawPath(earR, CatLook.Fur)
+                val earLi = Path().apply { moveTo(-22f, -20f); lineTo(-23f, -35f); lineTo(-11f, -26f); close() }
+                val earRi = Path().apply { moveTo(22f, -20f); lineTo(23f, -35f); lineTo(11f, -26f); close() }
+                drawPath(earLi, CatLook.EarInner); drawPath(earRi, CatLook.EarInner)
+                // Head.
+                drawCircle(CatLook.FurEdge, radius = 29.5f)
+                drawCircle(CatLook.Fur, radius = 28.5f)
+                ellipse(CatLook.FurSoft, Offset(-9f, -3f), 9f, 7f, 0.28f)
+                // Eyes.
+                val eyeCy = -6f
+                for (ex in listOf(-11.5f, 11.5f)) {
+                    if (eyeOpen > 0.12f) {
+                        val ry = 8.2f * eyeOpen
+                        drawCircle(CatLook.EyeRim, radius = 8.7f, center = Offset(ex, eyeCy))
+                        ellipse(CatLook.Eye, Offset(ex, eyeCy), 7.3f, ry)
+                        ellipse(CatLook.Pupil, Offset(ex, eyeCy), 2.0f, ry * 0.84f)
+                        drawCircle(CatLook.EyeGlint, radius = 1.9f, center = Offset(ex - 2.6f, eyeCy - 3.2f))
+                        drawCircle(CatLook.EyeGlint, radius = 0.9f, center = Offset(ex + 2.4f, eyeCy + 2.6f), alpha = 0.7f)
+                    } else {
+                        drawArc(
+                            CatLook.EyeRim, 0f, 180f, false,
+                            topLeft = Offset(ex - 7f, eyeCy - 3f), size = Size(14f, 6f),
+                            style = Stroke(width = 2.2f),
+                        )
+                    }
+                }
+                // Nose + mouth.
+                val nose = Path().apply { moveTo(0f, 2f); lineTo(-2.6f, 4.7f); lineTo(2.6f, 4.7f); close() }
+                drawPath(nose, CatLook.Nose)
+                drawArc(CatLook.Mouth, 0f, 180f, false, topLeft = Offset(-5f, 4f), size = Size(5f, 5f), style = Stroke(1.3f))
+                drawArc(CatLook.Mouth, 0f, 180f, false, topLeft = Offset(0f, 4f), size = Size(5f, 5f), style = Stroke(1.3f))
+                // Whiskers.
+                for (side in listOf(-1f, 1f)) {
+                    for (i in -1..1) {
+                        val y0 = 3f + i * 2.6f
+                        drawLine(
+                            CatLook.Whisker,
+                            start = Offset(side * 7f, y0),
+                            end = Offset(side * 28f, y0 + i * 4.4f),
+                            strokeWidth = 0.95f,
+                        )
+                    }
+                }
+                if (pressed) {
+                    ellipse(CatLook.Fur, Offset(-12f, 41f), 7f, 5f)
+                    ellipse(CatLook.Fur, Offset(12f, 41f), 7f, 5f)
+                }
+            }
+        }
+    }
+}
+private fun DrawScope.ellipse(color: Color, center: Offset, rx: Float, ry: Float, a: Float = 1f) {
+    drawOval(
+        color = color.copy(alpha = color.alpha * a),
+        topLeft = Offset(center.x - rx, center.y - ry),
+        size = Size(rx * 2f, ry * 2f),
+    )
 }
