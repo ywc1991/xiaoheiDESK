@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.1.1",
+      "zh": [
+        "修复了桌面小黑猫会挡住焦点的问题：现在方向键可以正常到达左上角的日历、右上角的天气和设置了。",
+        "用遥控器选中小黑猫按 OK，它会真的「喵」一声，配合蹦跳和台词气泡陪你玩。"
+      ],
+      "en": [
+        "Fixed the desk cat blocking focus: the D-pad now reaches the calendar, weather and settings corners again.",
+        "Select the cat and press OK — it now lets out a real meow, with a hop and a speech bubble."
+      ]
+    },
+    {
       "v": "1.1.0",
       "zh": [
         "桌面小黑猫玩偶改成了会躲猫猫的互动方式：平时缩进屏幕右边缘、只露一点耳朵，用遥控器操作时才悄悄探出头来张望。",

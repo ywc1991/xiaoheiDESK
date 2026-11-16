@@ -33,6 +33,8 @@ object Sounds {
     private var select = 0
     private var back = 0
     private var limit = 0
+    private var catPool: SoundPool? = null
+    private var meow = 0
     private var lastDpadAt = 0L
     private var lastMove = AudioManager.FX_FOCUS_NAVIGATION_DOWN
     private var tickedFor = -1L
@@ -98,6 +100,26 @@ object Sounds {
     }
 
     fun select() = play(AudioManager.FX_KEY_CLICK, Kind.Select)
+
+    /**
+     * The desk cat's meow when poked. Its own pool on the sonification stream, independent of
+     * the interface-sound choice: it is a character voice, not a navigation tick, and plays even
+     * when the TV's key sounds are off. Loaded lazily so it costs nothing until the cat is used.
+     */
+    fun meow() {
+        val context = app ?: return
+        val p = catPool ?: run {
+            val attrs = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            SoundPool.Builder().setMaxStreams(2).setAudioAttributes(attrs).build().also {
+                meow = it.load(context, R.raw.cat_meow, 1)
+                catPool = it
+            }
+        }
+        if (meow != 0) p.play(meow, 0.9f, 0.9f, 1, 0, 1f)
+    }
 
     /** A slider moved one step (volume, brightness). */
     fun step() = play(lastMove, Kind.Move)

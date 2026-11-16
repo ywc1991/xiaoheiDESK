@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import app.orchard.tv.system.Sounds
 import app.orchard.tv.ui.components.Pressable
 import app.orchard.tv.ui.theme.LocalReducedMotion
 import app.orchard.tv.ui.theme.Motion
@@ -95,16 +96,9 @@ fun CatCompanion(
     val reduced = LocalReducedMotion.current
     val density = LocalDensity.current
 
-    // Wake on any remote key, doze after a quiet spell — but never while the remote is on us.
+    // Wake on any remote key or when the remote lands on us; doze after a quiet spell.
     var awake by remember { mutableStateOf(false) }
     var heldFocus by remember { mutableStateOf(false) }
-    LaunchedEffect(activityTick) {
-        if (activityTick <= 0L) return@LaunchedEffect
-        awake = true
-        delay(3400)
-        while (heldFocus) delay(240)
-        awake = false
-    }
 
     // Pure phase drivers for the idle motion; frozen at their midpoint when motion is reduced.
     val infinite = rememberInfiniteTransition(label = "cat-idle")
@@ -124,34 +118,48 @@ fun CatCompanion(
         label = "cat-blink",
     )
 
-    // Hop is an Animatable rather than a boolean so a repeated press always replays from the top:
-    // snap to "up", then spring back down with a little overshoot.
+    // Any remote activity wakes the cat for a few quiet seconds; staying focused keeps it out.
+    LaunchedEffect(activityTick) {
+        if (activityTick <= 0L) return@LaunchedEffect
+        awake = true
+        delay(3400)
+        while (heldFocus) delay(240)
+        awake = false
+    }
+
+    // Poking the cat (OK) makes it hop, meow, and say a line. A repeated poke replays from the top.
     val hop = remember { Animatable(0f) }
     var pressTick by remember { mutableIntStateOf(0) }
     var line by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(pressTick) {
         if (pressTick == 0) return@LaunchedEffect
+        awake = true
         line = CatLines[(pressTick - 1) % CatLines.size]
+        Sounds.meow()
         if (!reduced) {
             hop.snapTo(1f)
             hop.animateTo(0f, spring(dampingRatio = 0.42f, stiffness = 300f))
         }
         delay(1900)
         line = null
+        delay(1600)
+        if (!heldFocus) awake = false
     }
 
     val presence by animateFloatAsState(
         targetValue = if (enabled) 1f else 0f,
         animationSpec = tween(180, easing = Motion.EaseOut), label = "cat-presence",
     )
-    // Asleep: tucked behind the right edge with one ear showing. Awake: slid fully into view.
+    // Asleep: tucked behind the right edge with one ear showing. Awake or focused: fully in view.
+    val out = awake || heldFocus
     val peekX by animateDpAsState(
-        targetValue = if (awake && enabled) (-10).dp else size * 0.72f,
+        targetValue = if (out && enabled) (-10).dp else size * 0.72f,
         animationSpec = spring(dampingRatio = 0.72f, stiffness = 170f),
         label = "cat-peek",
     )
-    // Only focusable while it is actually out, so the remote never lands on an invisible cat.
-    val usable = enabled && awake
+    // Always focusable while Home is usable: a stable spot in the focus graph, so the remote can
+    // always reach it (and pass through it to the corners) regardless of the doze animation.
+    val usable = enabled
 
     Pressable(
         onClick = { pressTick++ },

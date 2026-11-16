@@ -917,12 +917,16 @@ fun HomeScreen(
                             .align(Alignment.CenterEnd)
                             .focusProperties {
                                 val back = apps.getOrNull(columns / 2) ?: apps.firstOrNull()
+                                // Up must reach the top row (weather/settings/date), not bounce
+                                // back into the shelf — that trapped focus and made the corners
+                                // unreachable. Down/left return to the shelf; right stays put.
+                                if (!AerialSettings.largeClock) up = weatherRequester
                                 if (back != null) {
-                                    up = requester(back.key)
+                                    if (AerialSettings.largeClock) up = requester(back.key)
                                     down = requester(back.key)
                                     left = requester(back.key)
-                                    right = requester(back.key)
                                 }
+                                right = FocusRequester.Cancel
                             },
                         enabled = gridEnabled && moving == null && !vm.screensaverVisible && apps.isNotEmpty(),
                         activityTick = catActivity,
