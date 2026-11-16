@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "v": "1.1.0",
+      "zh": [
+        "桌面小黑猫玩偶改成了会躲猫猫的互动方式：平时缩进屏幕右边缘、只露一点耳朵，用遥控器操作时才悄悄探出头来张望。",
+        "它探出后毛色带柔和高光、琥珀眼睛有微光，脚下还有淡淡的投影；静置几秒没人理它，就自己缩回边缘藏好。",
+        "探头时用遥控器选中它按 OK，它照样会蹦一下并冒出台词气泡；不影响方向键在角落与应用之间切换，个性化里仍可随时开关。"
+      ],
+      "en": [
+        "The desk cat now plays hide-and-seek: it tucks behind the right edge showing just one ear, and only sneaks out to peek when you use the remote.",
+        "Out in the open it has a soft gradient sheen, a gentle glow in its amber eyes and a faint contact shadow. Leave it alone for a few seconds and it retreats to the edge again.",
+        "While it is out, focus it with the remote and press OK for a hop and a speech bubble. Direction keys still move between corners and apps as before, and it stays switchable in Personalize."
+      ]
+    },
+    {
       "v": "1.0.9",
       "zh": [
         "桌面迎来一只小黑猫玩偶：琥珀色的眼睛、竖起的耳朵、白胡须和卷尾巴，按你家小黑猫的样子画成了 Q 版，坐在壁纸上有呼吸、眨眼、甩尾巴的小动作。",

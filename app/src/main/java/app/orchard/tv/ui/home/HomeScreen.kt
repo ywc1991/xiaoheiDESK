@@ -42,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -316,6 +317,8 @@ fun HomeScreen(
     val weatherRequester = remember { FocusRequester() }
     val dateRequester = remember { FocusRequester() }
     val catRequester = remember { FocusRequester() }
+    // Bumped on every remote key so the desk cat knows the user is active and peeks out.
+    var catActivity by remember { mutableLongStateOf(0L) }
 
     var focusedKey by remember { mutableStateOf<String?>(null) }
     // Where focus goes when the overlay closes, when that is not the tile it was on. Kept apart
@@ -505,6 +508,8 @@ fun HomeScreen(
         Modifier
             .fillMaxSize()
             .onPreviewKeyEvent { e ->
+                // Any remote press tells the desk cat the user is active, so it peeks out.
+                if (e.type == KeyEventType.KeyDown) catActivity++
                 // The remote takes the grid back from the finger: scroll follows focus again.
                 // Back leaves it to BackHandler, which needs to know the grid was dragged
                 // (gesture navigation sends Back as a key too).
@@ -901,16 +906,15 @@ fun HomeScreen(
                     }
                 }
 
-                // The desk cat: a small companion on the wallpaper, between the corners and the
-                // shelf. It is focusable so the remote can reach it, but its four directions all
-                // point back to a middle tile, so it never joins the corner <-> shelf navigation
-                // chain (Home toggle / corner-panel focus stay exactly as before).
+                // The desk cat dozes behind the right edge and sneaks out when the remote is used.
+                // It only becomes focusable while out, and its four directions all point back to a
+                // middle tile, so it never joins the corner <-> shelf navigation chain (Home toggle
+                // and corner-panel focus stay exactly as before).
                 if (AerialSettings.showDeskCat) {
                     CatCompanion(
                         modifier = Modifier
                             .diagLayer("cat")
-                            .align(Alignment.Center)
-                            .offset(x = 148.dp)
+                            .align(Alignment.CenterEnd)
                             .focusProperties {
                                 val back = apps.getOrNull(columns / 2) ?: apps.firstOrNull()
                                 if (back != null) {
@@ -921,6 +925,7 @@ fun HomeScreen(
                                 }
                             },
                         enabled = gridEnabled && moving == null && !vm.screensaverVisible && apps.isNotEmpty(),
+                        activityTick = catActivity,
                         focusRequester = catRequester,
                         onFocused = { gained ->
                             if (gained) {

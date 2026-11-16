@@ -2,9 +2,11 @@ package app.orchard.tv.ui.home
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -27,6 +29,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -49,11 +52,15 @@ import kotlin.math.roundToInt
 /** The desk cat's palette: the owner's black cat, rounded off for a TV screen. */
 private object CatLook {
     val Fur = Color(0xFF1B1C1F)
+    val FurLit = Color(0xFF444852)   // upper-left gradient highlight
     val FurSoft = Color(0xFF35373E)
     val FurEdge = Color(0xFF0A0B0D)
+    val Sheen = Color(0xFF9AA3B4)    // faint breathing highlight
+    val Shadow = Color(0x2E000000)   // contact shadow on the wallpaper
     val EarInner = Color(0xFF5A4049)
     val Eye = Color(0xFFE8C64E)
     val EyeRim = Color(0xFF96751C)
+    val EyeHalo = Color(0x4DE8C64E)  // soft amber bloom behind the eye
     val Pupil = Color(0xFF0E0F12)
     val EyeGlint = Color(0xFFFFFFFF)
     val Nose = Color(0xFFCE8E96)
@@ -68,10 +75,10 @@ private val CatLines = listOf(
 )
 
 /**
- * A focusable desk cat drawn with Canvas, living on the wallpaper with no network or state outside
- * this composable. Idle it breathes, blinks and swishes its tail; focus lights a soft halo and
- * perks the ears; OK makes it hop and say a short line in a bubble. Keeps the real cat's amber eyes,
- * upright ears and white whiskers in a chunky shape that reads at TV distance.
+ * A desk cat that dozes behind the right edge of the wallpaper and sneaks out when the remote is
+ * used: [activityTick] is bumped on every key press in Home; the cat slides in, watches for a few
+ * quiet seconds, then retreats. While it is out the remote can land on it and OK gives a hop and a
+ * short line in a bubble. No network, no state outside this composable.
  *
  * [enabled] mirrors Home's gridEnabled, so the cat steps aside under overlays and while an app is
  * being moved. [onFocused] lets Home clear the corner-panel peek when the remote lands here.
@@ -80,12 +87,24 @@ private val CatLines = listOf(
 fun CatCompanion(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    activityTick: Long = 0L,
     focusRequester: FocusRequester? = null,
     onFocused: (Boolean) -> Unit = {},
     size: Dp = 138.dp,
 ) {
     val reduced = LocalReducedMotion.current
     val density = LocalDensity.current
+
+    // Wake on any remote key, doze after a quiet spell — but never while the remote is on us.
+    var awake by remember { mutableStateOf(false) }
+    var heldFocus by remember { mutableStateOf(false) }
+    LaunchedEffect(activityTick) {
+        if (activityTick <= 0L) return@LaunchedEffect
+        awake = true
+        delay(3400)
+        while (heldFocus) delay(240)
+        awake = false
+    }
 
     // Pure phase drivers for the idle motion; frozen at their midpoint when motion is reduced.
     val infinite = rememberInfiniteTransition(label = "cat-idle")
@@ -121,19 +140,31 @@ fun CatCompanion(
         line = null
     }
 
-    val presence by androidx.compose.animation.core.animateFloatAsState(
+    val presence by animateFloatAsState(
         targetValue = if (enabled) 1f else 0f,
         animationSpec = tween(180, easing = Motion.EaseOut), label = "cat-presence",
     )
+    // Asleep: tucked behind the right edge with one ear showing. Awake: slid fully into view.
+    val peekX by animateDpAsState(
+        targetValue = if (awake && enabled) (-10).dp else size * 0.72f,
+        animationSpec = spring(dampingRatio = 0.72f, stiffness = 170f),
+        label = "cat-peek",
+    )
+    // Only focusable while it is actually out, so the remote never lands on an invisible cat.
+    val usable = enabled && awake
 
     Pressable(
         onClick = { pressTick++ },
-        enabled = enabled,
+        enabled = usable,
         focusedScale = 1.08f,
         focusRequester = focusRequester,
         modifier = modifier
             .alpha(presence)
-            .onFocusChanged { onFocused(it.isFocused) },
+            .offset(x = peekX)
+            .onFocusChanged {
+                heldFocus = it.isFocused
+                onFocused(it.isFocused)
+            },
     ) { state ->
         Box(contentAlignment = Alignment.TopCenter) {
             val bubble = line
@@ -210,9 +241,18 @@ private fun DrawScope.drawCat(focused: Boolean, pressed: Boolean, breathe: Float
     translate(size.width / 2f, size.height / 2f) {
         scale(k, k, pivot = Offset.Zero) {
             if (focused) {
-                drawCircle(color = Color(0x1AFFFFFF), radius = 45f, center = Offset.Zero)
-                drawCircle(color = Color(0x77FFFFFF), radius = 45f, center = Offset.Zero, style = Stroke(width = 1.4f))
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        listOf(Color(0x3AFFFFFF), Color(0x00FFFFFF)),
+                        center = Offset.Zero, radius = 52f,
+                    ),
+                    radius = 52f,
+                    center = Offset.Zero,
+                )
+                drawCircle(color = Color(0x88FFFFFF), radius = 45f, center = Offset.Zero, style = Stroke(width = 1.4f))
             }
+            // A soft contact shadow keeps the cat sitting on the picture instead of floating.
+            drawOval(color = CatLook.Shadow, topLeft = Offset(-28f, 42f), size = Size(56f, 10f))
             val squash = 1f + (breathe - 0.5f) * 0.04f
             scale(1f, squash, pivot = Offset.Zero) {
                 // Tail behind the body, swishing.
@@ -225,9 +265,13 @@ private fun DrawScope.drawCat(focused: Boolean, pressed: Boolean, breathe: Float
                     drawPath(tailPath, CatLook.Fur, style = Stroke(width = 9f))
                     drawPath(tailPath, CatLook.FurEdge, style = Stroke(width = 1f))
                 }
-                // Body.
-                ellipse(CatLook.Fur, Offset(0f, 21f), 26f, 25f)
-                ellipse(CatLook.FurSoft, Offset(-8f, 15f), 8f, 13f, 0.30f)
+                // Body with a soft radial fur gradient (lit from upper left).
+                val bodyBrush = Brush.radialGradient(
+                    listOf(CatLook.FurLit, CatLook.Fur, CatLook.FurEdge),
+                    center = Offset(-12f, 12f), radius = 46f,
+                )
+                drawOval(bodyBrush, topLeft = Offset(-26f, -4f), size = Size(52f, 50f))
+                ellipse(CatLook.FurSoft, Offset(-8f, 15f), 8f, 13f, 0.26f)
                 // Collar: a thin band under the chin with a small bell, not a wide arc (which read
                 // as a smile on the dark head).
                 drawArc(
@@ -243,15 +287,20 @@ private fun DrawScope.drawCat(focused: Boolean, pressed: Boolean, breathe: Float
                 val earLi = Path().apply { moveTo(-22f, -20f); lineTo(-23f, -35f); lineTo(-11f, -26f); close() }
                 val earRi = Path().apply { moveTo(22f, -20f); lineTo(23f, -35f); lineTo(11f, -26f); close() }
                 drawPath(earLi, CatLook.EarInner); drawPath(earRi, CatLook.EarInner)
-                // Head.
+                // Head with the same fur gradient, plus a faint sheen that breathes.
+                val headBrush = Brush.radialGradient(
+                    listOf(CatLook.FurLit, CatLook.Fur, CatLook.FurEdge),
+                    center = Offset(-13f, -20f), radius = 50f,
+                )
                 drawCircle(CatLook.FurEdge, radius = 29.5f)
-                drawCircle(CatLook.Fur, radius = 28.5f)
-                ellipse(CatLook.FurSoft, Offset(-9f, -3f), 9f, 7f, 0.28f)
-                // Eyes.
+                drawCircle(headBrush, radius = 28.5f)
+                ellipse(CatLook.Sheen, Offset(-11f + breathe * 3f, -13f), 6f, 9f, 0.12f)
+                // Eyes: an amber bloom behind, then rim, eye, vertical pupil and glints.
                 val eyeCy = -6f
                 for (ex in listOf(-11.5f, 11.5f)) {
                     if (eyeOpen > 0.12f) {
                         val ry = 8.2f * eyeOpen
+                        drawCircle(CatLook.EyeHalo, radius = 13f, center = Offset(ex, eyeCy))
                         drawCircle(CatLook.EyeRim, radius = 8.7f, center = Offset(ex, eyeCy))
                         ellipse(CatLook.Eye, Offset(ex, eyeCy), 7.3f, ry)
                         ellipse(CatLook.Pupil, Offset(ex, eyeCy), 2.0f, ry * 0.84f)
