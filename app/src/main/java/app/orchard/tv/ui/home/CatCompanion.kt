@@ -204,16 +204,19 @@ private fun eyelid(p: Float): Float = when {
 
 private fun DrawScope.drawCat(focused: Boolean, pressed: Boolean, breathe: Float, tail: Float, eyeOpen: Float) {
     val k = size.minDimension / 100f // draw in a local 100x100 space
+    // Every transform must use Offset.Zero as pivot: after translate() the local origin is the
+    // canvas centre, but DrawScope.scale()/rotate() default to the *canvas* centre, which would
+    // fling the body away from the head.
     translate(size.width / 2f, size.height / 2f) {
-        scale(k) {
+        scale(k, k, pivot = Offset.Zero) {
             if (focused) {
-                drawCircle(color = Color(0x2EFFFFFF), radius = 47f)
-                drawCircle(color = Color(0x77FFFFFF), radius = 46f, style = Stroke(width = 1.3f))
+                drawCircle(color = Color(0x1AFFFFFF), radius = 45f, center = Offset.Zero)
+                drawCircle(color = Color(0x77FFFFFF), radius = 45f, center = Offset.Zero, style = Stroke(width = 1.4f))
             }
             val squash = 1f + (breathe - 0.5f) * 0.04f
-            scale(1f, squash) {
+            scale(1f, squash, pivot = Offset.Zero) {
                 // Tail behind the body, swishing.
-                rotate((tail - 0.5f) * 24f) {
+                rotate((tail - 0.5f) * 24f, pivot = Offset.Zero) {
                     val tailPath = Path().apply {
                         moveTo(20f, 20f)
                         cubicTo(42f, 32f, 48f, 4f, 34f, -4f)
@@ -225,10 +228,14 @@ private fun DrawScope.drawCat(focused: Boolean, pressed: Boolean, breathe: Float
                 // Body.
                 ellipse(CatLook.Fur, Offset(0f, 21f), 26f, 25f)
                 ellipse(CatLook.FurSoft, Offset(-8f, 15f), 8f, 13f, 0.30f)
+                // Collar: a thin band under the chin with a small bell, not a wide arc (which read
+                // as a smile on the dark head).
                 drawArc(
-                    CatLook.Collar, 15f, 150f, false,
-                    topLeft = Offset(-20f, 7f), size = Size(40f, 30f), style = Stroke(width = 2.6f),
+                    CatLook.Collar, 20f, 140f, false,
+                    topLeft = Offset(-22f, 10f), size = Size(44f, 32f), style = Stroke(width = 2f),
                 )
+                drawCircle(CatLook.Collar, radius = 3.2f, center = Offset(0f, 24f))
+                drawCircle(CatLook.FurEdge, radius = 1f, center = Offset(0f, 24f))
                 // Ears.
                 val earL = Path().apply { moveTo(-25f, -17f); lineTo(-27f, -41f); lineTo(-6f, -26f); close() }
                 val earR = Path().apply { moveTo(25f, -17f); lineTo(27f, -41f); lineTo(6f, -26f); close() }
