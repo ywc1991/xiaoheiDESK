@@ -292,6 +292,8 @@ fun WallpaperSheet(
                         R.string.ss_kind,
                         when {
                             Wallpapers.screensaver == ScreensaverMode.Videos -> stringResource(R.string.ss_videos_hint)
+                            Wallpapers.screensaver == ScreensaverMode.Gallery -> stringResource(R.string.ss_gallery_hint)
+                            Wallpapers.screensaver == ScreensaverMode.Usb -> stringResource(R.string.ss_usb_hint)
                             Wallpapers.screensaver == ScreensaverMode.System -> stringResource(R.string.ss_system_hint)
                             Wallpapers.screensaverFollows -> stringResource(R.string.ss_follow_hint)
                             AerialSettings.backStartsScreensaver -> stringResource(R.string.ss_back_hint)
@@ -319,7 +321,8 @@ fun WallpaperSheet(
                         )
                     }
                     // The clock screensaver is its clock, and the others show none.
-                    if (Wallpapers.screensaver == ScreensaverMode.Aerial || Wallpapers.screensaver == ScreensaverMode.Photos) Choices(
+                    if (Wallpapers.screensaver == ScreensaverMode.Aerial || Wallpapers.screensaver == ScreensaverMode.Photos ||
+                        Wallpapers.screensaver == ScreensaverMode.Gallery || Wallpapers.screensaver == ScreensaverMode.Usb) Choices(
                         R.string.ss_show_time, stringResource(R.string.ss_show_time_hint), note,
                         listOf(true to R.string.st_on, false to R.string.st_off),
                         AerialSettings.screensaverClock, AerialSettings::chooseScreensaverClock,
@@ -718,6 +721,8 @@ private fun ScreensaverChoice(onStart: () -> Unit) {
         listOf(
             ScreensaverMode.Aerial to R.string.ss_aerial,
             ScreensaverMode.Photos to R.string.ss_photos,
+            ScreensaverMode.Gallery to R.string.ss_gallery,
+            ScreensaverMode.Usb to R.string.ss_usb,
             ScreensaverMode.Clock to R.string.ss_clock,
             ScreensaverMode.Videos to R.string.ss_videos,
             ScreensaverMode.System to R.string.ss_system,

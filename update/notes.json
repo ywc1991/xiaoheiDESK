@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "v": "1.1.6",
+      "zh": [
+        "新增两种和航拍并列的屏保：「名画」和「U盘画作」。",
+        "名画：29 幅世界名画（莫奈、梵高、塞尚、库尔贝等），首次联网下载到电视后离线可看，每幅带中文画名。",
+        "U盘画作：读取你 U 盘里的图片轮播（自动过滤 macOS 隐藏文件）；插好 U 盘并授权文件访问即可。",
+        "两者都支持左右键切换、画框白边，画面留白和字幕自动避让。"
+      ],
+      "en": [
+        "Two new screensavers alongside Aerial: Gallery and USB Art.",
+        "Gallery: 29 museum paintings (Monet, van Gogh, Cezanne, Courbet and more), downloaded once then available offline, each with its title.",
+        "USB Art: slideshows your own pictures from a USB drive (macOS junk files filtered out); plug in and allow file access.",
+        "Both support left/right stepping and the picture frame; captions stay clear of the mat."
+      ]
+    },
+    {
       "v": "1.1.5",
       "zh": [
         "屏保可以变成画框了：画面四周加一圈细白边，让电视看起来像一幅挂画。个性化 → 屏幕保护程序 → 画框白边里可以开关，默认开启。",

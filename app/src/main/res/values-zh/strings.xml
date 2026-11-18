@@ -97,6 +97,10 @@
     <string name="ss_follow_hint">还没选过，跟随壁纸：航拍壁纸配航拍，其他壁纸配照片，并从这张壁纸开始。选一个就固定下来。</string>
     <string name="ss_aerial">航拍</string>
     <string name="ss_photos">照片</string>
+    <string name="ss_gallery">名画</string>
+    <string name="ss_usb">U盘画作</string>
+    <string name="ss_gallery_hint">29 幅世界名画，首次需联网下载到电视，之后离线可看；左右键切换。</string>
+    <string name="ss_usb_hint">读取 U 盘里你自己的画作。插好 U 盘并授权文件访问后，左右键切换。</string>
     <string name="ss_clock">时钟</string>
     <string name="wp_phone_title">用手机或电脑设置</string>
     <string name="wp_phone_body">扫码，或在电脑浏览器打开下面的地址，可以发照片和视频、更换 App 图标、设置天气城市。需要和电视连接同一网络。</string>

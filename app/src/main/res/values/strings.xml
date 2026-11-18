@@ -97,6 +97,10 @@
     <string name="ss_follow_hint">Not chosen yet, so it follows the wallpaper: aerial films with the aerial wallpaper, photos with a picture, starting from that picture. Choose one to keep it.</string>
     <string name="ss_aerial">Aerial</string>
     <string name="ss_photos">Photos</string>
+    <string name="ss_gallery">Gallery</string>
+    <string name="ss_usb">USB Art</string>
+    <string name="ss_gallery_hint">29 museum paintings from the web, cached on the TV. Needs internet the first time; left/right steps through them.</string>
+    <string name="ss_usb_hint">Your own pictures from a USB drive. Plug the drive in and allow file access; left/right steps through them.</string>
     <string name="ss_clock">Clock</string>
     <string name="wp_phone_title">Set up from a phone or computer</string>
     <string name="wp_phone_body">Scan the code, or open the address below in a computer\'s browser, to send photos and videos, change app icons and set the weather\'s city. It must be on the same network as the TV.</string>

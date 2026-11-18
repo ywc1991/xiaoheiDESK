@@ -68,6 +68,8 @@ import androidx.compose.runtime.mutableStateListOf
 import app.orchard.tv.settings.AerialSettings
 import app.orchard.tv.wallpaper.AerialFormats
 import app.orchard.tv.wallpaper.AerialQuality
+import app.orchard.tv.wallpaper.ArtGallery
+import app.orchard.tv.wallpaper.Images
 import app.orchard.tv.wallpaper.Aerials
 import app.orchard.tv.wallpaper.ScreensaverMode
 import app.orchard.tv.wallpaper.WallpaperKind
@@ -125,6 +127,7 @@ fun Screensaver(visible: Boolean, apps: List<AppEntry>, now: LocalDateTime, skip
         val context = LocalContext.current
         var aerialFailed by remember { mutableStateOf(false) }
         var videosFailed by remember { mutableStateOf(false) }
+        var artFailed by remember { mutableStateOf(false) }
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             when (Wallpapers.screensaver) {
                 ScreensaverMode.Aerial -> if (aerialFailed) PhotoSaver(now, skips.steps) else AerialSaver(
@@ -135,6 +138,12 @@ fun Screensaver(visible: Boolean, apps: List<AppEntry>, now: LocalDateTime, skip
                     },
                 )
                 ScreensaverMode.Photos -> PhotoSaver(now, skips.steps, remember { Wallpapers.screensaverPicture() })
+                ScreensaverMode.Gallery -> if (artFailed) PhotoSaver(now, skips.steps) else ArtSaver(
+                    ArtGallery.Source.Online, now, skips.steps, onUnavailable = { artFailed = true },
+                )
+                ScreensaverMode.Usb -> if (artFailed) PhotoSaver(now, skips.steps) else ArtSaver(
+                    ArtGallery.Source.Usb, now, skips.steps, onUnavailable = { artFailed = true },
+                )
                 ScreensaverMode.Clock, ScreensaverMode.System -> ClockSaver(apps, now)
                 ScreensaverMode.Videos -> if (videosFailed) PhotoSaver(now, skips.steps) else VideoSaver(skips.steps, onUnavailable = { videosFailed = true })
             }
@@ -669,6 +678,87 @@ private val DECODER_ERRORS = PlaybackException.ERROR_CODE_DECODER_INIT_FAILED..P
 
 /** How long the time and the place stay up after the screensaver switches. */
 private const val LABELS_SHOW_MS = 5_000L
+
+/**
+ * A slideshow of framed paintings: the museum collection downloaded from the web ([Source.Online])
+ * or the owner's own images on a USB drive ([Source.Usb]). Pictures are decoded off the main thread
+ * and cached to disk, so stepping back and forth is instant and a repeat visit works offline.
+ */
+@Composable
+private fun ArtSaver(
+    source: ArtGallery.Source,
+    now: LocalDateTime,
+    steps: SharedFlow<Int>,
+    onUnavailable: () -> Unit,
+) {
+    val context = LocalContext.current
+    val reduced = LocalReducedMotion.current
+    val art = remember { mutableStateListOf<ArtGallery.Artwork>() }
+    var ready by remember { mutableStateOf(false) }
+    var slide by remember { mutableIntStateOf(0) }
+    var image by remember { mutableStateOf<Pair<Int, ImageBitmap>?>(null) }
+
+    // Load the source once. A failure or an empty library hands over to the photo screensaver.
+    LaunchedEffect(source) {
+        val list = if (source == ArtGallery.Source.Online) ArtGallery.online(context) else ArtGallery.usb()
+        if (list.isEmpty()) {
+            onUnavailable()
+        } else {
+            art.addAll(list)
+            ready = true
+        }
+    }
+
+    // Decode just the slide being shown; keep a small decoded cache so stepping back is instant.
+    val decoded = remember { mutableMapOf<Int, ImageBitmap>() }
+    LaunchedEffect(art.size, slide) {
+        if (!ready || art.isEmpty()) return@LaunchedEffect
+        val idx = slide.mod(art.size)
+        val bmp = decoded[idx] ?: withContext(Dispatchers.Default) {
+            Images.decodeCover(art[idx].file, Wallpapers.screenW, Wallpapers.screenH)?.asImageBitmap()
+        }
+        if (bmp != null) {
+            decoded[idx] = bmp
+            image = idx to bmp
+            // Warm the next one so a manual step or the timer does not show a blank frame.
+            val next = (idx + 1).mod(art.size)
+            if (!decoded.containsKey(next)) {
+                withContext(Dispatchers.Default) {
+                    Images.decodeCover(art[next].file, Wallpapers.screenW, Wallpapers.screenH)?.asImageBitmap()
+                }?.let { decoded[next] = it }
+            }
+        }
+        delay(18_000)
+        slide++
+    }
+    LaunchedEffect(steps) {
+        steps.collect { slide += it }
+    }
+
+    if (image != null) {
+        Dissolve(targetState = image, durationMs = 2000, easing = LinearEasing, label = "art") { current ->
+            if (current != null) {
+                val push = remember { Animatable(0f) }
+                LaunchedEffect(Unit) { if (!reduced) push.animateTo(1f, tween(20_000, easing = LinearEasing)) }
+                val dir = if (current.first.mod(2) == 0) 1f else -1f
+                Canvas(
+                    Modifier.fillMaxSize().graphicsLayer {
+                        val s = 1.04f + 0.08f * push.value
+                        scaleX = s; scaleY = s
+                        translationX = dir * (push.value - 0.5f) * 40.dp.toPx()
+                    },
+                ) {
+                    drawImage(current.second, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()), filterQuality = FilterQuality.Medium)
+                }
+            }
+        }
+    } else {
+        // Loading the first painting. Keep it calm and dark rather than flashing a spinner.
+        Box(Modifier.fillMaxSize())
+    }
+    val cur = art.getOrNull((image?.first ?: 0).mod(art.size.coerceAtLeast(1)))
+    Labels(cur?.let { "${it.title}" + if (it.subtitle.isNotEmpty()) " · ${it.subtitle}" else "" }, now, switchKey = slide)
+}
 
 @Composable
 private fun PhotoSaver(
