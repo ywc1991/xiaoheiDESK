@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.1.5",
+      "zh": [
+        "屏保可以变成画框了：画面四周加一圈细白边，让电视看起来像一幅挂画。个性化 → 屏幕保护程序 → 画框白边里可以开关，默认开启。",
+        "白边对所有屏保都生效（航拍、照片、我的视频、时钟），时间和地名会自动避开白边，不会被遮住；偏好设置关闭后画面照常铺满全屏。"
+      ],
+      "en": [
+        "The screensaver can now look like a framed print: a thin white mat around the picture. Turn it on or off under Personalize → Screensaver → Picture frame; on by default.",
+        "The frame applies to every screensaver (aerial, photos, your videos, clock); the time and place name stay clear of it. Switch it off for an edge-to-edge picture."
+      ]
+    },
+    {
       "v": "1.1.4",
       "zh": [
         "桌面小黑猫换回之前那版手绘形象：圆脑袋、竖耳、大琥珀眼加竖瞳、白胡须、卷尾，肚子上那颗金色小铃铛也回来了。",

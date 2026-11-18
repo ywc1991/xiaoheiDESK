@@ -142,6 +142,9 @@ object AerialSettings {
      */
     var screensaverClock by mutableStateOf(true); private set
 
+    /** A thin white mat around the screensaver picture, so the screen reads as a framed print. */
+    var screensaverFrame by mutableStateOf(true); private set
+
     /** Every app's name under its tile, not only the focused one's (issue #28), the top row's on the glass plate too. */
     private var chosenAllNames by mutableStateOf(false)
 
@@ -217,6 +220,7 @@ object AerialSettings {
         wallpaperAlwaysMoves = prefs.getBoolean("wallpaper_always_moves", false)
         showWeather = prefs.getBoolean("show_weather", true)
         screensaverClock = prefs.getBoolean("screensaver_clock", true)
+        screensaverFrame = prefs.getBoolean("screensaver_frame", true)
         // Before 1.28 this was on or off; on meant whichever sounds Aerial played.
         uiSounds = UiSounds.of(prefs.getString("ui_sounds_kind", null)) ?: when {
             !prefs.getBoolean("ui_sounds", true) -> UiSounds.Off
@@ -336,6 +340,11 @@ object AerialSettings {
     fun chooseScreensaverClock(on: Boolean) {
         screensaverClock = on
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("screensaver_clock", on) }
+    }
+
+    fun chooseScreensaverFrame(on: Boolean) {
+        screensaverFrame = on
+        app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("screensaver_frame", on) }
     }
 
     fun chooseBackStartsScreensaver(on: Boolean) {

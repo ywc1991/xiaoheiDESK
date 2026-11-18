@@ -36,6 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
@@ -136,9 +138,34 @@ fun Screensaver(visible: Boolean, apps: List<AppEntry>, now: LocalDateTime, skip
                 ScreensaverMode.Clock, ScreensaverMode.System -> ClockSaver(apps, now)
                 ScreensaverMode.Videos -> if (videosFailed) PhotoSaver(now, skips.steps) else VideoSaver(skips.steps, onUnavailable = { videosFailed = true })
             }
+            // A thin white mat over the picture's edge, so the screen reads as a framed print (owner).
+            // Drawn above every saver mode and clear of the player, so it cannot disturb decoding.
+            PictureFrame()
         }
     }
 }
+
+/**
+ * The white border around the screensaver picture, like a picture frame's mat. Drawn on top of
+ * every saver; the labels sit well inside it (their margins are larger than [frameWidth]), so no
+ * text is covered. Off via AerialSettings.screensaverFrame.
+ */
+@Composable
+private fun PictureFrame() {
+    if (!AerialSettings.screensaverFrame) return
+    Canvas(Modifier.fillMaxSize().diagLayer("picture-frame")) {
+        val t = frameWidth.toPx()
+        val w = size.width
+        val h = size.height
+        val white = Color(0xFFF7F6F2)
+        drawRect(white, topLeft = Offset(0f, 0f), size = Size(w, t))
+        drawRect(white, topLeft = Offset(0f, h - t), size = Size(w, t))
+        drawRect(white, topLeft = Offset(0f, 0f), size = Size(t, h))
+        drawRect(white, topLeft = Offset(w - t, 0f), size = Size(t, h))
+    }
+}
+
+private val frameWidth = 22.dp
 
 /**
  * Left / right on the remote while the screensaver is up. The host (MainActivity on Home,

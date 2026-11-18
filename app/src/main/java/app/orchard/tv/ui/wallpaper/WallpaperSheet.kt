@@ -324,6 +324,12 @@ fun WallpaperSheet(
                         listOf(true to R.string.st_on, false to R.string.st_off),
                         AerialSettings.screensaverClock, AerialSettings::chooseScreensaverClock,
                     )
+                    // A thin white mat around the picture, like a framed print (all Aerial modes).
+                    if (Wallpapers.screensaver != ScreensaverMode.System) Choices(
+                        R.string.ss_frame, stringResource(R.string.ss_frame_hint), note,
+                        listOf(true to R.string.st_on, false to R.string.st_off),
+                        AerialSettings.screensaverFrame, AerialSettings::chooseScreensaverFrame,
+                    )
                     // The firmware's screensaver starts on the firmware's timer: Aerial's delay
                     // did nothing there, and Xiaomi's 1 minute came before the 5 chosen (issue #675).
                     if (Wallpapers.screensaver == ScreensaverMode.System) SettingRow(R.string.ss_delay, null, note) {
