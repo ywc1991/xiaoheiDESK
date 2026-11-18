@@ -918,10 +918,11 @@ fun HomeScreen(
                             .align(Alignment.CenterEnd)
                             .focusProperties {
                                 val back = apps.getOrNull(columns / 2) ?: apps.firstOrNull()
-                                // Up must reach the top row (weather/settings/date), not bounce
-                                // back into the shelf — that trapped focus and made the corners
-                                // unreachable. Down/left return to the shelf; right stays put.
-                                if (!AerialSettings.largeClock) up = weatherRequester
+                                // Up lands on the top-right settings pill first; weather/date stay
+                                // reachable by moving left from there. Never bounce back into the
+                                // shelf — that trapped focus and made the corners unreachable.
+                                // Down/left return to the shelf; right stays put.
+                                if (!AerialSettings.largeClock) up = pillRequester
                                 if (back != null) {
                                     if (AerialSettings.largeClock) up = requester(back.key)
                                     down = requester(back.key)

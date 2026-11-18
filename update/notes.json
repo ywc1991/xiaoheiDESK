@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.1.7",
+      "zh": [
+        "修正桌面小猫的焦点：在主页按遥控器「上」键，焦点现在先落到右上角的「设置」上，再往左可以依次到天气和日历。",
+        "其余焦点、桌面和小猫的其他行为不变。"
+      ],
+      "en": [
+        "Fixed the desk cat's focus: pressing Up on the home screen now lands first on the top-right Settings pill, from which Weather and Date are one step left.",
+        "All other focus and cat behaviour is unchanged."
+      ]
+    },
+    {
       "v": "1.1.6",
       "zh": [
         "新增两种和航拍并列的屏保：「名画」和「U盘画作」。",
