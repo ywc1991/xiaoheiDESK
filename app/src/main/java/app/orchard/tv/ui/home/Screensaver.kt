@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
@@ -187,7 +188,7 @@ private val frameColor = Color(0xFFF7F6F2)
 private val frameInk = Color(0xFF33312C).copy(alpha = 0.86f)
 
 /** Room kept under a painting shown whole, for its name: two lines and a little air. */
-private val CAPTION_STRIP = 92.dp
+private val CAPTION_STRIP = 72.dp
 /** Between the painting's bottom edge and its name. */
 private val CAPTION_GAP = 14.dp
 
@@ -796,6 +797,8 @@ private fun ArtSaver(
 
     val shown = image
     Box(Modifier.fillMaxSize()) {
+        // A picture shown whole hangs on a wall rather than floating in the dark (owner, 1.1.15).
+        if (fitWhole) WallBackdrop()
         if (shown != null) {
             Dissolve(targetState = shown, durationMs = 2000, easing = LinearEasing, label = "art") { current ->
                 if (current != null) {
@@ -814,10 +817,8 @@ private fun ArtSaver(
                             }
                         },
                     ) {
-                        // Letterbox bars from the fit decode are transparent; paint black behind them.
-                        if (fitWhole) drawRect(Color.Black)
-                        // A fitted picture is drawn inside the mat and above the caption's strip, so
-                        // the frame shows on all four sides and the name sits under the painting.
+                        // The wall shows through the bars either side of a picture unlike the screen,
+                        // so nothing is painted behind it.
                         val src = current.second.bmp
                         drawImage(
                             image = src,
@@ -883,10 +884,46 @@ private fun artCaptionTop(pic: ArtImage, insetPx: Float): Dp? {
 private class ArtImage(val bmp: ImageBitmap, val content: android.util.Size?)
 
 /**
- * The white mount around the painting. It is as wide as the screen for a picture wider than it is
- * tall, and as tall as the screen for a taller one, centred in the other direction; the mount
- * between the picture and the frame takes up whatever is left, so the frame always spans the screen
- * in the picture's own direction (owner, 1.1.14). The strip the name sits in is mount too.
+ * The wall a framed picture hangs on: warm plaster, the room's light pooling behind the picture and
+ * the corners falling away, so the eye stays on the art. Drawn for pictures shown whole, which are
+ * the ones that leave the screen's edges free; nothing is added behind a picture that fills it.
+ */
+@Composable
+private fun WallBackdrop() {
+    Canvas(Modifier.fillMaxSize().diagLayer("wall")) {
+        drawRect(
+            Brush.verticalGradient(
+                0f to Color(0xFF4A4642),
+                0.55f to Color(0xFF3B3835),
+                1f to Color(0xFF2C2A28),
+                startY = 0f,
+                endY = size.height,
+            ),
+        )
+        // A pool of light on the plaster behind the picture.
+        drawRect(
+            Brush.radialGradient(
+                colors = listOf(Color(0x14FFF4E4), Color(0x00FFF4E4)),
+                center = Offset(size.width * 0.5f, size.height * 0.42f),
+                radius = size.maxDimension * 0.55f,
+            ),
+        )
+        // The corners fall away: a room, not a flat colour.
+        drawRect(
+            Brush.radialGradient(
+                colors = listOf(Color(0x00000000), Color(0x33000000), Color(0x5C000000)),
+                center = Offset(size.width * 0.5f, size.height * 0.44f),
+                radius = size.maxDimension * 0.78f,
+            ),
+        )
+    }
+}
+
+/**
+ * The white frame round the painting: the same width on all four sides, taking in the picture and
+ * the strip its name is printed in. The picture is fitted so the frame reaches the screen's own
+ * width for a wide picture and its own height for a tall one, and the frame is centred the other
+ * way (owner, 1.1.15): the frame's width never changes to fill the screen.
  */
 @Composable
 private fun ArtMat(pic: ArtImage, inset: Float, reserve: Float) {
@@ -900,12 +937,24 @@ private fun ArtMat(pic: ArtImage, inset: Float, reserve: Float) {
             val ch = content.height * f
             val l = (size.width - cw) / 2f
             val t = inset + (size.height - inset * 2 - reserve - ch) / 2f
-            // The frame's own rectangle, and the mount filling it round the picture.
-            val wide = cw >= ch
-            val frameW = if (wide) size.width else cw + m * 2
-            val frameH = if (wide) (ch + reserve + m * 2).coerceAtMost(size.height) else size.height
+            // The frame round picture and strip, centred: a band of the same width on every side.
+            val frameW = cw + m * 2
+            val frameH = (ch + reserve + m * 2).coerceAtMost(size.height)
             val fx = (size.width - frameW) / 2f
             val fy = (size.height - frameH) / 2f
+            // The frame hangs on the wall and throws a little shadow down it, which is what makes it
+            // read as an object rather than a rectangle of paint.
+            val sh = 30.dp.toPx()
+            drawRect(
+                Brush.verticalGradient(listOf(Color(0x59000000), Color(0x00000000)), startY = fy + frameH, endY = fy + frameH + sh),
+                topLeft = Offset(fx - sh, fy + frameH),
+                size = Size(frameW + sh * 2, sh),
+            )
+            drawRect(
+                Brush.verticalGradient(listOf(Color(0x1E000000), Color(0x00000000)), startY = fy - sh * 0.5f, endY = fy),
+                topLeft = Offset(fx - sh * 0.5f, fy - sh * 0.5f),
+                size = Size(frameW + sh, sh * 0.5f),
+            )
             drawRect(frameColor, Offset(fx, fy), Size(frameW, t - fy))
             drawRect(frameColor, Offset(fx, t + ch), Size(frameW, fy + frameH - (t + ch)))
             drawRect(frameColor, Offset(fx, t), Size(l - fx, ch))

@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "v": "1.1.15",
+      "zh": [
+        "白色画框的边宽恢复固定：四边都是 22dp，不再为了铺满屏幕而加宽。",
+        "画框（含画作正下方的名字卡纸）在一个方向上顶满电视：横画顶满高度、宽幅画顶满宽度，另一个方向居中显示。",
+        "新增挂画背景墙：「相框适应画作」时画作挂在暖灰色的墙面上，画框带一层轻投影，不再是纯黑背景。"
+      ],
+      "en": [
+        "The white frame is a fixed 22dp on all four sides again, no longer widened to fill the screen.",
+        "The frame (with the strip the name is printed in) reaches the screen's edge in one direction — height for a tall picture, width for a very wide one — and is centred in the other.",
+        "New gallery wall: in Frame to Art the picture now hangs on a warm grey wall with a soft shadow under the frame, instead of on pure black."
+      ]
+    },
+    {
       "v": "1.1.14",
       "zh": [
         "画框改为铺满电视的一个方向：横画时画框与电视同宽、上下居中；竖画时画框与电视同高、左右居中。画作四周的白色卡纸（留白）随画作比例自动加宽。",
