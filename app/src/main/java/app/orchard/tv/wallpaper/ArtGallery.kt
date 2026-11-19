@@ -129,7 +129,9 @@ object ArtGallery {
                     .removeSuffix(" Google Art Project")
                     .trim()
                     .ifEmpty { f.name }
-                out += Artwork(f, title, "U 盘 · USB")
+                // No source tag in the caption: the owner asked that "U盘 / USB" not appear
+                // in the screen-saver label. Just show the artwork's own name.
+                out += Artwork(f, title, "")
             }
             DiagLog.i("$TAG usb ready: ${out.size}")
         } catch (e: Exception) {

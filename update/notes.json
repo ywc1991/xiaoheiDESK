@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "v": "1.1.11",
+      "zh": [
+        "「U盘画作」屏保左下角的字幕不再显示「U盘 / USB」字样，只显示画作本身的名字。"
+      ],
+      "en": [
+        "The USB Art screensaver caption no longer shows U-disk / USB; it now shows only the artwork's own name."
+      ]
+    },
+    {
       "v": "1.1.10",
       "zh": [
         "「名画」和「U盘画作」的「画作显示」选项改名为「填充」和「相框适应画作」：填充会裁掉边缘铺满屏幕，相框适应画作让整幅画完整显示、比例不同处留黑边。"
