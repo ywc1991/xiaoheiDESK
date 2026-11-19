@@ -45,11 +45,14 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import app.orchard.tv.MainActivity
 import app.orchard.tv.system.SystemScreensaver
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -179,6 +182,14 @@ private val frameWidth = 22.dp
 
 /** The mat's colour: warm off-white, as a paper mount is, not the screen's pure white. */
 private val frameColor = Color(0xFFF7F6F2)
+
+/** The name printed on the mount: a warm near-black, as a gallery label's ink. */
+private val frameInk = Color(0xFF33312C).copy(alpha = 0.86f)
+
+/** Room kept under a painting shown whole, for its name: two lines and a little air. */
+private val CAPTION_STRIP = 92.dp
+/** Between the painting's bottom edge and its name. */
+private val CAPTION_GAP = 14.dp
 
 /**
  * Left / right on the remote while the screensaver is up. The host (MainActivity on Home,
@@ -345,6 +356,15 @@ private fun Labels(
     switchKey: Any? = null,
     /** A shade under the labels: over photos. The aerial films are left as they are, as on Home. */
     shade: Boolean = true,
+    /**
+     * When set, the caption is centred horizontally this far below the screen's top: on a framed
+     * painting it sits under the painting itself, as a label under a print does.
+     */
+    captionTop: Dp? = null,
+    /** Longest the centred caption may run, a share of the screen for a wide painting. */
+    captionMaxWidth: Dp = 620.dp,
+    /** The caption's ink: white over a picture, dark when it is printed on a white mount. */
+    captionColor: Color = Color.White.copy(alpha = 0.92f),
 ) {
     // Fades in where Home's own clock has moved to, as the photos cover it.
     val time by animateFloatAsState(if (showTime) 1f else 0f, tween(2000), label = "time")
@@ -395,14 +415,18 @@ private fun Labels(
             targetState = caption.orEmpty(),
             // One after the other: two names fading across each other in the same place smeared.
             transitionSpec = { fadeIn(tween(600, delayMillis = 400, easing = Motion.EaseOut)) togetherWith fadeOut(tween(400, easing = Motion.EaseOut)) },
-            modifier = Modifier.align(Alignment.BottomStart).padding(start = 56.dp, bottom = 44.dp)
+            modifier = (if (captionTop != null) Modifier.align(Alignment.TopCenter).padding(top = captionTop) else
+                Modifier.align(Alignment.BottomStart).padding(start = 56.dp, bottom = 44.dp))
                 .graphicsLayer { translationX = drift.x.toPx(); translationY = -drift.y.toPx() },
             label = "caption",
         ) { text ->
             BasicText(
                 text, maxLines = 2, overflow = TextOverflow.Ellipsis,
-                style = Type.Title.copy(color = Color.White.copy(alpha = 0.92f)),
-                modifier = Modifier.widthIn(max = 620.dp),
+                style = Type.Title.copy(
+                    color = captionColor,
+                    textAlign = if (captionTop != null) TextAlign.Center else TextAlign.Start,
+                ),
+                modifier = Modifier.widthIn(max = if (captionTop != null) captionMaxWidth else 620.dp),
             )
         }
     }
@@ -700,9 +724,18 @@ private fun ArtSaver(
     // Show paintings whole (letterboxed) or cropped to fill, per the owner's Pictures setting.
     val fitWhole = AerialSettings.artFitWhole
     val slideMs = AerialSettings.artSlideSeconds * 1000L
+    // The mat's width, taken out of the picture so the frame shows on all four sides: a picture
+    // fitted to the full height would otherwise put the frame's top and bottom bands off-screen.
+    val framed = AerialSettings.screensaverFrame
+    val density = LocalDensity.current
+    val insetPx = if (framed && fitWhole) with(density) { frameWidth.toPx() } else 0f
+    // A strip under the picture for its name, which sits centred under the painting (owner).
+    val reservePx = if (fitWhole) with(density) { CAPTION_STRIP.toPx() } else 0f
+    val artW = (Wallpapers.screenW - insetPx * 2).roundToInt().coerceAtLeast(1)
+    val artH = (Wallpapers.screenH - insetPx * 2 - reservePx).roundToInt().coerceAtLeast(1)
     suspend fun decodeArt(file: java.io.File): ArtImage? = withContext(Dispatchers.Default) {
         if (fitWhole) {
-            Images.decodeFitMeasured(file, Wallpapers.screenW, Wallpapers.screenH)?.let { (bmp, content) ->
+            Images.decodeFitMeasured(file, artW, artH)?.let { (bmp, content) ->
                 ArtImage(bmp.asImageBitmap(), content)
             }
         } else {
@@ -727,9 +760,9 @@ private fun ArtSaver(
 
     // Decode the slide being shown, keeping only it and the next: a full screen of paintings held
     // as bitmaps would be hundreds of megabytes.
-    val decoded = remember { mutableMapOf<Int, ArtImage>() }
+    val decoded = remember(fitWhole, framed) { mutableMapOf<Int, ArtImage>() }
     var decodeMisses by remember { mutableIntStateOf(0) }
-    LaunchedEffect(art.size, slide) {
+    LaunchedEffect(art.size, slide, fitWhole, framed) {
         if (!ready || art.isEmpty()) return@LaunchedEffect
         val idx = slide.mod(art.size)
         val pic = decoded[idx] ?: decodeArt(art[idx].file)
@@ -783,7 +816,20 @@ private fun ArtSaver(
                     ) {
                         // Letterbox bars from the fit decode are transparent; paint black behind them.
                         if (fitWhole) drawRect(Color.Black)
-                        drawImage(current.second.bmp, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()), filterQuality = FilterQuality.Medium)
+                        // A fitted picture is drawn inside the mat and above the caption's strip, so
+                        // the frame shows on all four sides and the name sits under the painting.
+                        val src = current.second.bmp
+                        drawImage(
+                            image = src,
+                            srcOffset = IntOffset.Zero,
+                            srcSize = IntSize(src.width, src.height),
+                            dstOffset = IntOffset(insetPx.roundToInt(), insetPx.roundToInt()),
+                            dstSize = IntSize(
+                                (size.width - insetPx * 2).roundToInt(),
+                                (size.height - insetPx * 2 - reservePx).roundToInt(),
+                            ),
+                            filterQuality = FilterQuality.Medium,
+                        )
                     }
                 }
             }
@@ -792,35 +838,78 @@ private fun ArtSaver(
             Box(Modifier.fillMaxSize())
         }
         // The mat hugs the painting itself rather than the screen's edge (owner, 1.1.12).
-        if (AerialSettings.screensaverFrame && shown != null) ArtMat(shown.second)
+        if (framed && shown != null) ArtMat(shown.second, insetPx, reservePx)
     }
     val cur = art.getOrNull((shown?.first ?: 0).mod(art.size.coerceAtLeast(1)))
-    Labels(cur?.let { "${it.title}" + if (it.subtitle.isNotEmpty()) " · ${it.subtitle}" else "" }, now, switchKey = slide)
+    // Under a framed painting the name goes under the painting itself, centred on it (owner), and
+    // printed in ink on the mount rather than white on black.
+    val captionTop = shown?.second?.let { artCaptionTop(it, insetPx) }
+    val onMount = framed && captionTop != null
+    // Printed on the mount, the name may run no wider than the picture above it, or it would spill
+    // off the white onto the black either side of a narrow painting.
+    val captionMax = shown?.second?.let { pic ->
+        val c = pic.content
+        if (c == null || pic.bmp.width <= 0) null else with(density) {
+            (c.width * (Wallpapers.screenW - insetPx * 2) / pic.bmp.width - frameWidth.toPx())
+                .toDp().coerceAtLeast(240.dp)
+        }
+    }
+    Labels(
+        cur?.let { "${it.title}" + if (it.subtitle.isNotEmpty()) " · ${it.subtitle}" else "" },
+        now, switchKey = slide, captionTop = captionTop,
+        captionColor = if (onMount) frameInk else Color.White.copy(alpha = 0.92f),
+        shade = !onMount,
+        captionMaxWidth = if (onMount) captionMax ?: 620.dp else 620.dp,
+    )
+}
+
+/**
+ * Where the name of a painting shown whole goes: centred, just below the picture's own bottom
+ * edge. [ArtImage.content] is the size the picture fills in its canvas, which is centred in the
+ * area above the caption's strip. Null for a picture that fills the screen, whose name stays
+ * where it always was.
+ */
+@Composable
+private fun artCaptionTop(pic: ArtImage, insetPx: Float): Dp? {
+    val content = pic.content ?: return null
+    val density = LocalDensity.current
+    val reservePx = with(density) { CAPTION_STRIP.toPx() }
+    val areaH = Wallpapers.screenH - insetPx * 2 - reservePx
+    val bottom = insetPx + (areaH - content.height) / 2f + content.height
+    return with(density) { (bottom + CAPTION_GAP.toPx()).toDp() }
 }
 
 /** A decoded painting, plus the size its content fills inside the screen, for a mat that hugs it. */
 private class ArtImage(val bmp: ImageBitmap, val content: android.util.Size?)
 
 /**
- * A thin white mat around the painting: round the picture's own edge when it is shown whole, so
- * the bars of a picture unlike the screen do not turn into a white border on the screen; on the
- * screen's edge when the picture fills it.
+ * The white mount around the painting. It is as wide as the screen for a picture wider than it is
+ * tall, and as tall as the screen for a taller one, centred in the other direction; the mount
+ * between the picture and the frame takes up whatever is left, so the frame always spans the screen
+ * in the picture's own direction (owner, 1.1.14). The strip the name sits in is mount too.
  */
 @Composable
-private fun ArtMat(pic: ArtImage) {
+private fun ArtMat(pic: ArtImage, inset: Float, reserve: Float) {
     Canvas(Modifier.fillMaxSize().diagLayer("art-mat")) {
         val m = frameWidth.toPx()
         val content = pic.content
         if (content != null && pic.bmp.width > 0) {
-            val f = size.width / pic.bmp.width
+            // Where the picture itself lands: centred, and clear of the strip below it.
+            val f = if (inset > 0f) (size.width - inset * 2) / pic.bmp.width else size.width / pic.bmp.width
             val cw = content.width * f
             val ch = content.height * f
             val l = (size.width - cw) / 2f
-            val t = (size.height - ch) / 2f
-            drawRect(frameColor, Offset(l - m, t - m), Size(cw + m * 2, m))
-            drawRect(frameColor, Offset(l - m, t + ch), Size(cw + m * 2, m))
-            drawRect(frameColor, Offset(l - m, t), Size(m, ch))
-            drawRect(frameColor, Offset(l + cw, t), Size(m, ch))
+            val t = inset + (size.height - inset * 2 - reserve - ch) / 2f
+            // The frame's own rectangle, and the mount filling it round the picture.
+            val wide = cw >= ch
+            val frameW = if (wide) size.width else cw + m * 2
+            val frameH = if (wide) (ch + reserve + m * 2).coerceAtMost(size.height) else size.height
+            val fx = (size.width - frameW) / 2f
+            val fy = (size.height - frameH) / 2f
+            drawRect(frameColor, Offset(fx, fy), Size(frameW, t - fy))
+            drawRect(frameColor, Offset(fx, t + ch), Size(frameW, fy + frameH - (t + ch)))
+            drawRect(frameColor, Offset(fx, t), Size(l - fx, ch))
+            drawRect(frameColor, Offset(l + cw, t), Size(fx + frameW - (l + cw), ch))
         } else {
             drawRect(frameColor, Offset(0f, 0f), Size(size.width, m))
             drawRect(frameColor, Offset(0f, size.height - m), Size(size.width, m))

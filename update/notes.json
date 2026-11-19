@@ -1,6 +1,28 @@
 {
   "releases": [
     {
+      "v": "1.1.14",
+      "zh": [
+        "画框改为铺满电视的一个方向：横画时画框与电视同宽、上下居中；竖画时画框与电视同高、左右居中。画作四周的白色卡纸（留白）随画作比例自动加宽。",
+        "「相框适应画作」时画名印在画作正下方的白色卡纸上（深色字），不再落在黑底上。"
+      ],
+      "en": [
+        "The frame now spans the screen in the picture's own direction: a wide picture gets a frame as wide as the screen, centred vertically; a tall one gets a frame as tall as the screen, centred horizontally. The white mount grows to suit the picture.",
+        "In Frame to Art the painting's name is printed in ink on the white mount just under the painting."
+      ]
+    },
+    {
+      "v": "1.1.13",
+      "zh": [
+        "修复屏保白框：画作整体向内收一圈，「相框适应画作」时白框上、下、左、右四条边都能看到，不再只出现左右两条。",
+        "「相框适应画作」时，画作的名字改为显示在画的正下方、居中；其他屏保模式的名字位置不变。"
+      ],
+      "en": [
+        "Fixed the screensaver frame: the picture now sits inside the mat, so Frame to Art shows the white border on all four sides instead of only left and right.",
+        "In Frame to Art the painting's name now sits centred directly under the painting; the name stays where it was in every other screensaver mode."
+      ]
+    },
+    {
       "v": "1.1.12",
       "zh": [
         "屏保不再显示左上角的时间，画面只留画作本身。需要时可在 个性化 → 屏幕保护程序 → 时间 里重新打开。",
