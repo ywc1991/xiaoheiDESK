@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "v": "1.1.12",
+      "zh": [
+        "屏保不再显示左上角的时间，画面只留画作本身。需要时可在 个性化 → 屏幕保护程序 → 时间 里重新打开。",
+        "修复「相框适应画作」：白色画框改为紧贴画作边缘，不再画在屏幕最外圈。",
+        "新增「切换间隔」：15 / 30 / 60 / 120 秒，默认 30 秒；照片、名画和 U 盘画作都按这个时间切换。",
+        "修复个别图片无法解码时会删除 U 盘原图的问题：现在只跳过那张，不动你的文件。"
+      ],
+      "en": [
+        "The screensaver no longer shows the time in the corner; the picture is left to itself. Turn it back on under Personalize → Screen saver → Time.",
+        "Fixed Frame to Art: the white frame now hugs the painting's own edge instead of being drawn round the screen.",
+        "New Slide interval: 15 / 30 / 60 / 120 seconds, 30 by default; photos, gallery and USB pictures all follow it.",
+        "Fixed a bug where a picture that would not decode could delete the original file on the USB drive; it is now skipped and left alone."
+      ]
+    },
+    {
       "v": "1.1.11",
       "zh": [
         "「U盘画作」屏保左下角的字幕不再显示「U盘 / USB」字样，只显示画作本身的名字。"

@@ -149,7 +149,8 @@ fun Screensaver(visible: Boolean, apps: List<AppEntry>, now: LocalDateTime, skip
             }
             // A thin white mat over the picture's edge, so the screen reads as a framed print (owner).
             // Drawn above every saver mode and clear of the player, so it cannot disturb decoding.
-            PictureFrame()
+            // The art saver draws its own, hugging the painting, so it is left out here.
+            if (Wallpapers.screensaver != ScreensaverMode.Gallery && Wallpapers.screensaver != ScreensaverMode.Usb) PictureFrame()
         }
     }
 }
@@ -166,7 +167,7 @@ private fun PictureFrame() {
         val t = frameWidth.toPx()
         val w = size.width
         val h = size.height
-        val white = Color(0xFFF7F6F2)
+        val white = frameColor
         drawRect(white, topLeft = Offset(0f, 0f), size = Size(w, t))
         drawRect(white, topLeft = Offset(0f, h - t), size = Size(w, t))
         drawRect(white, topLeft = Offset(0f, 0f), size = Size(t, h))
@@ -175,6 +176,9 @@ private fun PictureFrame() {
 }
 
 private val frameWidth = 22.dp
+
+/** The mat's colour: warm off-white, as a paper mount is, not the screen's pure white. */
+private val frameColor = Color(0xFFF7F6F2)
 
 /**
  * Left / right on the remote while the screensaver is up. The host (MainActivity on Home,
@@ -695,14 +699,20 @@ private fun ArtSaver(
     val reduced = LocalReducedMotion.current
     // Show paintings whole (letterboxed) or cropped to fill, per the owner's Pictures setting.
     val fitWhole = AerialSettings.artFitWhole
-    suspend fun decodeArt(file: java.io.File) = withContext(Dispatchers.Default) {
-        (if (fitWhole) Images.decodeFit(file, Wallpapers.screenW, Wallpapers.screenH)
-         else Images.decodeCover(file, Wallpapers.screenW, Wallpapers.screenH))?.asImageBitmap()
+    val slideMs = AerialSettings.artSlideSeconds * 1000L
+    suspend fun decodeArt(file: java.io.File): ArtImage? = withContext(Dispatchers.Default) {
+        if (fitWhole) {
+            Images.decodeFitMeasured(file, Wallpapers.screenW, Wallpapers.screenH)?.let { (bmp, content) ->
+                ArtImage(bmp.asImageBitmap(), content)
+            }
+        } else {
+            Images.decodeCover(file, Wallpapers.screenW, Wallpapers.screenH)?.let { ArtImage(it.asImageBitmap(), null) }
+        }
     }
     val art = remember { mutableStateListOf<ArtGallery.Artwork>() }
     var ready by remember { mutableStateOf(false) }
     var slide by remember { mutableIntStateOf(0) }
-    var image by remember { mutableStateOf<Pair<Int, ImageBitmap>?>(null) }
+    var image by remember { mutableStateOf<Pair<Int, ArtImage>?>(null) }
 
     // Load the source once. A failure or an empty library hands over to the photo screensaver.
     LaunchedEffect(source) {
@@ -715,28 +725,29 @@ private fun ArtSaver(
         }
     }
 
-    // Decode just the slide being shown; keep a small decoded cache so stepping back is instant.
-    val decoded = remember { mutableMapOf<Int, ImageBitmap>() }
+    // Decode the slide being shown, keeping only it and the next: a full screen of paintings held
+    // as bitmaps would be hundreds of megabytes.
+    val decoded = remember { mutableMapOf<Int, ArtImage>() }
     var decodeMisses by remember { mutableIntStateOf(0) }
     LaunchedEffect(art.size, slide) {
         if (!ready || art.isEmpty()) return@LaunchedEffect
         val idx = slide.mod(art.size)
-        val bmp = decoded[idx] ?: decodeArt(art[idx].file)
-        if (bmp != null) {
-            decoded[idx] = bmp
-            image = idx to bmp
+        val pic = decoded[idx] ?: decodeArt(art[idx].file)
+        if (pic != null) {
+            decoded[idx] = pic
+            image = idx to pic
             decodeMisses = 0
             // Warm the next one so a manual step or the timer does not show a blank frame.
             val next = (idx + 1).mod(art.size)
             if (!decoded.containsKey(next)) decodeArt(art[next].file)?.let { decoded[next] = it }
-            delay(18_000)
+            decoded.keys.retainAll(setOf(idx, next))
+            delay(slideMs)
             slide++
         } else {
-            // A picture failed to decode. Never hold the screen black for the full 18 s: drop the
-            // bad cache, step on at once, and only hand over after several in a row (a whole broken
-            // library) so the owner sees the next painting rather than a stall.
+            // A picture that will not decode: never hold the screen black for the whole interval,
+            // and never touch the owner's file (a USB picture is theirs). Step on at once, and
+            // hand over only after a run of misses (a whole broken library).
             decoded.remove(idx)
-            art[idx].file.delete()
             val misses = ++decodeMisses
             if (misses >= art.size.coerceAtMost(4)) {
                 onUnavailable()
@@ -750,36 +761,73 @@ private fun ArtSaver(
         steps.collect { slide += it }
     }
 
-    if (image != null) {
-        Dissolve(targetState = image, durationMs = 2000, easing = LinearEasing, label = "art") { current ->
-            if (current != null) {
-                val push = remember { Animatable(0f) }
-                LaunchedEffect(Unit) { if (!reduced && !fitWhole) push.animateTo(1f, tween(20_000, easing = LinearEasing)) }
-                val dir = if (current.first.mod(2) == 0) 1f else -1f
-                Canvas(
-                    Modifier.fillMaxSize().graphicsLayer {
-                        if (fitWhole) {
-                            // A fitted picture is already whole; any zoom would clip its edges again.
-                            scaleX = 1f; scaleY = 1f; translationX = 0f
-                        } else {
-                            val s = 1.04f + 0.08f * push.value
-                            scaleX = s; scaleY = s
-                            translationX = dir * (push.value - 0.5f) * 40.dp.toPx()
-                        }
-                    },
-                ) {
-                    // Letterbox bars from decodeFit are transparent; paint black behind them.
-                    if (fitWhole) drawRect(Color.Black)
-                    drawImage(current.second, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()), filterQuality = FilterQuality.Medium)
+    val shown = image
+    Box(Modifier.fillMaxSize()) {
+        if (shown != null) {
+            Dissolve(targetState = shown, durationMs = 2000, easing = LinearEasing, label = "art") { current ->
+                if (current != null) {
+                    val push = remember { Animatable(0f) }
+                    LaunchedEffect(Unit) { if (!reduced && !fitWhole) push.animateTo(1f, tween(20_000, easing = LinearEasing)) }
+                    val dir = if (current.first.mod(2) == 0) 1f else -1f
+                    Canvas(
+                        Modifier.fillMaxSize().graphicsLayer {
+                            if (fitWhole) {
+                                // A fitted picture is already whole; any zoom would clip its edges again.
+                                scaleX = 1f; scaleY = 1f; translationX = 0f
+                            } else {
+                                val s = 1.04f + 0.08f * push.value
+                                scaleX = s; scaleY = s
+                                translationX = dir * (push.value - 0.5f) * 40.dp.toPx()
+                            }
+                        },
+                    ) {
+                        // Letterbox bars from the fit decode are transparent; paint black behind them.
+                        if (fitWhole) drawRect(Color.Black)
+                        drawImage(current.second.bmp, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()), filterQuality = FilterQuality.Medium)
+                    }
                 }
             }
+        } else {
+            // Loading the first painting. Keep it calm and dark rather than flashing a spinner.
+            Box(Modifier.fillMaxSize())
         }
-    } else {
-        // Loading the first painting. Keep it calm and dark rather than flashing a spinner.
-        Box(Modifier.fillMaxSize())
+        // The mat hugs the painting itself rather than the screen's edge (owner, 1.1.12).
+        if (AerialSettings.screensaverFrame && shown != null) ArtMat(shown.second)
     }
-    val cur = art.getOrNull((image?.first ?: 0).mod(art.size.coerceAtLeast(1)))
+    val cur = art.getOrNull((shown?.first ?: 0).mod(art.size.coerceAtLeast(1)))
     Labels(cur?.let { "${it.title}" + if (it.subtitle.isNotEmpty()) " · ${it.subtitle}" else "" }, now, switchKey = slide)
+}
+
+/** A decoded painting, plus the size its content fills inside the screen, for a mat that hugs it. */
+private class ArtImage(val bmp: ImageBitmap, val content: android.util.Size?)
+
+/**
+ * A thin white mat around the painting: round the picture's own edge when it is shown whole, so
+ * the bars of a picture unlike the screen do not turn into a white border on the screen; on the
+ * screen's edge when the picture fills it.
+ */
+@Composable
+private fun ArtMat(pic: ArtImage) {
+    Canvas(Modifier.fillMaxSize().diagLayer("art-mat")) {
+        val m = frameWidth.toPx()
+        val content = pic.content
+        if (content != null && pic.bmp.width > 0) {
+            val f = size.width / pic.bmp.width
+            val cw = content.width * f
+            val ch = content.height * f
+            val l = (size.width - cw) / 2f
+            val t = (size.height - ch) / 2f
+            drawRect(frameColor, Offset(l - m, t - m), Size(cw + m * 2, m))
+            drawRect(frameColor, Offset(l - m, t + ch), Size(cw + m * 2, m))
+            drawRect(frameColor, Offset(l - m, t), Size(m, ch))
+            drawRect(frameColor, Offset(l + cw, t), Size(m, ch))
+        } else {
+            drawRect(frameColor, Offset(0f, 0f), Size(size.width, m))
+            drawRect(frameColor, Offset(0f, size.height - m), Size(size.width, m))
+            drawRect(frameColor, Offset(0f, 0f), Size(m, size.height))
+            drawRect(frameColor, Offset(size.width - m, 0f), Size(m, size.height))
+        }
+    }
 }
 
 @Composable
@@ -810,7 +858,7 @@ private fun PhotoSaver(
             val bmp = withContext(Dispatchers.Default) { Wallpapers.picture(wp, Wallpapers.screenW, Wallpapers.screenH)?.asImageBitmap() }
             if (bmp != null) image = slide to bmp
         }
-        delay(18_000)
+        delay(AerialSettings.artSlideSeconds * 1000L)
         slide++
     }
     // Once a photo has crossfaded in over Home's picture, Home can stop drawing it.

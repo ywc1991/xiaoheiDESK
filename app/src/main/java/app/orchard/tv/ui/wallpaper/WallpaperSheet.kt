@@ -320,11 +320,11 @@ fun WallpaperSheet(
                             AerialSettings.aerialQuality, AerialSettings::chooseAerialQuality,
                         )
                     }
-                    // The clock screensaver is its clock, and the others show none.
+                    // Off by default since 1.1.12: the picture is left to itself (owner).
                     if (Wallpapers.screensaver == ScreensaverMode.Aerial || Wallpapers.screensaver == ScreensaverMode.Photos ||
                         Wallpapers.screensaver == ScreensaverMode.Gallery || Wallpapers.screensaver == ScreensaverMode.Usb) Choices(
                         R.string.ss_show_time, stringResource(R.string.ss_show_time_hint), note,
-                        listOf(true to R.string.st_on, false to R.string.st_off),
+                        listOf(false to R.string.st_off, true to R.string.st_on),
                         AerialSettings.screensaverClock, AerialSettings::chooseScreensaverClock,
                     )
                     // A thin white mat around the picture, like a framed print (all Aerial modes).
@@ -338,6 +338,13 @@ fun WallpaperSheet(
                         R.string.ss_art_fit, stringResource(R.string.ss_art_fit_hint), note,
                         listOf(false to R.string.ss_art_fit_fill, true to R.string.ss_art_fit_whole),
                         AerialSettings.artFitWhole, AerialSettings::chooseArtFitWhole,
+                    )
+                    // How long each picture stays up, photos, gallery and USB alike (owner).
+                    if (Wallpapers.screensaver == ScreensaverMode.Photos ||
+                        Wallpapers.screensaver == ScreensaverMode.Gallery || Wallpapers.screensaver == ScreensaverMode.Usb) Choices(
+                        R.string.ss_slide, stringResource(R.string.ss_slide_hint), note,
+                        AerialSettings.ART_SLIDE_SECONDS.map { it to stringResource(R.string.ss_slide_seconds, it) },
+                        AerialSettings.artSlideSeconds, AerialSettings::chooseArtSlideSeconds,
                     )
                     // The firmware's screensaver starts on the firmware's timer: Aerial's delay
                     // did nothing there, and Xiaomi's 1 minute came before the 5 chosen (issue #675).

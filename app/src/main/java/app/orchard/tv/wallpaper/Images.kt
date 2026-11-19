@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.Shader
 import android.media.ExifInterface
+import android.util.Size
 import androidx.core.graphics.createBitmap
 import java.io.File
 import kotlin.math.max
@@ -40,7 +41,13 @@ object Images {
      * nothing — for the owner's own images on USB, where a clipped painting is not acceptable.
      * The bars are transparent; the caller draws a backdrop colour underneath.
      */
-    fun decodeFit(file: File, w: Int, h: Int): Bitmap? {
+    fun decodeFit(file: File, w: Int, h: Int): Bitmap? = decodeFitMeasured(file, w, h)?.first
+
+    /**
+     * [decodeFit] plus the size the picture actually occupies inside the returned w×h canvas.
+     * The art screensaver uses [content] to draw a white mat tight to the picture, not the screen.
+     */
+    fun decodeFitMeasured(file: File, w: Int, h: Int): Pair<Bitmap, Size>? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.path, bounds)
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
@@ -52,7 +59,9 @@ object Images {
         while (bw / (sample * 2) >= w && bh / (sample * 2) >= h) sample *= 2
         val decoded = BitmapFactory.decodeFile(file.path, BitmapFactory.Options().apply { inSampleSize = sample }) ?: return null
         val src = upright(decoded, orientation)
-        return fit(src, w, h).also { if (it !== src) src.recycle() }
+        val scale = min(w / src.width.toFloat(), h / src.height.toFloat())
+        val content = Size((src.width * scale).roundToInt().coerceAtLeast(1), (src.height * scale).roundToInt().coerceAtLeast(1))
+        return fit(src, w, h).also { if (it !== src) src.recycle() } to content
     }
 
     /** [src] scaled whole into [w]x[h], centred on a transparent canvas; aspect ratio kept. */

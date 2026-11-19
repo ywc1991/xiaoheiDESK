@@ -268,6 +268,9 @@
     <string name="ss_art_fit_hint">「相框适应画作」让整幅画完整显示，比例不同处留黑边；「填充」则裁掉边缘铺满屏幕。</string>
     <string name="ss_art_fit_whole">相框适应画作</string>
     <string name="ss_art_fit_fill">填充</string>
+    <string name="ss_slide">切换间隔</string>
+    <string name="ss_slide_hint">每张画停留多久后自动切换；照片、名画和 U 盘画作都按这个时间来。左右键可以随时手动切下一张。</string>
+    <string name="ss_slide_seconds">%1$d 秒</string>
 
     <!-- Kids and Elders mode (settings/Restricted) -->
     <string name="kids_title">儿童与长辈模式</string>

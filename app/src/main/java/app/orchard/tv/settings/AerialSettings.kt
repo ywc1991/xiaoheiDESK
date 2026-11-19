@@ -120,6 +120,12 @@ object AerialSettings {
     /** Show gallery/USB paintings whole (letterboxed) instead of cropping them to fill the screen. */
     var artFitWhole by mutableStateOf(true); private set
 
+    /** Seconds each screensaver picture (photos, gallery, USB) stays before advancing. */
+    private var chosenArtSlideSeconds by mutableIntStateOf(DEFAULT_ART_SLIDE_SECONDS)
+
+    /** The picture-advance interval in seconds, one of [ART_SLIDE_SECONDS]. */
+    val artSlideSeconds: Int get() = chosenArtSlideSeconds
+
     /** Pop a corner panel preview while focus rests on date/weather/settings. Off by default. */
     var cornerAutoPeek by mutableStateOf(false); private set
 
@@ -143,7 +149,7 @@ object AerialSettings {
      * The time over Aerial's aerial and photo screensavers (issue #240: TCL's firmware puts its own
      * clock over the system screensaver). The clock screensaver is the clock and keeps it.
      */
-    var screensaverClock by mutableStateOf(true); private set
+    var screensaverClock by mutableStateOf(false); private set
 
     /** A thin white mat around the screensaver picture, so the screen reads as a framed print. */
     var screensaverFrame by mutableStateOf(true); private set
@@ -199,6 +205,10 @@ object AerialSettings {
     val HOME_COLUMNS = 4..6
     private const val DEFAULT_HOME_COLUMNS = 5
 
+    /** Picture-advance intervals offered in Settings, in seconds. */
+    val ART_SLIDE_SECONDS = listOf(15, 30, 60, 120)
+    private const val DEFAULT_ART_SLIDE_SECONDS = 30
+
     fun init(context: Context) {
         if (started) return
         started = true
@@ -219,11 +229,14 @@ object AerialSettings {
         homePlate = prefs.getBoolean("home_plate", true)
         showDeskCat = prefs.getBoolean("show_desk_cat", true)
         artFitWhole = prefs.getBoolean("art_fit_whole", true)
+        chosenArtSlideSeconds = prefs.getInt("art_slide_seconds", DEFAULT_ART_SLIDE_SECONDS)
+            .takeIf { it in ART_SLIDE_SECONDS } ?: DEFAULT_ART_SLIDE_SECONDS
         cornerAutoPeek = prefs.getBoolean("corner_auto_peek", false)
         chosenAllNames = prefs.getBoolean("show_all_names", false)
         wallpaperAlwaysMoves = prefs.getBoolean("wallpaper_always_moves", false)
         showWeather = prefs.getBoolean("show_weather", true)
-        screensaverClock = prefs.getBoolean("screensaver_clock", true)
+        // Off unless chosen: the screensaver is left to the picture alone, no time in the corner.
+        screensaverClock = prefs.getBoolean("screensaver_clock", false)
         screensaverFrame = prefs.getBoolean("screensaver_frame", true)
         // Before 1.28 this was on or off; on meant whichever sounds Aerial played.
         uiSounds = UiSounds.of(prefs.getString("ui_sounds_kind", null)) ?: when {
@@ -319,6 +332,12 @@ object AerialSettings {
     fun chooseArtFitWhole(on: Boolean) {
         artFitWhole = on
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("art_fit_whole", on) }
+    }
+
+    fun chooseArtSlideSeconds(seconds: Int) {
+        if (seconds !in ART_SLIDE_SECONDS) return
+        chosenArtSlideSeconds = seconds
+        app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putInt("art_slide_seconds", seconds) }
     }
 
     fun chooseCornerAutoPeek(on: Boolean) {
