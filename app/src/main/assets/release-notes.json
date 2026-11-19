@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "v": "1.1.16",
+      "zh": [
+        "画名改为直接印在画作本身的下方（画内），不再在画下单独留一条白纸；白框四边因此恢复完全等宽。",
+        "屏保背景换成米色墙纸：暖米色纸面、极淡的竖向上墙纹、上方来光，四角微暗，画框在墙上有投影。",
+        "名画改为随机播放：每次进入屏保从不同的画开始，顺序不再固定（U 盘里的画仍按你的排列顺序）。"
+      ],
+      "en": [
+        "The painting's name now sits on the picture itself, near its lower edge, instead of on a strip of white board left under it; the frame is an even 22dp on all four sides again.",
+        "New wallpaper backing: warm beige paper with faint vertical stripes, light from above, softly darkened corners, and the frame casting a shadow on the wall.",
+        "The museum paintings now play in a random order: each visit starts somewhere else instead of walking the same sequence (your own USB pictures keep the order you arranged them in)."
+      ]
+    },
+    {
       "v": "1.1.15",
       "zh": [
         "白色画框的边宽恢复固定：四边都是 22dp，不再为了铺满屏幕而加宽。",
