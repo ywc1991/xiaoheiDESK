@@ -693,6 +693,12 @@ private fun ArtSaver(
 ) {
     val context = LocalContext.current
     val reduced = LocalReducedMotion.current
+    // USB pictures must show whole (letterboxed); museum art keeps its frame-filling crop.
+    val fitWhole = source == ArtGallery.Source.Usb
+    suspend fun decodeArt(file: java.io.File) = withContext(Dispatchers.Default) {
+        (if (fitWhole) Images.decodeFit(file, Wallpapers.screenW, Wallpapers.screenH)
+         else Images.decodeCover(file, Wallpapers.screenW, Wallpapers.screenH))?.asImageBitmap()
+    }
     val art = remember { mutableStateListOf<ArtGallery.Artwork>() }
     var ready by remember { mutableStateOf(false) }
     var slide by remember { mutableIntStateOf(0) }
@@ -711,25 +717,34 @@ private fun ArtSaver(
 
     // Decode just the slide being shown; keep a small decoded cache so stepping back is instant.
     val decoded = remember { mutableMapOf<Int, ImageBitmap>() }
+    var decodeMisses by remember { mutableIntStateOf(0) }
     LaunchedEffect(art.size, slide) {
         if (!ready || art.isEmpty()) return@LaunchedEffect
         val idx = slide.mod(art.size)
-        val bmp = decoded[idx] ?: withContext(Dispatchers.Default) {
-            Images.decodeCover(art[idx].file, Wallpapers.screenW, Wallpapers.screenH)?.asImageBitmap()
-        }
+        val bmp = decoded[idx] ?: decodeArt(art[idx].file)
         if (bmp != null) {
             decoded[idx] = bmp
             image = idx to bmp
+            decodeMisses = 0
             // Warm the next one so a manual step or the timer does not show a blank frame.
             val next = (idx + 1).mod(art.size)
-            if (!decoded.containsKey(next)) {
-                withContext(Dispatchers.Default) {
-                    Images.decodeCover(art[next].file, Wallpapers.screenW, Wallpapers.screenH)?.asImageBitmap()
-                }?.let { decoded[next] = it }
+            if (!decoded.containsKey(next)) decodeArt(art[next].file)?.let { decoded[next] = it }
+            delay(18_000)
+            slide++
+        } else {
+            // A picture failed to decode. Never hold the screen black for the full 18 s: drop the
+            // bad cache, step on at once, and only hand over after several in a row (a whole broken
+            // library) so the owner sees the next painting rather than a stall.
+            decoded.remove(idx)
+            art[idx].file.delete()
+            val misses = ++decodeMisses
+            if (misses >= art.size.coerceAtMost(4)) {
+                onUnavailable()
+            } else {
+                delay(400)
+                slide++
             }
         }
-        delay(18_000)
-        slide++
     }
     LaunchedEffect(steps) {
         steps.collect { slide += it }
@@ -739,15 +754,22 @@ private fun ArtSaver(
         Dissolve(targetState = image, durationMs = 2000, easing = LinearEasing, label = "art") { current ->
             if (current != null) {
                 val push = remember { Animatable(0f) }
-                LaunchedEffect(Unit) { if (!reduced) push.animateTo(1f, tween(20_000, easing = LinearEasing)) }
+                LaunchedEffect(Unit) { if (!reduced && !fitWhole) push.animateTo(1f, tween(20_000, easing = LinearEasing)) }
                 val dir = if (current.first.mod(2) == 0) 1f else -1f
                 Canvas(
                     Modifier.fillMaxSize().graphicsLayer {
-                        val s = 1.04f + 0.08f * push.value
-                        scaleX = s; scaleY = s
-                        translationX = dir * (push.value - 0.5f) * 40.dp.toPx()
+                        if (fitWhole) {
+                            // A fitted picture is already whole; any zoom would clip its edges again.
+                            scaleX = 1f; scaleY = 1f; translationX = 0f
+                        } else {
+                            val s = 1.04f + 0.08f * push.value
+                            scaleX = s; scaleY = s
+                            translationX = dir * (push.value - 0.5f) * 40.dp.toPx()
+                        }
                     },
                 ) {
+                    // Letterbox bars from decodeFit are transparent; paint black behind them.
+                    if (fitWhole) drawRect(Color.Black)
                     drawImage(current.second, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()), filterQuality = FilterQuality.Medium)
                 }
             }

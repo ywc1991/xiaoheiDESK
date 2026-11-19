@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.1.8",
+      "zh": [
+        "修复「名画」屏保偶发黑屏：画作改为并行下载、缓存先校验完整性再显示；某张画损坏时立即跳到下一张，不再黑屏等待。",
+        "「U盘画作」现在整幅显示、不再裁掉边缘：画面按原比例完整放进屏幕，多出的空间留黑边；并去掉会再次裁切的缓慢推近动画。"
+      ],
+      "en": [
+        "Fixed the occasional black screen in the Gallery screensaver: paintings now download in parallel, cache files are verified before display, and a damaged image skips straight to the next one instead of holding a black frame.",
+        "USB Art now shows each picture whole instead of cropping the edges: images fit the screen at their original aspect ratio with black letterbox bars, and the push-in animation that re-cropped them is off."
+      ]
+    },
+    {
       "v": "1.1.7",
       "zh": [
         "修正桌面小猫的焦点：在主页按遥控器「上」键，焦点现在先落到右上角的「设置」上，再往左可以依次到天气和日历。",

@@ -12,6 +12,7 @@ import android.media.ExifInterface
 import androidx.core.graphics.createBitmap
 import java.io.File
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -32,6 +33,41 @@ object Images {
         val decoded = BitmapFactory.decodeFile(file.path, BitmapFactory.Options().apply { inSampleSize = sample }) ?: return null
         val src = upright(decoded, orientation)
         return cover(src, w, h).also { if (it !== src) src.recycle() }
+    }
+
+    /**
+     * Like [decodeCover] but fits the whole picture inside [w]x[h] with letterbox bars, cropping
+     * nothing — for the owner's own images on USB, where a clipped painting is not acceptable.
+     * The bars are transparent; the caller draws a backdrop colour underneath.
+     */
+    fun decodeFit(file: File, w: Int, h: Int): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        val orientation = exifOrientation(file)
+        val turned = quarterTurn(orientation)
+        val bw = if (turned) bounds.outHeight else bounds.outWidth
+        val bh = if (turned) bounds.outWidth else bounds.outHeight
+        var sample = 1
+        while (bw / (sample * 2) >= w && bh / (sample * 2) >= h) sample *= 2
+        val decoded = BitmapFactory.decodeFile(file.path, BitmapFactory.Options().apply { inSampleSize = sample }) ?: return null
+        val src = upright(decoded, orientation)
+        return fit(src, w, h).also { if (it !== src) src.recycle() }
+    }
+
+    /** [src] scaled whole into [w]x[h], centred on a transparent canvas; aspect ratio kept. */
+    fun fit(src: Bitmap, w: Int, h: Int): Bitmap {
+        val scale = min(w / src.width.toFloat(), h / src.height.toFloat())
+        val dw = (src.width * scale).roundToInt().coerceAtLeast(1)
+        val dh = (src.height * scale).roundToInt().coerceAtLeast(1)
+        val out = createBitmap(w, h)
+        val l = (w - dw) / 2
+        val t = (h - dh) / 2
+        Canvas(out).drawBitmap(
+            src, Rect(0, 0, src.width, src.height), Rect(l, t, l + dw, t + dh),
+            Paint(Paint.FILTER_BITMAP_FLAG),
+        )
+        return out
     }
 
     /**
