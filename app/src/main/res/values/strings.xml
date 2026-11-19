@@ -265,8 +265,8 @@
     <string name="ss_frame">Picture frame</string>
     <string name="ss_frame_hint">A thin white border around the screensaver picture, so the screen looks like a framed print. Off shows the picture edge to edge.</string>
     <string name="ss_art_fit">Picture fit</string>
-    <string name="ss_art_fit_hint">Whole shows each painting in full, with black bars where its shape differs from the screen. Fill crops the edges to fill the screen.</string>
-    <string name="ss_art_fit_whole">Whole</string>
+    <string name="ss_art_fit_hint">Frame to Art shows the whole picture, with black bars where its shape differs from the screen. Fill crops the edges to cover the screen.</string>
+    <string name="ss_art_fit_whole">Frame to Art</string>
     <string name="ss_art_fit_fill">Fill</string>
 
     <!-- Kids and Elders mode (settings/Restricted) -->

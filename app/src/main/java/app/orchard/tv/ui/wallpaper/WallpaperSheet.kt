@@ -336,7 +336,7 @@ fun WallpaperSheet(
                     // Gallery / USB pictures: show the whole picture or crop it to fill the screen.
                     if (Wallpapers.screensaver == ScreensaverMode.Gallery || Wallpapers.screensaver == ScreensaverMode.Usb) Choices(
                         R.string.ss_art_fit, stringResource(R.string.ss_art_fit_hint), note,
-                        listOf(true to R.string.ss_art_fit_whole, false to R.string.ss_art_fit_fill),
+                        listOf(false to R.string.ss_art_fit_fill, true to R.string.ss_art_fit_whole),
                         AerialSettings.artFitWhole, AerialSettings::chooseArtFitWhole,
                     )
                     // The firmware's screensaver starts on the firmware's timer: Aerial's delay

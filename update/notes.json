@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "v": "1.1.10",
+      "zh": [
+        "「名画」和「U盘画作」的「画作显示」选项改名为「填充」和「相框适应画作」：填充会裁掉边缘铺满屏幕，相框适应画作让整幅画完整显示、比例不同处留黑边。"
+      ],
+      "en": [
+        "Renamed the Gallery / USB Art Picture fit options to Fill and Frame to Art: Fill crops the edges to cover the screen, Frame to Art shows the whole picture with black bars where its shape differs."
+      ]
+    },
+    {
       "v": "1.1.9",
       "zh": [
         "「名画」和「U盘画作」新增「画作显示」选择：可选「完整」（整幅画都显示、比例不同处留黑边）或「填满」（裁掉边缘铺满屏幕）；默认完整。",
