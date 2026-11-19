@@ -264,6 +264,10 @@
     <string name="ss_show_time_hint">航拍和照片屏保上的时间。时间和地名会不时挪一点位置，避免烧屏。</string>
     <string name="ss_frame">画框白边</string>
     <string name="ss_frame_hint">屏保画面四周加一圈细白边，让电视看起来像一幅挂画的画框。关闭则画面铺满全屏。</string>
+    <string name="ss_art_fit">画作显示</string>
+    <string name="ss_art_fit_hint">「完整」把整幅画都显示出来，比例不同处留黑边；「填满」则裁掉边缘铺满屏幕。</string>
+    <string name="ss_art_fit_whole">完整</string>
+    <string name="ss_art_fit_fill">填满</string>
 
     <!-- Kids and Elders mode (settings/Restricted) -->
     <string name="kids_title">儿童与长辈模式</string>

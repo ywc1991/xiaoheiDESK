@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.1.9",
+      "zh": [
+        "「名画」和「U盘画作」新增「画作显示」选择：可选「完整」（整幅画都显示、比例不同处留黑边）或「填满」（裁掉边缘铺满屏幕）；默认完整。",
+        "在 个性化 → 屏幕保护程序 里，选「名画」或「U盘画作」后即可看到这个按钮。"
+      ],
+      "en": [
+        "Gallery and USB Art now have a Picture fit setting: Whole (show the full picture, with black bars where its shape differs) or Fill (crop the edges to fill the screen). Whole is the default.",
+        "Find it under Personalize → Screen saver after choosing Gallery or USB Art."
+      ]
+    },
+    {
       "v": "1.1.8",
       "zh": [
         "修复「名画」屏保偶发黑屏：画作改为并行下载、缓存先校验完整性再显示；某张画损坏时立即跳到下一张，不再黑屏等待。",

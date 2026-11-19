@@ -122,6 +122,7 @@ class ConfigReceiver : BroadcastReceiver() {
             "home_plate" to AerialSettings::chooseHomePlate,
             "show_all_names" to AerialSettings::chooseShowAllNames,
             "show_desk_cat" to AerialSettings::chooseShowDeskCat,
+            "art_fit_whole" to AerialSettings::chooseArtFitWhole,
             "corner_auto_peek" to AerialSettings::chooseCornerAutoPeek,
             "screensaver_frame" to AerialSettings::chooseScreensaverFrame,
         ).filterKeys { intent.hasExtra(it) }

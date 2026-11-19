@@ -117,6 +117,9 @@ object AerialSettings {
     /** The little black-cat companion that sits on the wallpaper and reacts to OK. */
     var showDeskCat by mutableStateOf(true); private set
 
+    /** Show gallery/USB paintings whole (letterboxed) instead of cropping them to fill the screen. */
+    var artFitWhole by mutableStateOf(true); private set
+
     /** Pop a corner panel preview while focus rests on date/weather/settings. Off by default. */
     var cornerAutoPeek by mutableStateOf(false); private set
 
@@ -215,6 +218,7 @@ object AerialSettings {
         largeClock = prefs.getBoolean("large_clock", false)
         homePlate = prefs.getBoolean("home_plate", true)
         showDeskCat = prefs.getBoolean("show_desk_cat", true)
+        artFitWhole = prefs.getBoolean("art_fit_whole", true)
         cornerAutoPeek = prefs.getBoolean("corner_auto_peek", false)
         chosenAllNames = prefs.getBoolean("show_all_names", false)
         wallpaperAlwaysMoves = prefs.getBoolean("wallpaper_always_moves", false)
@@ -310,6 +314,11 @@ object AerialSettings {
     fun chooseShowDeskCat(on: Boolean) {
         showDeskCat = on
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("show_desk_cat", on) }
+    }
+
+    fun chooseArtFitWhole(on: Boolean) {
+        artFitWhole = on
+        app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("art_fit_whole", on) }
     }
 
     fun chooseCornerAutoPeek(on: Boolean) {

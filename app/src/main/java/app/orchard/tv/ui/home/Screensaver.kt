@@ -693,8 +693,8 @@ private fun ArtSaver(
 ) {
     val context = LocalContext.current
     val reduced = LocalReducedMotion.current
-    // USB pictures must show whole (letterboxed); museum art keeps its frame-filling crop.
-    val fitWhole = source == ArtGallery.Source.Usb
+    // Show paintings whole (letterboxed) or cropped to fill, per the owner's Pictures setting.
+    val fitWhole = AerialSettings.artFitWhole
     suspend fun decodeArt(file: java.io.File) = withContext(Dispatchers.Default) {
         (if (fitWhole) Images.decodeFit(file, Wallpapers.screenW, Wallpapers.screenH)
          else Images.decodeCover(file, Wallpapers.screenW, Wallpapers.screenH))?.asImageBitmap()
