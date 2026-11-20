@@ -885,58 +885,141 @@ private fun artCaptionBottom(pic: ArtImage, insetPx: Float): Dp? {
 private class ArtImage(val bmp: ImageBitmap, val content: android.util.Size?)
 
 /**
- * The wall a framed picture hangs on: warm beige wallpaper, lit from above, with soft tone-on-tone
- * stripes and the corners falling away, so the eye stays on the art. Drawn for pictures shown whole,
- * which are the ones that leave the screen's edges free; nothing is added behind a picture that
- * fills it.
+ * What a framed picture hangs against: a sheet of frosted glass in the warm-milk tone the wall had,
+ * the way tvOS panels look — soft light behind it, a cold glint at the top edge, a fine frost over
+ * the whole surface and the corners settling into shadow. Drawn for pictures shown whole, which are
+ * the ones that leave the screen's edges free; nothing is added behind a picture that fills it.
  */
 @Composable
 private fun WallBackdrop() {
-    Canvas(Modifier.fillMaxSize().diagLayer("wall")) {
-        val w = size.width
-        val h = size.height
-        // The paper: warm beige, a little deeper towards the floor.
-        drawRect(
-            Brush.verticalGradient(
-                0f to Color(0xFFF3EBDB),
-                0.52f to Color(0xFFEADFCB),
-                1f to Color(0xFFDCCDB4),
-                endY = h,
-            ),
-        )
-        // The paper's weave: wide, faint stripes, feathered at both edges so none of them reads as
-        // a line. Tone on tone, a shade lighter than the paper.
-        val band = w / 15f
-        var x = -band
-        while (x < w) {
+    Box(Modifier.fillMaxSize()) {
+        // What lies behind the glass: colour, out of focus. Radial gradients fade to nothing at
+        // their edges, so none of it reads as a shape — no blur pass, which would cost the GPU a
+        // full-screen render effect and leave the screen's own edges fading to black.
+        Canvas(Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+            drawRect(Color(0xFFE9E1D3))
+            drawRect(
+                Brush.radialGradient(
+                    colors = listOf(Color(0xFFFFF4DE), Color(0x00FFF4DE)),
+                    center = Offset(w * 0.26f, h * 0.14f),
+                    radius = size.maxDimension * 0.66f,
+                ),
+            )
+            drawRect(
+                Brush.radialGradient(
+                    colors = listOf(Color(0xE0C6AC8B), Color(0x00C6AC8B)),
+                    center = Offset(w * 0.88f, h * 0.80f),
+                    radius = size.maxDimension * 0.62f,
+                ),
+            )
+            drawRect(
+                Brush.radialGradient(
+                    colors = listOf(Color(0xB3E7CBD2), Color(0x00E7CBD2)),
+                    center = Offset(w * 0.76f, h * 0.12f),
+                    radius = size.maxDimension * 0.50f,
+                ),
+            )
+            drawRect(
+                Brush.radialGradient(
+                    colors = listOf(Color(0xA6B6C8BF), Color(0x00B6C8BF)),
+                    center = Offset(w * 0.16f, h * 0.88f),
+                    radius = size.maxDimension * 0.48f,
+                ),
+            )
+        }
+        // The glass itself: the light it catches, its frost, and its edges.
+        Canvas(Modifier.fillMaxSize().diagLayer("frost")) {
+            val w = size.width
+            val h = size.height
+            // Light raking across the pane from the top left.
+            drawRect(
+                Brush.linearGradient(
+                    colors = listOf(Color(0x38FFFFFF), Color(0x0FFFFFFF), Color(0x00FFFFFF)),
+                    start = Offset(0f, 0f),
+                    end = Offset(w * 0.72f, h * 0.9f),
+                ),
+            )
+            // A cold glint along the top edge, where the pane meets the light.
+            drawRect(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0x3DFFFFFF), Color(0x00FFFFFF)),
+                    endY = h * 0.2f,
+                ),
+            )
+            // The room reflected in the pane: two soft vertical bands of light, wide and faint, the
+            // way a window shows in a sheet of glass. Nothing sharp — a reflection, not a stripe.
             drawRect(
                 Brush.horizontalGradient(
-                    listOf(Color(0x00FFFFFF), Color(0x1AFFFFFF), Color(0x00FFFFFF)),
-                    startX = x,
-                    endX = x + band,
+                    colors = listOf(Color(0x00FFFFFF), Color(0x16FFFFFF), Color(0x00FFFFFF)),
+                    startX = w * 0.04f,
+                    endX = w * 0.46f,
                 ),
-                topLeft = Offset(x, 0f),
-                size = Size(band, h),
             )
-            x += band
+            drawRect(
+                Brush.horizontalGradient(
+                    colors = listOf(Color(0x00FFFFFF), Color(0x0FFFFFFF), Color(0x00FFFFFF)),
+                    startX = w * 0.62f,
+                    endX = w * 0.90f,
+                ),
+            )
+            // The frost: fine grain, tiled so it stays grain rather than smearing when scaled.
+            val grain = frostGrain
+            var y = 0
+            while (y < size.height) {
+                var x = 0
+                while (x < size.width) {
+                    drawImage(grain, dstOffset = IntOffset(x, y))
+                    x += grain.width
+                }
+                y += grain.height
+            }
+            // The pane is thick at its edges: each side goes a shade deeper over its last band, the
+            // way the rim of a sheet of frosted glass does. This is what reads as glass up close.
+            val edge = 110.dp.toPx()
+            val deep = Color(0x2E5A4A34)
+            val clear = Color(0x005A4A34)
+            drawRect(Brush.verticalGradient(listOf(deep, clear), endY = edge), size = Size(w, edge))
+            drawRect(
+                Brush.verticalGradient(listOf(clear, deep), startY = h - edge, endY = h),
+                topLeft = Offset(0f, h - edge), size = Size(w, edge),
+            )
+            drawRect(Brush.horizontalGradient(listOf(deep, clear), endX = edge), size = Size(edge, h))
+            drawRect(
+                Brush.horizontalGradient(listOf(clear, deep), startX = w - edge, endX = w),
+                topLeft = Offset(w - edge, 0f), size = Size(edge, h),
+            )
+            // And the corners settle a little further, so the pane has an inside and an outside.
+            drawRect(
+                Brush.radialGradient(
+                    colors = listOf(Color(0x00000000), Color(0x1A6B5236), Color(0x38372616)),
+                    center = Offset(w * 0.5f, h * 0.42f),
+                    radius = size.maxDimension * 0.82f,
+                ),
+            )
         }
-        // The room's light, pooling on the paper behind the picture.
-        drawRect(
-            Brush.radialGradient(
-                colors = listOf(Color(0x40FFFBEF), Color(0x00FFFBEF)),
-                center = Offset(w * 0.5f, h * 0.40f),
-                radius = size.maxDimension * 0.52f,
-            ),
-        )
-        // The corners fall away in a warm brown: a wall with a room behind it, not a flat colour.
-        drawRect(
-            Brush.radialGradient(
-                colors = listOf(Color(0x00000000), Color(0x2A6B5236), Color(0x4D4A3620)),
-                center = Offset(w * 0.5f, h * 0.44f),
-                radius = size.maxDimension * 0.80f,
-            ),
-        )
     }
+}
+
+/**
+ * The frost over the glass: a tile of single-pixel grains, half of them lifting the tone and half
+ * deepening it, all but invisible one by one and reading as a matte surface together. Baked once:
+ * a few hundred thousand pixels drawn per frame would cost the GPU far more than the look is worth.
+ */
+private val frostGrain by lazy { frostGrainImage() }
+
+private fun frostGrainImage(): ImageBitmap {
+    val n = 512
+    val px = IntArray(n * n)
+    val rnd = Random(20261120)
+    for (i in px.indices) {
+        val a = rnd.nextInt(0, 27)
+        px[i] = if (rnd.nextBoolean()) (a shl 24) or 0xFFFFFF else (a shl 24)
+    }
+    return android.graphics.Bitmap
+        .createBitmap(px, n, n, android.graphics.Bitmap.Config.ARGB_8888)
+        .asImageBitmap()
 }
 
 /**

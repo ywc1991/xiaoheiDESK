@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.1.17",
+      "zh": [
+        "屏保背景改成苹果风格的毛玻璃：暖白色玻璃后面透出柔和的色彩光斑，表面一层极细的霜面颗粒，顶部有一道冷光、四边略深，画框像挂在玻璃前。",
+        "画名、白框宽度、随机播放都照旧。"
+      ],
+      "en": [
+        "The screensaver backdrop is now frosted glass in the Apple manner: soft colour glowing through warm white, a fine frost over the surface, a cold glint along the top edge and slightly deeper edges, with the frame hanging in front of it.",
+        "The name on the painting, the 22dp frame and the random order are unchanged."
+      ]
+    },
+    {
       "v": "1.1.16",
       "zh": [
         "画名改为直接印在画作本身的下方（画内），不再在画下单独留一条白纸；白框四边因此恢复完全等宽。",
