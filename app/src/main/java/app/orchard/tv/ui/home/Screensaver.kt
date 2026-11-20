@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
@@ -182,8 +184,15 @@ private fun PictureFrame() {
 
 private val frameWidth = 22.dp
 
-/** The mat's colour: warm off-white, as a paper mount is, not the screen's pure white. */
-private val frameColor = Color(0xFFFCFBF8)
+/**
+ * The mount's colours, taken from a real gallery mount rather than from the screen: the ivory face of
+ * the board, the white core its 45° cut exposes, the shadow that cut throws on the picture side, and
+ * a narrower moulding outside it that is a shade deeper than the board (owner, 1.1.19).
+ */
+private val frameColor = Color(0xFFF7F3E8)
+private val frameCore = Color(0xFFFFFFFF)
+private val frameBevel = Color(0xFFCFC7B4)
+private val frameMoulding = Color(0xFFD8CDB6)
 
 /** Between a painting's bottom edge and its name, which now sits on the painting itself. */
 private val CAPTION_INSET = 34.dp
@@ -801,9 +810,27 @@ private fun ArtSaver(
     Box(Modifier.fillMaxSize()) {
         // A picture shown whole hangs on a wall rather than floating in the dark (owner, 1.1.15).
         if (fitWhole) WallBackdrop()
-        if (shown != null) {
-            Dissolve(targetState = shown, durationMs = 2000, easing = LinearEasing, label = "art") { current ->
-                if (current != null) {
+        // Both pictures fade at once when one gives way to the next: the new one comes up while the
+        // old one goes on dimming underneath it, instead of holding full strength until the last
+        // frame and vanishing (owner, 1.1.19). The new picture arrives first and the old one takes
+        // its time leaving, which is what "slowly fades" means — and because the new one is opaque
+        // and lies on top, the old one shows only where the pictures differ, so there is no ghost.
+        // The mat rides in the same layer, or it would jump to the new picture's size before that
+        // picture had appeared.
+        AnimatedContent(
+            targetState = shown,
+            // The new picture is up in 1.2s; the old one keeps dimming for 2.2s underneath it.
+            transitionSpec = {
+                // Quick on, slow off: the new picture is solid within 0.9s so the two are only mixed
+                // for a moment, then the old one keeps dimming underneath for another 2.4s — long
+                // enough to watch it go, which is what "slowly fades" asks for.
+                fadeIn(tween(900, easing = LinearEasing)) togetherWith
+                    fadeOut(tween(2400, delayMillis = 300, easing = LinearEasing))
+            },
+            label = "art",
+        ) { current ->
+            if (current != null) {
+                Box(Modifier.fillMaxSize()) {
                     val push = remember { Animatable(0f) }
                     LaunchedEffect(Unit) { if (!reduced && !fitWhole) push.animateTo(1f, tween(20_000, easing = LinearEasing)) }
                     val dir = if (current.first.mod(2) == 0) 1f else -1f
@@ -834,14 +861,12 @@ private fun ArtSaver(
                             filterQuality = FilterQuality.Medium,
                         )
                     }
+                    // The mat hugs the painting itself rather than the screen's edge (owner, 1.1.12).
+                    if (framed) ArtMat(current.second, insetPx)
                 }
             }
-        } else {
-            // Loading the first painting. Keep it calm and dark rather than flashing a spinner.
-            Box(Modifier.fillMaxSize())
         }
         // The mat hugs the painting itself rather than the screen's edge (owner, 1.1.12).
-        if (framed && shown != null) ArtMat(shown.second, insetPx)
     }
     val cur = art.getOrNull((shown?.first ?: 0).mod(art.size.coerceAtLeast(1)))
     // The name prints on the painting itself, centred near its lower edge: no strip of card is left
@@ -856,7 +881,9 @@ private fun ArtSaver(
         }
     }
     Labels(
-        cur?.let { "${it.title}" + if (it.subtitle.isNotEmpty()) " · ${it.subtitle}" else "" },
+        // Nothing to name while the first painting is still decoding: on a bare wall the name would
+        // sit alone in the bottom-left corner, which is where it prints for a full-bleed picture.
+        if (shown == null && fitWhole) null else cur?.let { "${it.title}" + if (it.subtitle.isNotEmpty()) " · ${it.subtitle}" else "" },
         now, switchKey = slide, captionBottom = captionBottom,
         captionColor = Color.White.copy(alpha = 0.94f),
         shade = captionBottom == null,
@@ -885,110 +912,60 @@ private fun artCaptionBottom(pic: ArtImage, insetPx: Float): Dp? {
 private class ArtImage(val bmp: ImageBitmap, val content: android.util.Size?)
 
 /**
- * What a framed picture hangs against: a sheet of clear glass over a pale wall, in the iOS 26
- * "liquid glass" manner (owner, 1.1.18) — the colour behind shows through almost untouched, the
- * surface carries only the thinnest white veil, and what makes it read as glass is a crisp
- * highlight running just inside the screen's edges, with the corners settling into a neutral
- * shadow. Drawn for pictures shown whole, which are the ones that leave the screen's edges free;
- * nothing is added behind a picture that fills it.
+ * What a framed picture hangs against, in the dark: the same smoked glass as 小黑TV's channel panel
+ * (owner, 1.1.19) — a near-black neutral pane with a sheen across its top and light caught inside
+ * it — stretched edge to edge, so it reads as the room's own glass rather than a card laid on top
+ * (no rounded corners, no rim line). The thickness is carried by the edges sinking into shadow.
  */
 @Composable
 private fun WallBackdrop() {
     Box(Modifier.fillMaxSize()) {
-        // What lies behind the glass: colour, out of focus. Radial gradients fade to nothing at
-        // their edges, so none of it reads as a shape — no blur pass, which would cost the GPU a
-        // full-screen render effect and leave the screen's own edges fading to black.
-        Canvas(Modifier.fillMaxSize()) {
+        Canvas(Modifier.fillMaxSize().diagLayer("wall")) {
             val w = size.width
             val h = size.height
-            // A cool grey-white wall, not a warm one: the glass should have no colour of its own.
-            drawRect(Color(0xFFE7E6EA))
+            // The room beyond the pane, in case the glass's own 14% shows through to it.
+            drawRect(Color(0xFF070709))
+            // The pane: the channel panel's exact pair of stops, unchanged, so both are one material.
+            drawRect(
+                Brush.verticalGradient(colors = listOf(Color(0xDB121316), Color(0xCC0B0B0D))),
+            )
+            // Light caught under the glass, so the black has depth instead of being a void. Kept to a
+            // whisper: a white frame on a lit wall was the old look, and this is the opposite end.
             drawRect(
                 Brush.radialGradient(
-                    colors = listOf(Color(0xF2FAF3F6), Color(0x00FAF3F6)),
-                    center = Offset(w * 0.28f, h * 0.10f),
-                    radius = size.maxDimension * 0.74f,
+                    colors = listOf(Color(0x34465368), Color(0x00465368)),
+                    center = Offset(w * 0.22f, h * 0.10f),
+                    radius = size.maxDimension * 0.76f,
                 ),
             )
             drawRect(
                 Brush.radialGradient(
-                    colors = listOf(Color(0xA6DCE8E7), Color(0x00DCE8E7)),
-                    center = Offset(w * 0.84f, h * 0.22f),
-                    radius = size.maxDimension * 0.58f,
+                    colors = listOf(Color(0x266B4A35), Color(0x006B4A35)),
+                    center = Offset(w * 0.86f, h * 0.90f),
+                    radius = size.maxDimension * 0.62f,
                 ),
             )
+            // The room's own light, hanging somewhere behind the middle of the glass: this is what
+            // keeps the pane from reading as a flat black board.
             drawRect(
                 Brush.radialGradient(
-                    colors = listOf(Color(0xBFF8EEE7), Color(0x00F8EEE7)),
-                    center = Offset(w * 0.70f, h * 0.88f),
-                    radius = size.maxDimension * 0.66f,
+                    colors = listOf(Color(0x1E5C6678), Color(0x005C6678)),
+                    center = Offset(w * 0.5f, h * 0.40f),
+                    radius = size.maxDimension * 0.56f,
                 ),
             )
-            drawRect(
-                Brush.radialGradient(
-                    colors = listOf(Color(0x99D5D2DD), Color(0x00D5D2DD)),
-                    center = Offset(w * 0.06f, h * 0.92f),
-                    radius = size.maxDimension * 0.52f,
-                ),
-            )
-        }
-        // The glass itself: its veil, the light it catches, its frost, and its edges.
-        Canvas(Modifier.fillMaxSize().diagLayer("frost")) {
-            val w = size.width
-            val h = size.height
-            // The merest white veil over the whole pane, a touch denser at the top.
+            // The lit top edge: 200dp of white fading to nothing — the panel's own sheen.
             drawRect(
                 Brush.verticalGradient(
-                    colors = listOf(Color(0x24FFFFFF), Color(0x0AFFFFFF), Color(0x12FFFFFF)),
+                    colors = listOf(Color(0x2AFFFFFF), Color(0x00FFFFFF)),
+                    endY = 200.dp.toPx(),
                 ),
             )
-            // Light raking across the pane from the top left.
-            drawRect(
-                Brush.linearGradient(
-                    colors = listOf(Color(0x2AFFFFFF), Color(0x0AFFFFFF), Color(0x00FFFFFF)),
-                    start = Offset(0f, 0f),
-                    end = Offset(w * 0.76f, h * 0.94f),
-                ),
-            )
-            // A bright glint along the top edge, and the soft halo it throws inwards.
-            drawRect(
-                Brush.verticalGradient(
-                    colors = listOf(Color(0x66FFFFFF), Color(0x00FFFFFF)),
-                    endY = h * 0.11f,
-                ),
-            )
-            // The room reflected in the pane: two soft vertical bands of light, wide and faint, the
-            // way a window shows in a sheet of glass. Nothing sharp — a reflection, not a stripe.
-            drawRect(
-                Brush.horizontalGradient(
-                    colors = listOf(Color(0x00FFFFFF), Color(0x12FFFFFF), Color(0x00FFFFFF)),
-                    startX = w * 0.04f,
-                    endX = w * 0.46f,
-                ),
-            )
-            drawRect(
-                Brush.horizontalGradient(
-                    colors = listOf(Color(0x00FFFFFF), Color(0x0BFFFFFF), Color(0x00FFFFFF)),
-                    startX = w * 0.62f,
-                    endX = w * 0.90f,
-                ),
-            )
-            // The frost: fine grain, tiled so it stays grain rather than smearing when scaled.
-            val grain = frostGrain
-            var y = 0
-            while (y < size.height) {
-                var x = 0
-                while (x < size.width) {
-                    drawImage(grain, dstOffset = IntOffset(x, y))
-                    x += grain.width
-                }
-                y += grain.height
-            }
-            // The pane is thick at its edges: each side goes a shade deeper over its last band. Only
-            // a shade now — clear glass has very little body of its own.
-            val edge = 90.dp.toPx()
-            val deep = Color(0x1A3C3A46)
-            val clear = Color(0x003C3A46)
+            // The glass is thickest where it runs off the screen: each side darkens over its last
+            // band, which is what gives the pane a body without drawing a line round it.
+            val edge = 120.dp.toPx()
+            val deep = Color(0x5C000000)
+            val clear = Color(0x00000000)
             drawRect(Brush.verticalGradient(listOf(deep, clear), endY = edge), size = Size(w, edge))
             drawRect(
                 Brush.verticalGradient(listOf(clear, deep), startY = h - edge, endY = h),
@@ -999,44 +976,16 @@ private fun WallBackdrop() {
                 Brush.horizontalGradient(listOf(clear, deep), startX = w - edge, endX = w),
                 topLeft = Offset(w - edge, 0f), size = Size(edge, h),
             )
-            // And the corners settle a little further, so the pane has an inside and an outside.
+            // And the corners settle further still, the way a dark room falls away at its edges.
             drawRect(
                 Brush.radialGradient(
-                    colors = listOf(Color(0x00000000), Color(0x11202028), Color(0x2A15151C)),
-                    center = Offset(w * 0.5f, h * 0.44f),
-                    radius = size.maxDimension * 0.86f,
+                    colors = listOf(Color(0x00000000), Color(0x26000000), Color(0x4E000000)),
+                    center = Offset(w * 0.5f, h * 0.46f),
+                    radius = size.maxDimension * 0.80f,
                 ),
             )
-            // The rim: a hairline of light just inside each edge, brightest along the top and
-            // fading round the corners — the single detail that makes a sheet of glass look like a
-            // sheet of glass rather than a tinted rectangle.
-            val hair = 1.5.dp.toPx()
-            drawRect(Color(0xA8FFFFFF), size = Size(w, hair))
-            drawRect(Color(0x40FFFFFF), topLeft = Offset(0f, h - hair), size = Size(w, hair))
-            drawRect(Color(0x5CFFFFFF), size = Size(hair, h))
-            drawRect(Color(0x5CFFFFFF), topLeft = Offset(w - hair, 0f), size = Size(hair, h))
         }
     }
-}
-
-/**
- * The frost over the glass: a tile of single-pixel grains, half of them lifting the tone and half
- * deepening it, all but invisible one by one and reading as a matte surface together. Baked once:
- * a few hundred thousand pixels drawn per frame would cost the GPU far more than the look is worth.
- */
-private val frostGrain by lazy { frostGrainImage() }
-
-private fun frostGrainImage(): ImageBitmap {
-    val n = 512
-    val px = IntArray(n * n)
-    val rnd = Random(20261120)
-    for (i in px.indices) {
-        val a = rnd.nextInt(0, 17)
-        px[i] = if (rnd.nextBoolean()) (a shl 24) or 0xFFFFFF else (a shl 24)
-    }
-    return android.graphics.Bitmap
-        .createBitmap(px, n, n, android.graphics.Bitmap.Config.ARGB_8888)
-        .asImageBitmap()
 }
 
 /**
@@ -1055,30 +1004,44 @@ private fun ArtMat(pic: ArtImage, inset: Float) {
             val f = if (inset > 0f) (size.width - inset * 2) / pic.bmp.width else size.width / pic.bmp.width
             val cw = content.width * f
             val ch = content.height * f
-            val l = (size.width - cw) / 2f
-            val t = (size.height - ch) / 2f
             // The frame: a band of the same width on every side of the picture, centred with it.
             val frameW = cw + m * 2
             val frameH = ch + m * 2
             val fx = (size.width - frameW) / 2f
             val fy = (size.height - frameH) / 2f
             // The frame hangs on the wall and throws a little shadow down it, which is what makes it
-            // read as an object rather than a rectangle of paint.
-            val sh = 30.dp.toPx()
+            // read as an object rather than a rectangle of paint. On smoked glass there is no wall
+            // to catch it, so it stays close to the edge: enough to lift the frame off the pane.
+            val sh = 9.dp.toPx()
             drawRect(
-                Brush.verticalGradient(listOf(Color(0x59000000), Color(0x00000000)), startY = fy + frameH, endY = fy + frameH + sh),
+                Brush.verticalGradient(listOf(Color(0x66000000), Color(0x00000000)), startY = fy + frameH, endY = fy + frameH + sh),
                 topLeft = Offset(fx - sh, fy + frameH),
                 size = Size(frameW + sh * 2, sh),
             )
             drawRect(
-                Brush.verticalGradient(listOf(Color(0x1E000000), Color(0x00000000)), startY = fy - sh * 0.5f, endY = fy),
-                topLeft = Offset(fx - sh * 0.5f, fy - sh * 0.5f),
-                size = Size(frameW + sh, sh * 0.5f),
+                Brush.horizontalGradient(listOf(Color(0x00000000), Color(0x59000000)), startX = fx + frameW, endX = fx + frameW + sh),
+                topLeft = Offset(fx + frameW, fy),
+                size = Size(sh, frameH),
             )
-            drawRect(frameColor, Offset(fx, fy), Size(frameW, t - fy))
-            drawRect(frameColor, Offset(fx, t + ch), Size(frameW, fy + frameH - (t + ch)))
-            drawRect(frameColor, Offset(fx, t), Size(l - fx, ch))
-            drawRect(frameColor, Offset(l + cw, t), Size(fx + frameW - (l + cw), ch))
+            // The mount, built outwards from the picture in four bands that still add up to 22dp:
+            // the shadow of the cut, the white core it exposes, the ivory face of the board, and the
+            // moulding outside it. Laid down from the outside in, so each band meets the next edge
+            // exactly. The picture is not pasted on the board — this is what says it is mounted.
+            // A band's offsets are measured in from the outside of the frame, so the moulding sits at
+            // 0 and the mount's cut — the part that touches the picture — ends at 22dp.
+            val bevelDark = 1.dp.toPx()
+            val bevelLight = 3.dp.toPx()
+            val moulding = m * 0.227f // 5dp of the frame's 22dp
+            fun band(from: Float, to: Float, color: Color) {
+                drawRect(color, Offset(fx + from, fy + from), Size(frameW - from * 2, to - from))
+                drawRect(color, Offset(fx + from, fy + frameH - to), Size(frameW - from * 2, to - from))
+                drawRect(color, Offset(fx + from, fy + to), Size(to - from, frameH - to * 2))
+                drawRect(color, Offset(fx + frameW - to, fy + to), Size(to - from, frameH - to * 2))
+            }
+            band(0f, m, frameMoulding)
+            band(moulding, m, frameColor)
+            band(m - bevelLight, m, frameCore)
+            band(m - bevelDark, m, frameBevel)
         } else {
             drawRect(frameColor, Offset(0f, 0f), Size(size.width, m))
             drawRect(frameColor, Offset(0f, size.height - m), Size(size.width, m))

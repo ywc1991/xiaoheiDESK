@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "v": "1.1.19",
+      "zh": [
+        "屏保背景墙改成深色玻璃，和小黑TV 频道面板同一块材料：近黑的近中性色、顶部 160dp 的白色高光、一点透进来的冷光和暖光，整块铺满屏幕，没有圆角也没有边框线。",
+        "白色画框按美术馆装裱重做成四层，总宽仍是 22dp：最外 5dp 略深的框条、17dp 象牙白卡纸、一条 2dp 的纸芯白边、贴画处 1dp 的斜切暗边——画看起来是嵌进卡纸里，而不是贴上去的。",
+        "画与画之间改为交叉淡化：新画约 0.9 秒到位，上一幅在被覆盖的同时继续淡出 2.4 秒，不再是一瞬间消失。",
+        "画名、22dp 等宽、随机播放、切换间隔都不变。"
+      ],
+      "en": [
+        "The wall behind the frame is now the same smoked glass as 小黑TV's channel panel: near-black neutral, a white sheen across its top 160dp, a whisper of cool and warm light inside, stretched edge to edge with no rounded corners and no rim line.",
+        "The white frame is rebuilt as a gallery mount in four layers, still 22dp in total: a 5dp moulding outside, a 17dp ivory board, a 2dp white core where the board is cut, and a 1dp shadow of that cut against the picture — so the painting reads as mounted, not pasted on.",
+        "Pictures now cross-fade: the new one is solid in about 0.9s while the previous one keeps dimming underneath for another 2.4s, instead of vanishing in a frame.",
+        "The name, the even 22dp width, the random order and the switch interval are unchanged."
+      ]
+    },
+    {
       "v": "1.1.18",
       "zh": [
         "屏保背景墙改成 iOS 26「液态玻璃」那种材质：不再偏暖米色，而是一层几乎无色的清澈玻璃——墙面只是淡冷的灰白，色相很轻微；玻璃本身几乎没有雾面感，只在四边内侧留一道极细的白色高光，顶边最亮、底部最淡，四角缓缓沉入中性的暗部。",
