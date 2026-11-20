@@ -183,7 +183,7 @@ private fun PictureFrame() {
 private val frameWidth = 22.dp
 
 /** The mat's colour: warm off-white, as a paper mount is, not the screen's pure white. */
-private val frameColor = Color(0xFFF7F6F2)
+private val frameColor = Color(0xFFFCFBF8)
 
 /** Between a painting's bottom edge and its name, which now sits on the painting itself. */
 private val CAPTION_INSET = 34.dp
@@ -885,10 +885,12 @@ private fun artCaptionBottom(pic: ArtImage, insetPx: Float): Dp? {
 private class ArtImage(val bmp: ImageBitmap, val content: android.util.Size?)
 
 /**
- * What a framed picture hangs against: a sheet of frosted glass in the warm-milk tone the wall had,
- * the way tvOS panels look — soft light behind it, a cold glint at the top edge, a fine frost over
- * the whole surface and the corners settling into shadow. Drawn for pictures shown whole, which are
- * the ones that leave the screen's edges free; nothing is added behind a picture that fills it.
+ * What a framed picture hangs against: a sheet of clear glass over a pale wall, in the iOS 26
+ * "liquid glass" manner (owner, 1.1.18) — the colour behind shows through almost untouched, the
+ * surface carries only the thinnest white veil, and what makes it read as glass is a crisp
+ * highlight running just inside the screen's edges, with the corners settling into a neutral
+ * shadow. Drawn for pictures shown whole, which are the ones that leave the screen's edges free;
+ * nothing is added behind a picture that fills it.
  */
 @Composable
 private fun WallBackdrop() {
@@ -899,67 +901,74 @@ private fun WallBackdrop() {
         Canvas(Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height
-            drawRect(Color(0xFFE9E1D3))
+            // A cool grey-white wall, not a warm one: the glass should have no colour of its own.
+            drawRect(Color(0xFFE7E6EA))
             drawRect(
                 Brush.radialGradient(
-                    colors = listOf(Color(0xFFFFF4DE), Color(0x00FFF4DE)),
-                    center = Offset(w * 0.26f, h * 0.14f),
+                    colors = listOf(Color(0xF2FAF3F6), Color(0x00FAF3F6)),
+                    center = Offset(w * 0.28f, h * 0.10f),
+                    radius = size.maxDimension * 0.74f,
+                ),
+            )
+            drawRect(
+                Brush.radialGradient(
+                    colors = listOf(Color(0xA6DCE8E7), Color(0x00DCE8E7)),
+                    center = Offset(w * 0.84f, h * 0.22f),
+                    radius = size.maxDimension * 0.58f,
+                ),
+            )
+            drawRect(
+                Brush.radialGradient(
+                    colors = listOf(Color(0xBFF8EEE7), Color(0x00F8EEE7)),
+                    center = Offset(w * 0.70f, h * 0.88f),
                     radius = size.maxDimension * 0.66f,
                 ),
             )
             drawRect(
                 Brush.radialGradient(
-                    colors = listOf(Color(0xE0C6AC8B), Color(0x00C6AC8B)),
-                    center = Offset(w * 0.88f, h * 0.80f),
-                    radius = size.maxDimension * 0.62f,
-                ),
-            )
-            drawRect(
-                Brush.radialGradient(
-                    colors = listOf(Color(0xB3E7CBD2), Color(0x00E7CBD2)),
-                    center = Offset(w * 0.76f, h * 0.12f),
-                    radius = size.maxDimension * 0.50f,
-                ),
-            )
-            drawRect(
-                Brush.radialGradient(
-                    colors = listOf(Color(0xA6B6C8BF), Color(0x00B6C8BF)),
-                    center = Offset(w * 0.16f, h * 0.88f),
-                    radius = size.maxDimension * 0.48f,
+                    colors = listOf(Color(0x99D5D2DD), Color(0x00D5D2DD)),
+                    center = Offset(w * 0.06f, h * 0.92f),
+                    radius = size.maxDimension * 0.52f,
                 ),
             )
         }
-        // The glass itself: the light it catches, its frost, and its edges.
+        // The glass itself: its veil, the light it catches, its frost, and its edges.
         Canvas(Modifier.fillMaxSize().diagLayer("frost")) {
             val w = size.width
             val h = size.height
+            // The merest white veil over the whole pane, a touch denser at the top.
+            drawRect(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0x24FFFFFF), Color(0x0AFFFFFF), Color(0x12FFFFFF)),
+                ),
+            )
             // Light raking across the pane from the top left.
             drawRect(
                 Brush.linearGradient(
-                    colors = listOf(Color(0x38FFFFFF), Color(0x0FFFFFFF), Color(0x00FFFFFF)),
+                    colors = listOf(Color(0x2AFFFFFF), Color(0x0AFFFFFF), Color(0x00FFFFFF)),
                     start = Offset(0f, 0f),
-                    end = Offset(w * 0.72f, h * 0.9f),
+                    end = Offset(w * 0.76f, h * 0.94f),
                 ),
             )
-            // A cold glint along the top edge, where the pane meets the light.
+            // A bright glint along the top edge, and the soft halo it throws inwards.
             drawRect(
                 Brush.verticalGradient(
-                    colors = listOf(Color(0x3DFFFFFF), Color(0x00FFFFFF)),
-                    endY = h * 0.2f,
+                    colors = listOf(Color(0x66FFFFFF), Color(0x00FFFFFF)),
+                    endY = h * 0.11f,
                 ),
             )
             // The room reflected in the pane: two soft vertical bands of light, wide and faint, the
             // way a window shows in a sheet of glass. Nothing sharp — a reflection, not a stripe.
             drawRect(
                 Brush.horizontalGradient(
-                    colors = listOf(Color(0x00FFFFFF), Color(0x16FFFFFF), Color(0x00FFFFFF)),
+                    colors = listOf(Color(0x00FFFFFF), Color(0x12FFFFFF), Color(0x00FFFFFF)),
                     startX = w * 0.04f,
                     endX = w * 0.46f,
                 ),
             )
             drawRect(
                 Brush.horizontalGradient(
-                    colors = listOf(Color(0x00FFFFFF), Color(0x0FFFFFFF), Color(0x00FFFFFF)),
+                    colors = listOf(Color(0x00FFFFFF), Color(0x0BFFFFFF), Color(0x00FFFFFF)),
                     startX = w * 0.62f,
                     endX = w * 0.90f,
                 ),
@@ -975,11 +984,11 @@ private fun WallBackdrop() {
                 }
                 y += grain.height
             }
-            // The pane is thick at its edges: each side goes a shade deeper over its last band, the
-            // way the rim of a sheet of frosted glass does. This is what reads as glass up close.
-            val edge = 110.dp.toPx()
-            val deep = Color(0x2E5A4A34)
-            val clear = Color(0x005A4A34)
+            // The pane is thick at its edges: each side goes a shade deeper over its last band. Only
+            // a shade now — clear glass has very little body of its own.
+            val edge = 90.dp.toPx()
+            val deep = Color(0x1A3C3A46)
+            val clear = Color(0x003C3A46)
             drawRect(Brush.verticalGradient(listOf(deep, clear), endY = edge), size = Size(w, edge))
             drawRect(
                 Brush.verticalGradient(listOf(clear, deep), startY = h - edge, endY = h),
@@ -993,11 +1002,19 @@ private fun WallBackdrop() {
             // And the corners settle a little further, so the pane has an inside and an outside.
             drawRect(
                 Brush.radialGradient(
-                    colors = listOf(Color(0x00000000), Color(0x1A6B5236), Color(0x38372616)),
-                    center = Offset(w * 0.5f, h * 0.42f),
-                    radius = size.maxDimension * 0.82f,
+                    colors = listOf(Color(0x00000000), Color(0x11202028), Color(0x2A15151C)),
+                    center = Offset(w * 0.5f, h * 0.44f),
+                    radius = size.maxDimension * 0.86f,
                 ),
             )
+            // The rim: a hairline of light just inside each edge, brightest along the top and
+            // fading round the corners — the single detail that makes a sheet of glass look like a
+            // sheet of glass rather than a tinted rectangle.
+            val hair = 1.5.dp.toPx()
+            drawRect(Color(0xA8FFFFFF), size = Size(w, hair))
+            drawRect(Color(0x40FFFFFF), topLeft = Offset(0f, h - hair), size = Size(w, hair))
+            drawRect(Color(0x5CFFFFFF), size = Size(hair, h))
+            drawRect(Color(0x5CFFFFFF), topLeft = Offset(w - hair, 0f), size = Size(hair, h))
         }
     }
 }
@@ -1014,7 +1031,7 @@ private fun frostGrainImage(): ImageBitmap {
     val px = IntArray(n * n)
     val rnd = Random(20261120)
     for (i in px.indices) {
-        val a = rnd.nextInt(0, 27)
+        val a = rnd.nextInt(0, 17)
         px[i] = if (rnd.nextBoolean()) (a shl 24) or 0xFFFFFF else (a shl 24)
     }
     return android.graphics.Bitmap

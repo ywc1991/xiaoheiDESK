@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.1.18",
+      "zh": [
+        "屏保背景墙改成 iOS 26「液态玻璃」那种材质：不再偏暖米色，而是一层几乎无色的清澈玻璃——墙面只是淡冷的灰白，色相很轻微；玻璃本身几乎没有雾面感，只在四边内侧留一道极细的白色高光，顶边最亮、底部最淡，四角缓缓沉入中性的暗部。",
+        "白画框提亮为接近纯白，在浅色玻璃前层次更清楚；画名、22dp 等宽框、随机播放都照旧。"
+      ],
+      "en": [
+        "The wall behind the frame is now liquid glass in the iOS 26 manner: no longer warm beige but clear and almost colourless — a cool grey-white wall with only a faint tint, the pane itself nearly free of frost, defined instead by a hairline of white light just inside the screen's edges, brightest along the top and fading round the corners.",
+        "The white frame is lifted close to pure white so it still reads against the pale glass; the name, the even 22dp frame and the random order are unchanged."
+      ]
+    },
+    {
       "v": "1.1.17",
       "zh": [
         "屏保背景改成苹果风格的毛玻璃：暖白色玻璃后面透出柔和的色彩光斑，表面一层极细的霜面颗粒，顶部有一道冷光、四边略深，画框像挂在玻璃前。",
