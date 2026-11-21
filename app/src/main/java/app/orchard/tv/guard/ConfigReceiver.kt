@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import app.orchard.tv.apps.TileSheet
 import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.ArtScope
 import app.orchard.tv.settings.Restricted
 import app.orchard.tv.settings.Effects
 import app.orchard.tv.system.DeviceProfile
@@ -168,6 +169,8 @@ class ConfigReceiver : BroadcastReceiver() {
         if (intent.hasExtra("guard_off_in_standby")) GuardSetup.setOffInStandby(context, intent.getBooleanExtra("guard_off_in_standby", false))
         if (intent.hasExtra("own_screensaver")) GuardSetup.setOwnScreensaver(context, intent.getBooleanExtra("own_screensaver", false))
         // aerial, photos, clock, videos or system.
+        // Which school of online museum paintings the gallery shows: all / cn / west (owner 1.1.20).
+        intent.getStringExtra("art_scope")?.let { AerialSettings.chooseArtScope(ArtScope.of(it)) }
         intent.getStringExtra("screensaver")?.let { key ->
             Wallpapers.init(context)
             ScreensaverMode.entries.firstOrNull { it.key == key }?.let { Wallpapers.chooseScreensaver(it) }

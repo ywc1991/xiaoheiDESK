@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "v": "1.1.20",
+      "zh": [
+        "在线名画新增 15 幅中国画（全部横屏、来自克利夫兰艺术博物馆 CC0 收藏）：髡残、王蒙、沈周、查士标、梅清、李士达、郎世宁等，以山水画为主。",
+        "屏保设置新增「名画范围」：全部混合 / 只看国画 / 只看国外名画，默认全部混合，随时可切换。",
+        "原有 29 幅国外名画、随机播放、画框、画名、切换间隔等都不变。"
+      ],
+      "en": [
+        "Added 15 Chinese paintings to the online gallery, all landscape-oriented and from the Cleveland Museum of Art's CC0 collection: Kuncan, Wang Meng, Shen Zhou, Zha Shibiao, Mei Qing, Li Shida, Castiglione and more, mostly landscapes.",
+        "A new Art collection setting in the screensaver options: All mixed / Chinese only / Western only, default All, switchable any time.",
+        "The original 29 Western paintings, random order, frame, captions and slide interval are unchanged."
+      ]
+    },
+    {
       "v": "1.1.19",
       "zh": [
         "屏保背景墙改成深色玻璃，和小黑TV 频道面板同一块材料：近黑的近中性色、顶部 160dp 的白色高光、一点透进来的冷光和暖光，整块铺满屏幕，没有圆角也没有边框线。",

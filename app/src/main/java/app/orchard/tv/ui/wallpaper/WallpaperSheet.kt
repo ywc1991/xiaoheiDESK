@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import app.orchard.tv.R
 import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.ArtScope
 import app.orchard.tv.settings.Restricted
 import app.orchard.tv.settings.RestrictedKind
 import app.orchard.tv.settings.FocusStyle
@@ -332,6 +333,16 @@ fun WallpaperSheet(
                         R.string.ss_frame, stringResource(R.string.ss_frame_hint), note,
                         listOf(true to R.string.st_on, false to R.string.st_off),
                         AerialSettings.screensaverFrame, AerialSettings::chooseScreensaverFrame,
+                    )
+                    // Which school of online museum paintings the gallery draws from (owner 1.1.20).
+                    if (Wallpapers.screensaver == ScreensaverMode.Gallery) Choices(
+                        R.string.ss_art_scope, stringResource(R.string.ss_art_scope_hint), note,
+                        listOf(
+                            ArtScope.All to R.string.ss_art_scope_all,
+                            ArtScope.Chinese to R.string.ss_art_scope_cn,
+                            ArtScope.Western to R.string.ss_art_scope_west,
+                        ),
+                        AerialSettings.artScope, AerialSettings::chooseArtScope,
                     )
                     // Gallery / USB pictures: show the whole picture or crop it to fill the screen.
                     if (Wallpapers.screensaver == ScreensaverMode.Gallery || Wallpapers.screensaver == ScreensaverMode.Usb) Choices(

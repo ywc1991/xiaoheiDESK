@@ -264,6 +264,11 @@
     <string name="ss_show_time_hint">航拍和照片屏保上的时间。时间和地名会不时挪一点位置，避免烧屏。</string>
     <string name="ss_frame">画框白边</string>
     <string name="ss_frame_hint">屏保画面四周加一圈细白边，让电视看起来像一幅挂画的画框。关闭则画面铺满全屏。</string>
+    <string name="ss_art_scope">名画范围</string>
+    <string name="ss_art_scope_hint">屏保的在线名画来自克利夫兰艺术博物馆：可只看国画、只看国外名画，或两者混合随机播放。</string>
+    <string name="ss_art_scope_all">全部混合</string>
+    <string name="ss_art_scope_cn">国画</string>
+    <string name="ss_art_scope_west">国外名画</string>
     <string name="ss_art_fit">画作显示</string>
     <string name="ss_art_fit_hint">「相框适应画作」让整幅画完整显示，比例不同处留黑边；「填充」则裁掉边缘铺满屏幕。</string>
     <string name="ss_art_fit_whole">相框适应画作</string>

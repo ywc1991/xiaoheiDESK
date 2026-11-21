@@ -33,6 +33,18 @@ enum class FocusStyle(val key: String) {
  * Where interface sounds come from. The TV's own are silent wherever its key sound setting is off,
  * which many TVs ship with (Sony, issue #160; #169), so that is not the default there.
  */
+/**
+ * Which of the museum paintings the gallery screensaver shows: the whole collection, just the
+ * Chinese paintings, or just the Western ones (owner, 1.1.20).
+ */
+enum class ArtScope(val key: String) {
+    All("all"), Chinese("cn"), Western("west");
+
+    companion object {
+        fun of(key: String?) = entries.firstOrNull { it.key == key } ?: All
+    }
+}
+
 enum class UiSounds(val key: String) {
     Tv("tv"), Aerial("aerial"), Off("off");
 
@@ -119,6 +131,9 @@ object AerialSettings {
 
     /** Show gallery/USB paintings whole (letterboxed) instead of cropping them to fill the screen. */
     var artFitWhole by mutableStateOf(true); private set
+
+    /** Which museum paintings the gallery screensaver draws from (owner, 1.1.20). */
+    var artScope by mutableStateOf(ArtScope.All); private set
 
     /** Seconds each screensaver picture (photos, gallery, USB) stays before advancing. */
     private var chosenArtSlideSeconds by mutableIntStateOf(DEFAULT_ART_SLIDE_SECONDS)
@@ -229,6 +244,7 @@ object AerialSettings {
         homePlate = prefs.getBoolean("home_plate", true)
         showDeskCat = prefs.getBoolean("show_desk_cat", true)
         artFitWhole = prefs.getBoolean("art_fit_whole", true)
+        artScope = ArtScope.of(prefs.getString("art_scope", null))
         chosenArtSlideSeconds = prefs.getInt("art_slide_seconds", DEFAULT_ART_SLIDE_SECONDS)
             .takeIf { it in ART_SLIDE_SECONDS } ?: DEFAULT_ART_SLIDE_SECONDS
         cornerAutoPeek = prefs.getBoolean("corner_auto_peek", false)
@@ -332,6 +348,11 @@ object AerialSettings {
     fun chooseArtFitWhole(on: Boolean) {
         artFitWhole = on
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("art_fit_whole", on) }
+    }
+
+    fun chooseArtScope(scope: ArtScope) {
+        artScope = scope
+        app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putString("art_scope", scope.key) }
     }
 
     fun chooseArtSlideSeconds(seconds: Int) {

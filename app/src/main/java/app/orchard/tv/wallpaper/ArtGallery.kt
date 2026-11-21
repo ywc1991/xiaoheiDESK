@@ -2,6 +2,8 @@ package app.orchard.tv.wallpaper
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.ArtScope
 import app.orchard.tv.system.DiagLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -51,13 +53,21 @@ object ArtGallery {
         val out = mutableListOf<Artwork>()
         try {
             val raw = context.assets.open("art_online.json").bufferedReader().use { it.readText() }
-            val arr = org.json.JSONObject(raw).getJSONArray("items")
+            val all = org.json.JSONObject(raw).getJSONArray("items")
+            // Keep only the chosen school before downloading, so a Western-only run never spends
+            // data on the Chinese paintings (or the other way round). The slot index is taken from
+            // the full list, so a cached file always matches its URL whatever the scope (owner 1.1.20).
+            val scope = AerialSettings.artScope
+            val indices = (0 until all.length()).filter { i ->
+                scope == ArtScope.All || all.getJSONObject(i).optString("c") == scope.key
+            }
+            val arr = all
             val dir = cacheDir(context)
             // One slot per painting, in list order. A slot is an optional Artwork: null when both
             // the cache and the download failed, so one dead link cannot stall the others.
             val slots = coroutineScope {
                 val gate = Semaphore(PARALLEL)
-                (0 until arr.length()).map { i -> async<Artwork?>(Dispatchers.IO) {
+                indices.map { i -> async<Artwork?>(Dispatchers.IO) {
                     gate.withPermit {
                         val o = arr.getJSONObject(i)
                         val url = o.optString("u")
@@ -82,7 +92,7 @@ object ArtGallery {
                 } }.map { it.await() }
             }
             slots.forEach { if (it != null) out += it }
-            DiagLog.i("$TAG online ready: ${out.size}/${arr.length()}")
+            DiagLog.i("$TAG online ready: ${out.size}/${indices.size} (scope ${scope.key})")
         } catch (e: Exception) {
             DiagLog.i("$TAG online failed: ${e.message}")
         }
