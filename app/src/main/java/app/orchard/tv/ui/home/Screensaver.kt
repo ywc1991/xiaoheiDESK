@@ -290,6 +290,13 @@ object AerialStart {
      * film will be at [leadMs] on (AerialStream.prepareStart). The screensaver then starts there.
      */
     suspend fun prepareAhead(context: android.content.Context, leadMs: Long) {
+        // Gallery/USB: scan the drive and decode the first painting now, while Home is still up,
+        // so the screensaver does not open onto seconds of black (owner, 1.1.21).
+        if (Wallpapers.screensaver == ScreensaverMode.Usb || Wallpapers.screensaver == ScreensaverMode.Gallery) {
+            val src = if (Wallpapers.screensaver == ScreensaverMode.Usb) ArtGallery.Source.Usb else ArtGallery.Source.Online
+            ArtPrefetch.warm(context, src)
+            return
+        }
         if (Wallpapers.screensaver != ScreensaverMode.Aerial || AerialFormats.screensaverCarriesWallpaper(context)) return
         val quality = AerialFormats.forScreensaver(context, overWallpaper = true).let { q ->
             aerialQualityCap?.takeIf { it.ordinal < q.ordinal } ?: q
@@ -742,30 +749,33 @@ private fun ArtSaver(
     // No strip is reserved under the picture: its name prints on the picture itself (owner).
     val artW = (Wallpapers.screenW - insetPx * 2).roundToInt().coerceAtLeast(1)
     val artH = (Wallpapers.screenH - insetPx * 2).roundToInt().coerceAtLeast(1)
-    suspend fun decodeArt(file: java.io.File): ArtImage? = withContext(Dispatchers.Default) {
-        if (fitWhole) {
-            Images.decodeFitMeasured(file, artW, artH)?.let { (bmp, content) ->
-                ArtImage(bmp.asImageBitmap(), content)
-            }
-        } else {
-            Images.decodeCover(file, Wallpapers.screenW, Wallpapers.screenH)?.let { ArtImage(it.asImageBitmap(), null) }
-        }
-    }
+    // The cover crop fills the whole screen; the whole-picture mode leaves room for the mat. The
+    // prewarmer used exactly these dimensions, so its decoded first frame is interchangeable.
+    val decodeW = if (fitWhole) artW else Wallpapers.screenW
+    val decodeH = if (fitWhole) artH else Wallpapers.screenH
+    suspend fun decodeArt(file: java.io.File): ArtImage? = decodeArtFile(file, fitWhole, decodeW, decodeH)
+
     val art = remember { mutableStateListOf<ArtGallery.Artwork>() }
     var ready by remember { mutableStateOf(false) }
     var slide by remember { mutableIntStateOf(0) }
     var image by remember { mutableStateOf<Pair<Int, ArtImage>?>(null) }
+    // The first frame scanned and decoded eight seconds ago, while Home was still up (owner 1.1.21).
+    var prefetched by remember { mutableStateOf<ArtImage?>(null) }
 
     // Load the source once. A failure or an empty library hands over to the photo screensaver.
     // The museum's paintings are shuffled, so each visit starts somewhere else and the screensaver
     // never walks the same order twice (owner); the owner's own USB folders keep their order, which
-    // is how they arranged them.
+    // is how they arranged them. A warmed list from before the saver opened is used first, so the
+    // drive is not scanned a second time and the first frame is already decoded — no black gap.
     LaunchedEffect(source) {
-        val list = if (source == ArtGallery.Source.Online) ArtGallery.online(context).shuffled() else ArtGallery.usb()
+        val warmed = ArtPrefetch.take(source)
+        val list = warmed?.first
+            ?: if (source == ArtGallery.Source.Online) ArtGallery.online(context).shuffled() else ArtGallery.usb()
         if (list.isEmpty()) {
             onUnavailable()
         } else {
             art.addAll(list)
+            if (warmed != null) prefetched = warmed.second
             ready = true
         }
     }
@@ -777,7 +787,11 @@ private fun ArtSaver(
     LaunchedEffect(art.size, slide, fitWhole, framed) {
         if (!ready || art.isEmpty()) return@LaunchedEffect
         val idx = slide.mod(art.size)
-        val pic = decoded[idx] ?: decodeArt(art[idx].file)
+        // First slide: take the frame decoded before the saver opened instead of decoding again —
+        // that decode was the black gap. Drop it once used so a reshuffle cannot show a stale frame.
+        val warmed = if (idx == 0 && decoded.isEmpty()) prefetched else null
+        val pic = decoded[idx] ?: warmed ?: decodeArt(art[idx].file)
+        if (warmed != null) prefetched = null
         if (pic != null) {
             decoded[idx] = pic
             image = idx to pic
@@ -910,6 +924,71 @@ private fun artCaptionBottom(pic: ArtImage, insetPx: Float): Dp? {
 
 /** A decoded painting, plus the size its content fills inside the screen, for a mat that hugs it. */
 private class ArtImage(val bmp: ImageBitmap, val content: android.util.Size?)
+
+/** The picture's canvas in pixels, after the mat's inset. Shared by the live saver and the prewarmer. */
+private fun artCanvasPx(insetPx: Float): Pair<Int, Int> =
+    (Wallpapers.screenW - insetPx * 2).roundToInt().coerceAtLeast(1) to
+        (Wallpapers.screenH - insetPx * 2).roundToInt().coerceAtLeast(1)
+
+/** Decode one artwork to a [ArtImage] off the main thread, whole (letterboxed) or cover-cropped. */
+private suspend fun decodeArtFile(
+    file: java.io.File,
+    fitWhole: Boolean,
+    artW: Int,
+    artH: Int,
+): ArtImage? = withContext(Dispatchers.Default) {
+    if (fitWhole) {
+        Images.decodeFitMeasured(file, artW, artH)?.let { (bmp, content) ->
+            ArtImage(bmp.asImageBitmap(), content)
+        }
+    } else {
+        Images.decodeCover(file, artW, artH)?.let { ArtImage(it.asImageBitmap(), null) }
+    }
+}
+
+/**
+ * The first picture of a USB/gallery slideshow, scanned and decoded while Home is still up — the
+ * eight seconds before the screensaver starts (owner, 1.1.21). Without this, entering the saver
+ * scans the whole drive and decodes a large photo on the spot, and the black backing shows through
+ * for seconds. The list and the decoded first frame are handed to [ArtSaver], which consumes them
+ * once and clears the cache, so a later visit scans again rather than showing a stale picture.
+ */
+private object ArtPrefetch {
+    @Volatile private var source: ArtGallery.Source? = null
+    @Volatile private var list: List<ArtGallery.Artwork>? = null
+    @Volatile private var first: ArtImage? = null
+
+    /** True only when [src] still names what is on screen; guards a mode switch between warm and use. */
+    fun matches(src: ArtGallery.Source): Boolean = source == src && list != null && first != null
+
+    fun take(src: ArtGallery.Source): Pair<List<ArtGallery.Artwork>, ArtImage>? {
+        if (!matches(src)) return null
+        val l = list ?: return null
+        val f = first ?: return null
+        // Consume once: a stale frame must never reappear on a later visit.
+        list = null; first = null; source = null
+        return l to f
+    }
+
+    suspend fun warm(context: android.content.Context, src: ArtGallery.Source) {
+        val fitted = AerialSettings.artFitWhole
+        val framed = AerialSettings.screensaverFrame
+        val density = context.resources.displayMetrics.density
+        val insetPx = if (framed && fitted) 22f * density else 0f
+        val (w, h) = if (fitted) artCanvasPx(insetPx) else Wallpapers.screenW to Wallpapers.screenH
+        // Scan and decode off the main thread, exactly as the live saver does.
+        val found = withContext(Dispatchers.IO) {
+            if (src == ArtGallery.Source.Online) ArtGallery.online(context).shuffled() else ArtGallery.usb()
+        }
+        if (found.isEmpty()) return
+        val decoded = decodeArtFile(found[0].file, fitted, w, h) ?: return
+        // Publish all three at once so a partially warmed cache is never consumed.
+        first = decoded
+        list = found
+        source = src
+        DiagLog.i("art prefetch ready (${src.name}): ${found.size} pictures, first frame decoded")
+    }
+}
 
 /**
  * What a framed picture hangs against, in the dark: the same smoked glass as 小黑TV's channel panel

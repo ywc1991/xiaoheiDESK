@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "v": "1.1.21",
+      "zh": [
+        "修复 U 盘 / 名画屏保刚打开时黑屏几秒的问题：在桌面闲置的最后 8 秒，就提前把 U 盘图库扫描好、第一张画解码好，屏保一出现直接显示，不再先黑一阵。",
+        "原有的随机播放、四层装裱画框、深色玻璃背景、画名、慢淡出和切换间隔都不变。"
+      ],
+      "en": [
+        "Fixed the few seconds of black when the USB / gallery screensaver first opens: in the last 8 idle seconds on Home, the picture list is scanned and the first painting is decoded ahead of time, so the screensaver shows it immediately instead of opening onto black.",
+        "Random order, the four-layer mount, the smoked-glass backing, captions, the slow fade and the switch interval are all unchanged."
+      ]
+    },
+    {
       "v": "1.1.20",
       "zh": [
         "在线名画新增 15 幅中国画（全部横屏、来自克利夫兰艺术博物馆 CC0 收藏）：髡残、王蒙、沈周、查士标、梅清、李士达、郎世宁等，以山水画为主。",
