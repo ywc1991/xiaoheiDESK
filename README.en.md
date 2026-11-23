@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/brand/icon.png" width="96" alt="Aerial icon">
+<img src="docs/brand/icon.png" width="96" alt="xiaoheiDESK icon">
 
-# Aerial
+# xiaoheiDESK
 
 **A calm home screen for Android TV.**
 
@@ -11,20 +11,20 @@ Made for Xiaomi, TCL, Skyworth, Sony and other TVs sold in China, and runs on bo
 
 [中文](README.md) · **English**
 
-<a href="https://aerial.qust.me/en/"><img alt="Website" src="https://img.shields.io/badge/Website-1f6feb?style=for-the-badge&logo=safari&logoColor=white"></a>
-<a href="https://github.com/pengchujin/aerial-tv/releases/latest"><img alt="Download APK" src="https://img.shields.io/badge/Download%20APK-34a853?style=for-the-badge&logo=android&logoColor=white"></a>
+<a href="https://github.com/ywc1991/xiaoheiDESK"><img alt="Website" src="https://img.shields.io/badge/Website-1f6feb?style=for-the-badge&logo=safari&logoColor=white"></a>
+<a href="https://github.com/ywc1991/xiaoheiDESK/releases/latest"><img alt="Download APK" src="https://img.shields.io/badge/Download%20APK-34a853?style=for-the-badge&logo=android&logoColor=white"></a>
 <a href="#install"><img alt="Install" src="https://img.shields.io/badge/Install-d97757?style=for-the-badge&logo=gnubash&logoColor=white"></a>
 
-<a href="https://github.com/pengchujin/aerial-tv/releases/latest"><img alt="Version" src="https://img.shields.io/github/v/release/pengchujin/aerial-tv?style=flat-square&label=version&color=2997ff"></a>
+<a href="https://github.com/ywc1991/xiaoheiDESK/releases/latest"><img alt="Version" src="https://img.shields.io/github/v/release/ywc1991/xiaoheiDESK?style=flat-square&label=version&color=2997ff"></a>
 <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-555555?style=flat-square"></a>
 <img alt="Android TV 5.0+" src="https://img.shields.io/badge/Android%20TV-5.0%2B-3ddc84?style=flat-square&logo=android&logoColor=white">
 <a href="#lite"><img alt="Lite 4.0–4.4 beta" src="https://img.shields.io/badge/Lite-4.0%E2%80%934.4%20beta-f5a623?style=flat-square&logo=android&logoColor=white"></a>
 
-![Aerial's home screen](site/img/home.jpg)
+![xiaoheiDESK's home screen](site/img/home.jpg)
 
-| The TV's stock home screen | With Aerial |
+| The TV's stock home screen | With xiaoheiDESK |
 |:---:|:---:|
-| <img src="site/img/stock-xiaomi.jpg" alt="The stock home screen, covered in show recommendations and membership badges"> | <img src="site/img/home.jpg" alt="Aerial's home screen"> |
+| <img src="site/img/stock-xiaomi.jpg" alt="The stock home screen, covered in show recommendations and membership badges"> | <img src="site/img/home.jpg" alt="xiaoheiDESK's home screen"> |
 
 </div>
 
@@ -49,7 +49,7 @@ Made for Xiaomi, TCL, Skyworth, Sony and other TVs sold in China, and runs on bo
 </p>
 
 <p align="center">
-  <img src="site/img/screensaver-aerial.jpg" width="49%" alt="Aerial screensaver">
+  <img src="site/img/screensaver-aerial.jpg" width="49%" alt="xiaoheiDESK screensaver">
   <img src="site/img/columns.jpg" width="49%" alt="Personalize, with six apps per row">
 </p>
 
@@ -88,11 +88,11 @@ A more detailed guide by brand, including TVs that cannot open ADB, is in [docs/
 **With an agent (recommended)**: paste this into an agent that can run commands on your computer (Claude Code, Codex, WorkBuddy, Trae, Cursor, Doubao for desktop…):
 
 ```text
-Please install Aerial, an open-source home screen for Android TV, on my TV, and make it the home screen the TV starts into.
+Please install xiaoheiDESK, an open-source home screen for Android TV, on my TV, and make it the home screen the TV starts into.
 TV IP address: <TV-IP>
 Keep ADB debugging on: yes
 
-The install guide is here: https://aerial.qust.me/en/agent.md
+The install guide is here: https://github.com/ywc1991/xiaoheiDESK#install
 (If you can't open it, use https://raw.githubusercontent.com/pengchujin/aerial-tv/main/site/en/agent.md)
 
 Read the whole guide before you start. Then run the commands yourself on my computer; don't just tell me the steps. Tell me when I need to do something on the TV.
@@ -108,30 +108,30 @@ Phone apps and web chats, including Doubao on a phone, only tell you the steps; 
 
 | Download | For |
 |---|---|
-| [aerial-standard.apk](https://aerial.qust.me/download/aerial-standard.apk) | Android 5.0 and later; try this first |
-| [aerial-guard.apk](https://aerial.qust.me/download/aerial-guard.apk) | when standard is refused because the TV won't install home-screen apps |
-| [aerial-lite.apk](https://aerial.qust.me/download/aerial-lite.apk) | Android 4.0-4.4 (see [Aerial Lite](#lite) below) |
+| [xiaoheiDESK.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest/download/xiaoheiDESK.apk) | Android 5.0 and later; try this first |
+| [xiaoheiDESK.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest/download/xiaoheiDESK.apk) | when standard is refused because the TV won't install home-screen apps |
+| [xiaoheiDESK-lite.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest/download/xiaoheiDESK-lite.apk) | Android 4.0-4.4 (see [xiaoheiDESK Lite](#lite) below) |
 
-Then press Home: if Android asks which app to use, choose Aerial, then Always, and you're done (stock Android TV usually works this way). If Home goes straight back to the old launcher without asking (most Chinese-brand TVs), open Aerial from the app list; it shows "Make Aerial Your Home Screen", whose entries open the TV's settings for the home guard (Accessibility) and notification access. If the TV's settings don't have them, Aerial works only as an ordinary app; to take over Home, run the command below or hand it to an agent once (it installs over, settings stay).
+Then press Home: if Android asks which app to use, choose xiaoheiDESK, then Always, and you're done (stock Android TV usually works this way). If Home goes straight back to the old launcher without asking (most Chinese-brand TVs), open xiaoheiDESK from the app list; it shows "Make xiaoheiDESK Your Home Screen", whose entries open the TV's settings for the home guard (Accessibility) and notification access. If the TV's settings don't have them, xiaoheiDESK works only as an ordinary app; to take over Home, run the command below or hand it to an agent once (it installs over, settings stay).
 
-**Without a computer**: users have installed Aerial with the phone apps Beetle ADB (甲壳虫 ADB 助手) and Super Xiaoai (超级小爱); we haven't tested each one. The steps are the same as the Windows ones above; once it's installed, run the check from a computer if you can (see [Check](site/en/agent.md#check-required)).
+**Without a computer**: users have installed xiaoheiDESK with the phone apps Beetle ADB (甲壳虫 ADB 助手) and Super Xiaoai (超级小爱); we haven't tested each one. The steps are the same as the Windows ones above; once it's installed, run the check from a computer if you can (see [Check](site/en/agent.md#check-required)).
 
 **One command (macOS / Linux)**:
 
 ```bash
-curl -fsSL https://aerial.qust.me/install.sh | KEEP_ADB=1 TV=192.168.1.20 bash
+curl -fsSL https://raw.githubusercontent.com/ywc1991/xiaoheiDESK/main/tools/install.sh | KEEP_ADB=1 TV=192.168.1.20 bash
 ```
 
 On a TV that only offers Wireless debugging (step 1), `export ADB_PAIR=<pairing-screen IP:port> ADB_CODE=<6-digit code> ADB_CONNECT=<main-screen IP:port>` before running that command; one with no pairing-code entry (TCL Q10M, Q10L, Crane 6 Ultra and similar) first follows the [by-brand guide](docs/devices/adb-by-brand.md), authorizing once over a USB cable and running `adb tcpip 5555`, then runs the command as usual.
 
-**By hand**: download [aerial-standard.apk](https://aerial.qust.me/download/aerial-standard.apk). On a TV that only offers Wireless debugging (step 1), do one of these first, then run the commands:
+**By hand**: download [xiaoheiDESK.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest/download/xiaoheiDESK.apk). On a TV that only offers Wireless debugging (step 1), do one of these first, then run the commands:
 
 - **With a pairing-code entry** (Sony BRAVIA on Android 14 and similar): pair as in step 1 and run `adb tcpip 5555` once connected, so the first line of the commands is 5555; without that, use the IP:port from the main Wireless debugging screen on the first line; the rest is the same.
 - **Without a pairing-code entry** (TCL Q10M, Q10L, Crane 6 Ultra and similar): follow the [by-brand guide](docs/devices/adb-by-brand.md) to connect the TV to a computer with a USB cable, then run `adb tcpip 5555` once authorized; until then, the first line's `adb connect <TV-IP>:5555` does not work.
 
 ```bash
 adb connect 192.168.1.20:5555
-adb install -r aerial-standard.apk
+adb install -r xiaoheiDESK.apk
 adb shell pm grant app.orchard.tv android.permission.WRITE_SECURE_SETTINGS
 adb shell cmd notification allow_listener app.orchard.tv/app.orchard.tv.guard.RevivalListener
 adb shell appops set app.orchard.tv SYSTEM_ALERT_WINDOW allow
@@ -139,55 +139,55 @@ adb shell am start -n app.orchard.tv/.MainActivity
 adb shell cmd package compile -m speed -f app.orchard.tv
 ```
 
-The last line makes Aerial smoother on the TV: run it about 5 seconds after Aerial shows, and it takes some tens of seconds. Without it, Aerial is only compiled at its next update from Control Center.
+The last line makes xiaoheiDESK smoother on the TV: run it about 5 seconds after xiaoheiDESK shows, and it takes some tens of seconds. Without it, xiaoheiDESK is only compiled at its next update from Control Center.
 
 On Windows, use an agent, or follow the Windows steps in the [install guide](site/en/agent.md).
 
-**Updating**: from 1.32, Control Center shows New Version when there is one; choose Download and Install there and confirm in the TV's own installer (checked on Xiaomi and TCL). Aerial comes back afterwards with every setting kept. On TVs that do not let apps install apps, updating means running the install command again: the update page has a QR code that opens this TV's command on a phone, ready to copy or to hand to an agent. 1.31 and earlier have no such button, so this once, run the install command again.
+**Updating**: from 1.32, Control Center shows New Version when there is one; choose Download and Install there and confirm in the TV's own installer (checked on Xiaomi and TCL). xiaoheiDESK comes back afterwards with every setting kept. On TVs that do not let apps install apps, updating means running the install command again: the update page has a QR code that opens this TV's command on a phone, ready to copy or to hand to an agent. 1.31 and earlier have no such button, so this once, run the install command again.
 
 <a id="lite"></a>
 
-### Android 4.0–4.4: Aerial Lite (beta)
+### Android 4.0–4.4: xiaoheiDESK Lite (beta)
 
-TVs and boxes on Android 4.0–4.4 cannot run the full app (its UI framework needs Android 5.0), so there is a separate **Aerial Lite**: package `app.orchard.tv.lite`, looking the same as the full app.
+TVs and boxes on Android 4.0–4.4 cannot run the full app (its UI framework needs Android 5.0), so there is a separate **xiaoheiDESK Lite**: package `app.orchard.tv.lite`, looking the same as the full app.
 
 > **Lite is at its first release (1.0), a beta.** It was tested on Android 4.0.4 / 4.4.4 emulators and on newer Xiaomi and TCL TVs, not yet on a real 4.x TV, and may still have many small problems. **It is for Android 4.0–4.4 only**; on Android 5.0 and later use the full app above. Report problems with the [device support form](https://github.com/pengchujin/aerial-tv/issues/new?template=device.yml), with Lite in the title.
 
 **One command (macOS / Linux)**: the same command as the full app; the script installs Lite by itself on an Android 4.x TV. To ask for it:
 
 ```bash
-curl -fsSL https://aerial.qust.me/install.sh | TV=192.168.1.20 bash -s lite
+curl -fsSL https://raw.githubusercontent.com/ywc1991/xiaoheiDESK/main/tools/install.sh | TV=192.168.1.20 bash -s lite
 ```
 
-**By hand**: download [aerial-lite.apk](https://aerial.qust.me/download/aerial-lite.apk), then:
+**By hand**: download [xiaoheiDESK-lite.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest/download/xiaoheiDESK-lite.apk), then:
 
 ```bash
 adb connect 192.168.1.20:5555
-adb install -r aerial-lite.apk
+adb install -r xiaoheiDESK-lite.apk
 adb shell pm grant app.orchard.tv.lite android.permission.WRITE_SECURE_SETTINGS   # for brightness; Android 4.0 refuses it, which is fine
 adb shell am start -n app.orchard.tv.lite/.HomeActivity
 ```
 
 **USB drive**: copy `aerial-lite.apk` to a drive and open it with the TV's file manager.
 
-**Afterwards**: press **Home** on the remote; when Android asks which app to use, choose **Aerial Lite**, then **Always**. If no question comes and the old launcher opens, the firmware keeps Home for its own launcher: open Lite from the app list.
+**Afterwards**: press **Home** on the remote; when Android asks which app to use, choose **xiaoheiDESK Lite**, then **Always**. If no question comes and the old launcher opens, the firmware keeps Home for its own launcher: open Lite from the app list.
 
 **Differences from the full app**: no Home Guard (accessibility takeover), so Home and boot depend on Android's default home; no aerial wallpaper, My Videos wallpaper, input tiles (4.x has no TV input framework; the Inputs button opens the TV's own input panel) or in-app updates (update by installing again; settings are kept). The aerial screensaver, photos and the daily picture, clocks, folders, the press-and-hold menu, Control Center, Personalize and the phone page are all there. More in [docs/LITE.md](docs/LITE.md) (Chinese).
 
-**Undo**: on the TV, Settings → Apps → Aerial Lite → Clear defaults, then press Home and pick the old launcher; or uninstall it: `adb uninstall app.orchard.tv.lite` (the one command's `bash -s restore --uninstall` removes it too).
+**Undo**: on the TV, Settings → Apps → xiaoheiDESK Lite → Clear defaults, then press Home and pick the old launcher; or uninstall it: `adb uninstall app.orchard.tv.lite` (the one command's `bash -s restore --uninstall` removes it too).
 
 ### Undo
 
 ```bash
-curl -fsSL https://aerial.qust.me/install.sh | TV=192.168.1.20 bash -s restore
+curl -fsSL https://raw.githubusercontent.com/ywc1991/xiaoheiDESK/main/tools/install.sh | TV=192.168.1.20 bash -s restore
 ```
 
-Add `--uninstall` (`bash -s restore --uninstall`) to remove Aerial as well. Without bash (Windows), the adb commands one by one are under [Undo in the install guide](site/en/agent.md#undo).
+Add `--uninstall` (`bash -s restore --uninstall`) to remove xiaoheiDESK as well. Without bash (Windows), the adb commands one by one are under [Undo in the install guide](site/en/agent.md#undo).
 
 To have an AI do it (it needs to run commands on a computer), paste this:
 
 ```text
-Please follow the "Undo" section of https://aerial.qust.me/en/agent.md to give my TV (IP address: <TV-IP>) its original home screen back, without uninstalling Aerial.
+Please follow the "Undo" section of https://github.com/ywc1991/xiaoheiDESK#install to give my TV (IP address: <TV-IP>) its original home screen back, without uninstalling xiaoheiDESK.
 Run the commands yourself on my computer, and at the end paste the raw output of settings get secure enabled_accessibility_services and of dumpsys window | grep mCurrentFocus after pressing Home.
 ```
 
@@ -195,16 +195,16 @@ Run the commands yourself on my computer, and at the end paste the raw output of
 
 - **Will it work on my TV?** See [Supported TVs](#supported-tvs) below.
 
-- **Installed only the APK from a USB stick**: from 1.32 Aerial has an icon in the TV's app list and, when opened, shows how to make it the Home screen. With the APK alone, Home, power-on and wake still go to the old launcher; run the command above or hand it to an agent once more (it installs over, settings stay).
+- **Installed only the APK from a USB stick**: from 1.32 xiaoheiDESK has an icon in the TV's app list and, when opened, shows how to make it the Home screen. With the APK alone, Home, power-on and wake still go to the old launcher; run the command above or hand it to an agent once more (it installs over, settings stay).
 - **TCL shows a 多屏互动 prompt**: press Right, then OK, to choose 同意 (Agree).
 - **Skyworth: `adb install` fails with `INSTALL_FAILED_USER_RESTRICTED`**: run `adb shell settings put global verifier_verify_adb_installs 0`, then install again (from a user's report; see the [agent guide](site/en/agent.md#common-cases)).
-- **The firmware won't install home-screen apps**: add `-s guard` to the end of the command, or use [aerial-guard.apk](https://aerial.qust.me/download/aerial-guard.apk).
-- **What `KEEP_ADB=1` does**: Xiaomi turns ADB off after standby; with it, Aerial turns it back on so you can update later.
-- **Do my apps, subscriptions, Xiaoai, account and cable TV stay?** Yes. Aerial only replaces the home screen. The old home screen is in the app list (Xiaomi Video and PatchWall open from the 桌面 tile), and Xiaoai, the Xiaomi account and cable TV work as before. A boot ad comes from the firmware and stays.
+- **The firmware won't install home-screen apps**: add `-s guard` to the end of the command, or use [xiaoheiDESK.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest/download/xiaoheiDESK.apk).
+- **What `KEEP_ADB=1` does**: Xiaomi turns ADB off after standby; with it, xiaoheiDESK turns it back on so you can update later.
+- **Do my apps, subscriptions, Xiaoai, account and cable TV stay?** Yes. xiaoheiDESK only replaces the home screen. The old home screen is in the app list (Xiaomi Video and PatchWall open from the 桌面 tile), and Xiaoai, the Xiaomi account and cable TV work as before. A boot ad comes from the firmware and stays.
 
 ## How it stays your home screen
 
-Most TVs sold in China only accept their own home screen and clear third-party apps in standby. So Aerial uses an accessibility service to switch back whenever the stock home screen appears (it only looks at which window is in front, never at what's on screen), and a notification listener to get the system to restart it after a kill (it reads no notifications). Old Xiaomi sets on Android 6 report no window changes from their home screen, so there the guard reads the system's usage stats; it also knows the home screens some Coocaa and Skyworth firmware start in their own way. Stock Android TV needs none of this: Aerial is simply the default home screen.
+Most TVs sold in China only accept their own home screen and clear third-party apps in standby. So xiaoheiDESK uses an accessibility service to switch back whenever the stock home screen appears (it only looks at which window is in front, never at what's on screen), and a notification listener to get the system to restart it after a kill (it reads no notifications). Old Xiaomi sets on Android 6 report no window changes from their home screen, so there the guard reads the system's usage stats; it also knows the home screens some Coocaa and Skyworth firmware start in their own way. Stock Android TV needs none of this: xiaoheiDESK is simply the default home screen.
 
 ## Supported TVs
 
@@ -215,28 +215,28 @@ Most TVs sold in China only accept their own home screen and clear third-party a
 | Xiaomi / Redmi | MiTV-MFTR0 (Redmi X65 2026), MFFU0, MTSU0 (S65 Mini LED 2026) | Android 14 | ✅ In daily use ([MFTR0](docs/devices/xiaomi-mitv-mftr0.md), [MFFU0](docs/devices/xiaomi-mitv-mffu0.md), [MTSU0](docs/devices/xiaomi-mitv-mtsu0.md)) |
 | Xiaomi / Redmi | MiTV-ASTR0 (Redmi A Pro 75, HyperOS 2) | Android 11 | ✅ Home, reboot, standby wake, volume and brightness work ([#1042](https://github.com/pengchujin/aerial-tv/issues/1042)) |
 | Xiaomi | MiTV-ASTP0, ASTP1, NSOP0, MFTP0 | Android 9 | ✅ MFTP0 takes 30–60 s to come back after the system clears it ([notes](docs/devices/xiaomi-mitv-mftp0.md)) |
-| Xiaomi | Mi TV 4 / 4A / 4X / 3S, Mi Box 4 | Android 6 | ✅ From 1.43; Home takes a few seconds to return to Aerial ([notes](docs/devices/xiaomi-android6.md)) |
-| Xiaomi | Mi TV 2S (MIUITV 1.3.33) | Android 5.1 | ✅ Full app installed from USB; with Home Guard turned on from Control Center, Home, power cycle and standby wake return to Aerial ([#1237](https://github.com/pengchujin/aerial-tv/issues/1237)) |
-| Xiaomi | Mi TV 2 (MiTV2-49) | Android 4.3 | ❌ Aerial Lite installs and runs, but the system opens Xiaomi's launcher by component on Home, so it cannot be the home screen ([#770](https://github.com/pengchujin/aerial-tv/issues/770)) |
-| Huawei | M330 box | Android 4.4 | ❌ Aerial Lite installs, but the firmware sets its own launcher back as the default at every boot ([#850](https://github.com/pengchujin/aerial-tv/issues/850)) |
+| Xiaomi | Mi TV 4 / 4A / 4X / 3S, Mi Box 4 | Android 6 | ✅ From 1.43; Home takes a few seconds to return to xiaoheiDESK ([notes](docs/devices/xiaomi-android6.md)) |
+| Xiaomi | Mi TV 2S (MIUITV 1.3.33) | Android 5.1 | ✅ Full app installed from USB; with Home Guard turned on from Control Center, Home, power cycle and standby wake return to xiaoheiDESK ([#1237](https://github.com/pengchujin/aerial-tv/issues/1237)) |
+| Xiaomi | Mi TV 2 (MiTV2-49) | Android 4.3 | ❌ xiaoheiDESK Lite installs and runs, but the system opens Xiaomi's launcher by component on Home, so it cannot be the home screen ([#770](https://github.com/pengchujin/aerial-tv/issues/770)) |
+| Huawei | M330 box | Android 4.4 | ❌ xiaoheiDESK Lite installs, but the firmware sets its own launcher back as the default at every boot ([#850](https://github.com/pengchujin/aerial-tv/issues/850)) |
 | Xiaomi (Fengmi) | Ultraman series projector | Android 9 | ✅ ([notes](docs/devices/xiaomi-ultraman-projector.md)) |
 | TCL | MT5879 (China), 98T8H | Android 11 | ✅ In daily use ([notes](docs/devices/tcl-mt5879-cn.md); 98T8H: [#803](https://github.com/pengchujin/aerial-tv/issues/803)) |
-| TCL | Q9L Pro | Android 14 | ⚠️ ADB over a USB cable only; allow Aerial to auto-start in the TV manager; inputs switch from 1.77 on ([#792](https://github.com/pengchujin/aerial-tv/issues/792)) |
+| TCL | Q9L Pro | Android 14 | ⚠️ ADB over a USB cable only; allow xiaoheiDESK to auto-start in the TV manager; inputs switch from 1.77 on ([#792](https://github.com/pengchujin/aerial-tv/issues/792)) |
 | TCL | 65V8E (tc8000 ay30a2) | Android 11 | ✅ After a power cut the stock launcher shows for 6–8 s first ([#1137](https://github.com/pengchujin/aerial-tv/issues/1137)) |
-| Thunderbird | 75S78A Plus (FFALCON T966D5) | Android 14 | ❌ The firmware clears accessibility about once a minute, so Home cannot be taken over; `boot_app_componentname` boots into Aerial ([notes](docs/devices/ffalcon-t966d5.md)) |
-| Thunderbird | He 6 2027, 55" (T966D5 / AU01) | Android 14 | ⚠️ guard flavor; with `boot_app_componentname` set to Aerial it booted into Aerial with the guard running; one reboot tried ([#1185](https://github.com/pengchujin/aerial-tv/issues/1185)) |
-| TCL | 75V2 (m7221) | Android 8 | ✅ Starts straight into Aerial, no root ([notes](docs/devices/tcl-m7221-cn.md)) |
+| Thunderbird | 75S78A Plus (FFALCON T966D5) | Android 14 | ❌ The firmware clears accessibility about once a minute, so Home cannot be taken over; `boot_app_componentname` boots into xiaoheiDESK ([notes](docs/devices/ffalcon-t966d5.md)) |
+| Thunderbird | He 6 2027, 55" (T966D5 / AU01) | Android 14 | ⚠️ guard flavor; with `boot_app_componentname` set to xiaoheiDESK it booted into xiaoheiDESK with the guard running; one reboot tried ([#1185](https://github.com/pengchujin/aerial-tv/issues/1185)) |
+| TCL | 75V2 (m7221) | Android 8 | ✅ Starts straight into xiaoheiDESK, no root ([notes](docs/devices/tcl-m7221-cn.md)) |
 | TCL / FFALCON | 60A730U, 55V2 Pro (x32a0), 65Q10E and Crane 6 (m7642), 75S365C, 75Q10L | Android 5.1–14 | ✅ 60A730U only takes the guard build; 55V2 Pro needs `setprop persist.tcl.debug.installapk 1` before adb installs ([#620](https://github.com/pengchujin/aerial-tv/issues/620)) |
-| FFALCON | FF55S515D-E674 (tcl_m7642) | Android 9 | ✅ guard installed through Multi-screen Interaction; Home works. After reboot and screen-on, stock Home appears before Aerial; wake sometimes briefly shows stock Home too ([observations and limits](docs/devices/ffalcon-55s515d.md)) |
+| FFALCON | FF55S515D-E674 (tcl_m7642) | Android 9 | ✅ guard installed through Multi-screen Interaction; Home works. After reboot and screen-on, stock Home appears before xiaoheiDESK; wake sometimes briefly shows stock Home too ([observations and limits](docs/devices/ffalcon-55s515d.md)) |
 | FFALCON | 55S595C Ultra, Crane 6 2025 Ultra | Android 11+ | ❌ Installs, can't take over Home ([notes](docs/devices/tcl-mt9655-cn.md)) |
 | Sony | A80J (China), BRAVIA VH1 | Android 10 / 12 | ✅ |
 | Sony | BRAVIA 4K VH2 | not given | ✅ ([#1193](https://github.com/pengchujin/aerial-tv/issues/1193)) |
 | Sony | KD55X7000D (China) | Android 8 | ✅ Brightness only in the TV's own settings ([#757](https://github.com/pengchujin/aerial-tv/issues/757)) |
 | Skyworth / Coocaa | K3 Pro, 75A7D | Android 11 | ✅ 75A7D inputs work from 1.45; at power-on Coocaa's launcher shows for 3–6 s, which the reporter removed by changing firmware properties ([#894](https://github.com/pengchujin/aerial-tv/issues/894)) |
 | Skyworth / Coocaa | 65G60, 8R134 / 8R145, aigc models (C10 projector, P60, 7T863) | Android 8–11 | ⚠️ Boots into Coocaa's home first, or takes 20–30 s to come back after the system clears it ([notes](docs/devices/skyworth-coocaa.md)) |
-| Skyworth / Coocaa | 5S21 (50K2, 7626K2), 5S05 (60U2), 8H66 H7 | Android 5.x | ⚠️ Aerial after boot and standby, but Home does not return to it; no inputs listed |
-| Skyworth / Coocaa | 8H83 M6 (Hi3751V500) | Android 4.4 | ❌ Aerial Lite installs and runs, but the firmware opens its own launcher by component on Home and at power-on, and its chooser lists no third-party launcher ([#903](https://github.com/pengchujin/aerial-tv/issues/903)) |
-| Skyworth / Coocaa | 8H57_H5 | Android 5.1 | ⚠️ Spins for a dozen seconds at boot before Aerial ([#785](https://github.com/pengchujin/aerial-tv/issues/785)) |
+| Skyworth / Coocaa | 5S21 (50K2, 7626K2), 5S05 (60U2), 8H66 H7 | Android 5.x | ⚠️ xiaoheiDESK after boot and standby, but Home does not return to it; no inputs listed |
+| Skyworth / Coocaa | 8H83 M6 (Hi3751V500) | Android 4.4 | ❌ xiaoheiDESK Lite installs and runs, but the firmware opens its own launcher by component on Home and at power-on, and its chooser lists no third-party launcher ([#903](https://github.com/pengchujin/aerial-tv/issues/903)) |
+| Skyworth / Coocaa | 8H57_H5 | Android 5.1 | ⚠️ Spins for a dozen seconds at boot before xiaoheiDESK ([#785](https://github.com/pengchujin/aerial-tv/issues/785)) |
 | Skyworth | 1AA46_D4 (T963) | Android 9 | ✅ ([#796](https://github.com/pengchujin/aerial-tv/issues/796)) |
 | Skyworth | 43H30 (1MC02, MT5862) | Android 9 | ✅ On a cold boot the stock launcher shows for 1–2 s; the backlight is set only in the TV's own picture settings ([#1192](https://github.com/pengchujin/aerial-tv/issues/1192)) |
 | Skyworth | 7T641, 7T634_P3H, 75A6E, 55A5F Pro (8R702), 8R721_A6FP | Android 13 | ❌ Black screen, or no window focus and stopped by the system ([#864](https://github.com/pengchujin/aerial-tv/issues/864), [#839](https://github.com/pengchujin/aerial-tv/issues/839)) |
@@ -244,16 +244,16 @@ Most TVs sold in China only accept their own home screen and clear third-party a
 | Panasonic | TH-55HX560C (built by Skyworth) | Android 8 | ⚠️ No inputs listed |
 | Konka | KKTV U86V9, 2861 | Android 9 | ✅ U86V9 brightness does not work ([notes](docs/devices/konka-kktv-u86v9.md)) |
 | Haier | L55F5 (LRM9633, AliOS) | Android 13 | ✅ Guard build: Home and waking from standby ([#1131](https://github.com/pengchujin/aerial-tv/issues/1131)) |
-| Konka | Android TV 551 (Hi3751V551) | Android 5.1.1 | ✅ Boots straight into Aerial once it is chosen under Konka's Settings → General → Shortcuts → Boot to; Home Guard takes Home; the firmware has no `cmd` ([#1089](https://github.com/pengchujin/aerial-tv/issues/1089)) |
+| Konka | Android TV 551 (Hi3751V551) | Android 5.1.1 | ✅ Boots straight into xiaoheiDESK once it is chosen under Konka's Settings → General → Shortcuts → Boot to; Home Guard takes Home; the firmware has no `cmd` ([#1089](https://github.com/pengchujin/aerial-tv/issues/1089)) |
 | LeTV | Super4 X55 (f608) | Android 6 | ✅ Installs, starts at boot, takes over Home ([#510](https://github.com/pengchujin/aerial-tv/issues/510)) |
 | LeTV | Super3 X65 (X65-168CQ) | Android 5.0.1 | ⚠️ Installs and draws; the firmware kills third-party launchers on Home, so takeover is unreliable ([notes](docs/devices/letv-x3-65.md)) |
 | Hisense / Vidda | VIDAA models | Android 5–14 | ⚠️ Home works, most boot into Hisense's home first; VIDAA C1 projector can't be taken over ([notes](docs/devices/hisense-vidaa.md)) |
-| Hisense | 65E52D | Android 8 | ✅ Boots straight into Aerial ([#672](https://github.com/pengchujin/aerial-tv/issues/672)) |
-| Hisense | 75E3F (VIDAA_TV, n62016) | Android 9 | ✅ Boots straight into Aerial ([#847](https://github.com/pengchujin/aerial-tv/issues/847)) |
+| Hisense | 65E52D | Android 8 | ✅ Boots straight into xiaoheiDESK ([#672](https://github.com/pengchujin/aerial-tv/issues/672)) |
+| Hisense | 75E3F (VIDAA_TV, n62016) | Android 9 | ✅ Boots straight into xiaoheiDESK ([#847](https://github.com/pengchujin/aerial-tv/issues/847)) |
 | Hisense | E5Q Pro | Android 11 | ✅ ([#790](https://github.com/pengchujin/aerial-tv/issues/790)) |
-| Hisense | 85U7G-PRO (MT9652) | Android 9 | ✅ After installing the APK, the first Home press offers Aerial; pick it and "Always", and the TV boots into Aerial without ADB ([#886](https://github.com/pengchujin/aerial-tv/issues/886)) |
-| Hisense | VIDAA_TV (MSD6A348) | Android 4.4 | ✅ Aerial Lite from a USB drive; pick it with "Always" at the Home prompt; no brightness ([#769](https://github.com/pengchujin/aerial-tv/issues/769)) |
-| Hisense | LED47K600X3D (VIDAA_TV, MT5880) | Android 4.0.4 | ⚠️ Aerial Lite installs and boots straight in; the remote's Home, APP and VOD keys open Hisense's own screens through a private path Aerial cannot catch ([#913](https://github.com/pengchujin/aerial-tv/issues/913)) |
+| Hisense | 85U7G-PRO (MT9652) | Android 9 | ✅ After installing the APK, the first Home press offers xiaoheiDESK; pick it and "Always", and the TV boots into xiaoheiDESK without ADB ([#886](https://github.com/pengchujin/aerial-tv/issues/886)) |
+| Hisense | VIDAA_TV (MSD6A348) | Android 4.4 | ✅ xiaoheiDESK Lite from a USB drive; pick it with "Always" at the Home prompt; no brightness ([#769](https://github.com/pengchujin/aerial-tv/issues/769)) |
+| Hisense | LED47K600X3D (VIDAA_TV, MT5880) | Android 4.0.4 | ⚠️ xiaoheiDESK Lite installs and boots straight in; the remote's Home, APP and VOD keys open Hisense's own screens through a private path xiaoheiDESK cannot catch ([#913](https://github.com/pengchujin/aerial-tv/issues/913)) |
 | Sharp | LCD-50SU671A | Android 6 | ✅ Needs QuickShortcutMaker to open ADB |
 | OPPO | K9 | Android 9 | ⚠️ Needs a renamed package ([notes](docs/devices/oppo-coloros-tv.md)) |
 | XGIMI | Z7X, m7642 | Android 9 | ✅ Z7X needs a third-party tool to open ADB ([notes](docs/devices/xgimi-z7x.md)) |
@@ -262,33 +262,33 @@ Most TVs sold in China only accept their own home screen and clear third-party a
 | XGIMI | Z6X Gen 4 (XK03U / ironman / m7221) | Android 8 | ⚠️ HDMI 1 listing and switching verified; video output not tested ([notes](docs/devices/xgimi-xk03u-android8.md)) |
 | XGIMI | H3, m7221 | Android 8 | ✅ Needs a third-party tool to open ADB; boot handover and screensaver match Z7X ([notes](docs/devices/xgimi-h3.md)) |
 | OBE | X7, X7D projectors | Android 9 / 5.1 | ✅ Home inside HDMI can go to the Apple TV's home screen ([notes](docs/devices/obe-x7.md)) |
-| OBE | OBE_R3Ultra high-brightness projector (MT5879) | Android 11 | ✅ Developer options show only "USB debugging", and turning it on opens ADB on port 5555; Home first goes to the firmware's Youku launcher, the guard brings Aerial back about 13 s later ([notes](docs/devices/obe-r3-ultra.md)) |
+| OBE | OBE_R3Ultra high-brightness projector (MT5879) | Android 11 | ✅ Developer options show only "USB debugging", and turning it on opens ADB on port 5555; Home first goes to the firmware's Youku launcher, the guard brings xiaoheiDESK back about 13 s later ([notes](docs/devices/obe-r3-ultra.md)) |
 | Tencent Aurora box | 6 / 6SE / 7S | Android 10 / 14 | ✅ 6 works; ⚠️ 7S stays on the stock home at boot ([notes](docs/devices/tencent-aurora-box.md)) |
 | Dangbei | Box Max1, H5, HAQU K2 (Dangbei OS) | Android 9 | ✅ |
-| Dangbei | H3S box (RK3566) | Android 11 | ⚠️ The firmware stops third-party apps on Home; Aerial comes back after 7–12 s ([#849](https://github.com/pengchujin/aerial-tv/issues/849)) |
+| Dangbei | H3S box (RK3566) | Android 11 | ⚠️ The firmware stops third-party apps on Home; xiaoheiDESK comes back after 7–12 s ([#849](https://github.com/pengchujin/aerial-tv/issues/849)) |
 | Dangbei | F3 projector | Android 6 | ⚠️ Everything works on firmware V2.1.5.2 ([#1145](https://github.com/pengchujin/aerial-tv/issues/1145)); later firmware refuses third-party launchers and has no accessibility service ([#789](https://github.com/pengchujin/aerial-tv/issues/789)) |
-| China Mobile | CM101s box (Hi3798MV100) | Android 4.4.2 | ✅ Aerial Lite, installed with the one-line command ([#1052](https://github.com/pengchujin/aerial-tv/issues/1052)) |
+| China Mobile | CM101s box (Hi3798MV100) | Android 4.4.2 | ✅ xiaoheiDESK Lite, installed with the one-line command ([#1052](https://github.com/pengchujin/aerial-tv/issues/1052)) |
 | JMGO | S621 | Android 13 | ❌ The firmware refuses writes to the accessibility setting; Home cannot be taken over ([#793](https://github.com/pengchujin/aerial-tv/issues/793)) |
 | Epson | DTP9733 projector | Android 11 | ✅ |
-| ZHIYING / RIGAL | HS350 projector (HiSilicon, YunOS) | Android 9 | ⚠️ The firmware stops apps sent to the background; Home from another app takes 10–30 s back to Aerial; installed without the script it needs two grants ([#853](https://github.com/pengchujin/aerial-tv/issues/853)) |
-| Other boxes | CM311-1 (modified ATV), PPTV K55U27, HK1 Box (S905X3) | Android 9 | ✅ HK1 Box: set Aerial as the default home ([#838](https://github.com/pengchujin/aerial-tv/issues/838)) |
+| ZHIYING / RIGAL | HS350 projector (HiSilicon, YunOS) | Android 9 | ⚠️ The firmware stops apps sent to the background; Home from another app takes 10–30 s back to xiaoheiDESK; installed without the script it needs two grants ([#853](https://github.com/pengchujin/aerial-tv/issues/853)) |
+| Other boxes | CM311-1 (modified ATV), PPTV K55U27, HK1 Box (S905X3) | Android 9 | ✅ HK1 Box: set xiaoheiDESK as the default home ([#838](https://github.com/pengchujin/aerial-tv/issues/838)) |
 | Phicomm | T1 box (S912) | Android 7.1.2 | ✅ Moving down from the first row into all apps stutters a little; Personalize → Effects → Smooth helps ([#876](https://github.com/pengchujin/aerial-tv/issues/876)) |
 
-- **Android 4.0–4.4**: [Aerial Lite](#lite) (first release, a beta).
+- **Android 4.0–4.4**: [xiaoheiDESK Lite](#lite) (first release, a beta).
 - **Not supported**: LG webOS, Samsung Tizen, Huawei Vision (HarmonyOS), and Android older than 4.0.
 - **Can't open ADB**: old LeTV sets, Honor Vision, old Konka models (no version number to tap).
-- **Slow or low-memory TVs**: from 1.48 Aerial picks Lite effects on its own (solid panels, no highlights); you can also choose it in Personalize → Effects.
+- **Slow or low-memory TVs**: from 1.48 xiaoheiDESK picks Lite effects on its own (solid panels, no highlights); you can also choose it in Personalize → Effects.
 
 <a id="adapt"></a>
 
-### Installed, but something is off? Help adapt Aerial to your TV
+### Installed, but something is off? Help adapt xiaoheiDESK to your TV
 
 Home goes back to the old launcher, standby or a restart ends there, an input opens the wrong port, the brightness slider does nothing. Pick one:
 
 **1. Hand it to an agent (easiest)**: send this to an agent that can run commands on your computer. It tests the TV, fixes on the spot what it can (input numbers, say), and writes a report for you to read before it is posted.
 
 ```text
-Please adapt Aerial to my TV, following https://aerial.qust.me/en/adapt.md
+Please adapt xiaoheiDESK to my TV, following https://github.com/ywc1991/xiaoheiDESK#device-support
 TV IP: <tv-ip>
 What is wrong: <e.g. Home goes back to the old launcher / HDMI 2 opens HDMI 1 / ends on the old launcher after standby>
 
@@ -299,7 +299,7 @@ Show me the finished report, and post it to GitHub only once I agree.
 
 **2. Send it from your phone**: Control Center → Personalize, scan the QR code, and at the bottom of the phone page choose Report a Problem → Show Diagnostics → Report on GitHub. The model and the version fill the [device support form](https://github.com/pengchujin/aerial-tv/issues/new?template=device.yml), and the diagnostics are copied for you to paste.
 
-On a computer you can also run `curl -fsSL https://aerial.qust.me/tools/report.sh | TV=<tv-ip> bash` (reads only) and `curl -fsSL https://aerial.qust.me/tools/selftest.sh | TV=<tv-ip> bash` (presses Home, opens the settings, checks that Aerial comes back) and paste both into the form. The diagnostics hold no accounts, addresses, Wi-Fi names or app lists. If your TV just works, tell others with the [works-on-my-TV form](https://github.com/pengchujin/aerial-tv/issues/new?template=works.yml).
+On a computer you can also run `curl -fsSL https://raw.githubusercontent.com/ywc1991/xiaoheiDESK/main/tools/report.sh | TV=<tv-ip> bash` (reads only) and `curl -fsSL https://raw.githubusercontent.com/ywc1991/xiaoheiDESK/main/tools/selftest.sh | TV=<tv-ip> bash` (presses Home, opens the settings, checks that xiaoheiDESK comes back) and paste both into the form. The diagnostics hold no accounts, addresses, Wi-Fi names or app lists. If your TV just works, tell others with the [works-on-my-TV form](https://github.com/pengchujin/aerial-tv/issues/new?template=works.yml).
 
 ## Development
 
@@ -316,4 +316,4 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the code, [HANDOFF.md](docs/HAND
 
 [MIT](LICENSE). The Inter font is under the [SIL Open Font License](FONT-LICENSE-OFL.txt). The list of Chinese cities for the weather is from [GeoNames](https://www.geonames.org) (CC BY 4.0), the weather from [Open-Meteo](https://open-meteo.com).
 
-Aerial is an independent open-source project, not affiliated with Apple, Xiaomi, TCL or any other company. The aerial films belong to Apple and play from Apple's servers; the photo of the day comes from Bing.
+xiaoheiDESK is an independent open-source project, not affiliated with Apple, Xiaomi, TCL or any other company. The aerial films belong to Apple and play from Apple's servers; the photo of the day comes from Bing.

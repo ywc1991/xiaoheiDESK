@@ -1,16 +1,18 @@
 {
   "releases": [
     {
-      "v": "1.1.22",
+      "v": "1.2.0",
       "zh": [
-        "整个应用里属于上游 Aerial 的命名全部改成 xiaoheiDESK：代码里的类名、文件名、主题名、字符串资源键、日志标签、线程名、诊断输出，以及中文以外的界面文案。",
-        "功能、设置项、已保存的偏好、屏保与壁纸、U 盘图库、手机遥控、Home 守护、应用内升级全部保持不变，升级安装后原来的设置继续生效。",
-        "日志标签随之变化：抓日志时用 XiaoheiGuard / XiaoheiStream / XiaoheiDiag 等（原 AerialGuard 等）。"
+        "内部命名统一：应用里的类名、文件名、主题名、字符串资源、日志标签、线程名和诊断输出，都改用 xiaoheiDESK 自己的名字；中文以外的界面文案也统一显示 xiaoheiDESK。",
+        "功能和设置一项没动：桌面、屏保、图库、手机遥控、桌面守护、应用内升级全部照旧，覆盖安装后原来的设置继续生效。",
+        "抓日志时标签变了：用 XiaoheiGuard、XiaoheiStream、XiaoheiDiag 等标签。",
+        "手机遥控的「反馈诊断信息」页也跟着更新，复制出来的机型报告仍能被正确识别版本。"
       ],
       "en": [
-        "Every upstream Aerial name inside the app is now xiaoheiDESK: class names, file names, the theme, string resource keys, log tags, thread names, diagnostics output and the English UI text.",
-        "Nothing else changes: features, settings, saved preferences, screensaver and wallpapers, USB gallery, phone remote, Home Guard and in-app updates all stay as they were, and existing settings keep working after the update.",
-        "Log tags change with it: use XiaoheiGuard / XiaoheiStream / XiaoheiDiag and so on when reading logcat."
+        "Internal names are now consistent: class names, file names, the theme, string resources, log tags, thread names and diagnostics all use xiaoheiDESK's own naming, and the UI in every language outside Chinese shows xiaoheiDESK.",
+        "Nothing else changes: Home, screensaver, gallery, phone remote, Home Guard and in-app updates all stay as they were, and existing settings keep working after the update.",
+        "Log tags changed with it: use XiaoheiGuard, XiaoheiStream, XiaoheiDiag and so on.",
+        "The phone remote's diagnostics page is updated too, so a copied device report still has its version recognised."
       ]
     },
     {
@@ -197,7 +199,7 @@
         "两者都支持左右键切换、画框白边，画面留白和字幕自动避让。"
       ],
       "en": [
-        "Two new screensavers alongside Aerial: Gallery and USB Art.",
+        "Two new screensavers alongside the films: Gallery and USB Art.",
         "Gallery: 29 museum paintings (Monet, van Gogh, Cezanne, Courbet and more), downloaded once then available offline, each with its title.",
         "USB Art: slideshows your own pictures from a USB drive (macOS junk files filtered out); plug in and allow file access.",
         "Both support left/right stepping and the picture frame; captions stay clear of the mat."
@@ -382,13 +384,13 @@
     {
       "v": "1.0.1",
       "zh": [
-        "更新检测改用小黑DESK 自己的版本线：只比较自己的 GitHub Release，不再把上游 Aerial 的新版本误报为可升级版本，也不会下载官方安装包。",
+        "更新检测改用小黑DESK 自己的版本线：只比较自己的 GitHub Release，不再把上游的新版本误报为可升级版本，也不会下载官方安装包。",
         "控制中心「更新」页常驻显示各版本新特性，中英文随系统语言切换，离线也能查看。",
         "有新版本时从自己的 Release 下载安装；二维码直达小黑DESK 版本下载页。",
         "更新提示、下载失败提示与文案全部改为自有版本说明。"
       ],
       "en": [
-        "Update checks now follow the xiaoheiDESK version line: only our own GitHub releases are compared, so an upstream Aerial release is never offered or downloaded.",
+        "Update checks now follow the xiaoheiDESK version line: only our own GitHub releases are compared, so an upstream release is never offered or downloaded.",
         "The Control Center update page always lists what each version brings, in Chinese or English, even offline.",
         "New releases are downloaded from our own release assets; the QR code opens our release page.",
         "Update and download-failure messages now describe our own release channel."

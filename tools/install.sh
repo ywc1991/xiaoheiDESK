@@ -32,7 +32,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 : "${TV:?set TV to the TV IP address, e.g. TV=<tv-ip> $0}"
-REPO=pengchujin/aerial-tv
+REPO=ywc1991/xiaoheiDESK
 command -v adb >/dev/null || { echo "adb not found. macOS: brew install android-platform-tools; Linux: install android-tools / adb." >&2; exit 1; }
 FLAVOR="${1:-standard}"
 case "$FLAVOR" in standard|guard|repair|lite) ;; *) echo "flavor must be standard, guard or lite (or repair)" >&2; exit 1 ;; esac
@@ -112,7 +112,7 @@ fi
 # MiTV-MFTP0 (Android 9) kept the entry while system_server still pointed at the old APK directory
 # and never bound it (issue #72).
 # Some firmwares show the class name where the label goes (Xiaomi MiTV-ASTP0, Android 9, issue #183).
-guard_bound() { adb shell dumpsys accessibility 2>/dev/null | grep -q -E "label=(Aerial|app\.orchard\.tv)"; }
+guard_bound() { adb shell dumpsys accessibility 2>/dev/null | grep -q -E "label=(xiaoheiDESK|小黑DESK|app\.orchard\.tv)|packageName=app\.orchard\.tv"; }
 
 wait_guard() {
   for _ in $(seq 1 "$1"); do sleep 1; guard_bound && return 0; done
@@ -167,12 +167,17 @@ grant() {
 # Never pass an interrupted or corrupt download to the TV, even if curl exits successfully.
 # A subshell keeps this temporary-file trap separate from the ADB disconnect trap.
 download_apk() (
-  local flavor=$1 out="${TMPDIR:-/tmp}/aerial-$1.apk" partial url
+  local flavor=$1 out="${TMPDIR:-/tmp}/xiaohei-$1.apk" partial url name
+  case "$flavor" in
+    lite) name=xiaoheiDESK-lite.apk ;;
+    guard) name=xiaoheiDESK-guard.apk ;;
+    *) name=xiaoheiDESK.apk ;;
+  esac
   command -v unzip >/dev/null || { echo "unzip is required to check downloaded APKs. Install unzip and run again." >&2; return 1; }
-  partial=$(mktemp "${TMPDIR:-/tmp}/aerial-$flavor.XXXXXX") || return 1
+  partial=$(mktemp "${TMPDIR:-/tmp}/xiaohei-$flavor.XXXXXX") || return 1
   trap 'rm -f "$partial"' EXIT
-  for url in "https://aerial.qust.me/download/aerial-$flavor.apk" \
-             "https://github.com/$REPO/releases/latest/download/aerial-$flavor.apk"; do
+  for url in "https://github.com/$REPO/releases/latest/download/$name" \
+             "https://github.com/$REPO/releases/download/v1.2.0/$name"; do
     echo "Downloading $url" >&2
     if curl -fL --progress-bar --connect-timeout 10 -o "$partial" "$url"; then
       if unzip -tq "$partial" </dev/null >/dev/null 2>&1; then
@@ -183,7 +188,7 @@ download_apk() (
       echo "Downloaded APK is incomplete or corrupt: $url" >&2
     fi
   done
-  echo "Could not download a complete aerial-$flavor.apk" >&2
+  echo "Could not download a complete $name" >&2
   return 1
 )
 

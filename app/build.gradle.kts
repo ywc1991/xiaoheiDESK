@@ -19,11 +19,11 @@ android {
         // Android 5.0. Compose 1.10 and later need 6.0, so the Compose BOM below stays on 1.9.
         minSdk = 21
         targetSdk = 34
-        // xiaoheiDESK has its own version line (1.0.0, ...), independent of the upstream
-        // Aerial release it is based on. Keep the code above the last custom build (112)
+        // xiaoheiDESK has its own version line, independent of the upstream release it is
+        // based on. Keep the code above the last custom build (112)
         // so the TV can install 1.0.0 over 1.83-custom in place.
-        versionCode = 155
-        versionName = "1.1.22"
+        versionCode = 156
+        versionName = "1.2.0"
         // `./gradlew -Pdiag ...`: a build for one reporter's TV whose logcat shows no app lines;
         // see system/DiagLog.kt.
         val diag = project.hasProperty("diag")
@@ -57,7 +57,7 @@ android {
     signingConfigs {
         if (signingProps.exists()) {
             val p = Properties().apply { signingProps.inputStream().use { load(it) } }
-            create("aerial") {
+            create("xiaohei") {
                 storeFile = rootProject.file("local/" + p.getProperty("storeFile"))
                 storePassword = p.getProperty("storePassword")
                 keyAlias = p.getProperty("keyAlias")
@@ -71,7 +71,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.findByName("aerial") ?: signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("xiaohei") ?: signingConfigs.getByName("debug")
         }
     }
 

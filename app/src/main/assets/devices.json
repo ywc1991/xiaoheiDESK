@@ -52,7 +52,7 @@
     },
     {
       "models": ["MiTV-MTTP0"],
-      "note": "Android 9, m7332: the TV's menu writes picture_backlight (100 to 15), Aerial's write leaves the panel as it was; backLightForNormal is kept, so the mitv panel path is probed instead (#1014).",
+      "note": "Android 9, m7332: the TV's menu writes picture_backlight (100 to 15), xiaoheiDESK's write leaves the panel as it was; backLightForNormal is kept, so the mitv panel path is probed instead (#1014).",
       "ignoresPictureBacklight": true
     },
     {
