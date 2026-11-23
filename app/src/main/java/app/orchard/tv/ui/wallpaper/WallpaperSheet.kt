@@ -78,6 +78,7 @@ import app.orchard.tv.settings.FocusStyle
 import app.orchard.tv.settings.UiSounds
 import app.orchard.tv.settings.Effects
 import app.orchard.tv.system.Sounds
+import app.orchard.tv.system.UsbArtStorage
 import app.orchard.tv.ui.components.Pressable
 import app.orchard.tv.ui.components.consumeTaps
 import app.orchard.tv.ui.components.dismissOnTap
@@ -741,6 +742,7 @@ private fun ActionChip(label: String, glyph: Glyph, onClick: () -> Unit) {
 @Composable
 private fun ScreensaverChoice(onStart: () -> Unit) {
     // The choice first, then the action that tries it.
+    val context = LocalContext.current
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         listOf(
             ScreensaverMode.Xiaohei to R.string.ss_xiaohei,
@@ -751,7 +753,13 @@ private fun ScreensaverChoice(onStart: () -> Unit) {
             ScreensaverMode.Videos to R.string.ss_videos,
             ScreensaverMode.System to R.string.ss_system,
         ).forEach { (mode, label) ->
-            Chip(stringResource(label), on = Wallpapers.screensaver == mode) { Wallpapers.chooseScreensaver(mode) }
+            Chip(stringResource(label), on = Wallpapers.screensaver == mode) {
+                Wallpapers.chooseScreensaver(mode)
+                // Android 6-10 (Huawei's HarmonyOS 2/3/4 smart screens among them): the USB art
+                // screensaver cannot list /storage without this, and there is no adb-free way to
+                // grant it otherwise. Android 11+ uses MANAGE_EXTERNAL_STORAGE instead.
+                if (mode == ScreensaverMode.Usb) UsbArtStorage.request(context)
+            }
         }
         Spacer(Modifier.width(6.dp))
         Pressable(onClick = onStart, focusedScale = 1.06f) { state ->

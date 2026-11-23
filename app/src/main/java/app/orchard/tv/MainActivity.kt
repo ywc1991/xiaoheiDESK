@@ -81,6 +81,7 @@ import app.orchard.tv.system.FrameStats
 import app.orchard.tv.wallpaper.XiaoheiFormats
 import app.orchard.tv.wallpaper.ScreensaverMode
 import app.orchard.tv.system.SystemScreensaver
+import app.orchard.tv.system.UsbArtStorage
 import app.orchard.tv.system.Diagnostics
 import app.orchard.tv.system.MissingClipboard
 import app.orchard.tv.system.Sounds
@@ -247,6 +248,9 @@ class MainActivity : ComponentActivity() {
         FontWarmup.start(this)
         val uhd = UhdCanvas.scale(this)
         Wallpapers.init(this)
+        // An update from a build that could not ask leaves USB art selected with no grant: ask once
+        // here, at the same place the settings are read. Android 6-10 only, see UsbArtStorage.
+        if (Wallpapers.screensaver == ScreensaverMode.Usb) UsbArtStorage.request(this)
         Weather.init(this)
         Updates.init(this)
         lifecycleScope.launch(Dispatchers.IO) { SelfCompile.init(this@MainActivity) }

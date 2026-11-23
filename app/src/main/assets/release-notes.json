@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "v": "1.2.1",
+      "zh": [
+        "提升对华为鸿蒙 2/3/4 智慧屏（底层 Android 6–10）的兼容性：U 盘名画屏保现在能在这些机型上真正读到 U 盘里的图片。",
+        "存储权限改为按需申请：首次选择 U 盘屏保时会弹出系统授权框，同意一次即可；已经设成 U 盘屏保的，升级后首次启动会问一次。",
+        "Android 10 上补上了读取 U 盘所需的兼容开关，Android 6–9 上同样生效；Android 11 及以上行为与之前完全一致。",
+        "桌面、屏保、图库、手机遥控、桌面守护、应用内升级都没有其他变化，覆盖安装后原设置继续生效。"
+      ],
+      "en": [
+        "Better support for Huawei smart screens running HarmonyOS 2/3/4 (Android 6-10 underneath): the USB art screensaver can now actually read pictures from the drive on those sets.",
+        "The storage permission is asked for when it is needed: the system dialog appears the first time you pick the USB screensaver, and once on first launch if the USB screensaver is already selected.",
+        "Android 10 gets the compatibility switch needed to read a USB drive, and it applies on Android 6-9 too; on Android 11 and later nothing changes.",
+        "Home, screensaver, gallery, phone remote, Home Guard and in-app updates are otherwise unchanged, and existing settings keep working after the update."
+      ]
+    },
+    {
       "v": "1.2.0",
       "zh": [
         "内部命名统一：应用里的类名、文件名、主题名、字符串资源、日志标签、线程名和诊断输出，都改用 xiaoheiDESK 自己的名字；中文以外的界面文案也统一显示 xiaoheiDESK。",

@@ -135,7 +135,7 @@ Windows 用 Agent 装，或照[安装说明](site/agent.md)里的 Windows 步骤
 
 | 下载 | 用在 |
 |---|---|
-| [xiaoheiDESK-1.0.8.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest) | Android 5.0 及以上（含 5.0、5.1、6.0），先装这个 |
+| [xiaoheiDESK-1.2.0.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest) | Android 5.0 及以上（含 5.0、5.1、6.0），先装这个 |
 | [xiaoheiDESK-lite-1.0.0.apk](https://github.com/ywc1991/xiaoheiDESK/releases/latest) | Android 4.0–4.4 的老电视、老盒子（见下面的 [小黑DESK Lite](#lite)） |
 
 装好后按主页键：系统问「使用哪个应用」时选 小黑DESK、再选「始终」就设好了（原生 Android TV 一般是这样）。直接回到原桌面、不问（国产电视大多这样）时，从「我的应用」打开 小黑DESK，它会弹出「设为主屏幕」，按里面的入口去电视设置里打开桌面守护（无障碍）和通知使用权；电视设置里没有这些入口时，小黑DESK 只能当普通 App 用，要接管主页键还得用上面的命令或 Agent 设置一次（覆盖安装，不丢设置）。
