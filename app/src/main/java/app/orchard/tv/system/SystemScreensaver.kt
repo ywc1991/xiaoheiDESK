@@ -6,14 +6,14 @@ import android.content.Intent
 import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
-import app.orchard.tv.dream.AerialDream
+import app.orchard.tv.dream.XiaoheiDream
 
 /**
  * The TV's own screensaver: Android's dream where the firmware uses it (TCL, most Android TVs), or
  * the maker's own app where it runs outside it (Xiaomi HyperOS).
  */
 object SystemScreensaver {
-    private const val TAG = "AerialScreensaver"
+    private const val TAG = "XiaoheiScreensaver"
     private const val COMPONENTS = "screensaver_components"
     private const val DEFAULT_COMPONENT = "screensaver_default_component"
 
@@ -29,9 +29,9 @@ object SystemScreensaver {
     private fun component(context: Context): String =
         runCatching { Settings.Secure.getString(context.contentResolver, COMPONENTS) }.getOrNull().orEmpty()
 
-    /** Aerial's own dream is the TV's screensaver (tools/install.sh sets it where dreams are on). */
-    fun isAerials(context: Context): Boolean =
-        dreamsOn(context) && component(context).split(',').firstOrNull() == ComponentName(context, AerialDream::class.java).flattenToString()
+    /** xiaoheiDESK's own dream is the TV's screensaver (tools/install.sh sets it where dreams are on). */
+    fun isXiaohei(context: Context): Boolean =
+        dreamsOn(context) && component(context).split(',').firstOrNull() == ComponentName(context, XiaoheiDream::class.java).flattenToString()
 
     /** The dream the firmware came with, or null where it has none on record. */
     fun firmwareDream(context: Context): String? =
@@ -56,7 +56,7 @@ object SystemScreensaver {
     }
 
     /**
-     * When Home last asked for Aerial's dream, and when Home's window went away after that (both
+     * When Home last asked for xiaoheiDESK's dream, and when Home's window went away after that (both
      * elapsed time, -1 for none): how long the screen had nothing to show is measured from there to
      * the dream's first frame (dreamFirstFrame). Coocaa C10 (Android 9, issue #915) showed the dream
      * every time, but only after cold-starting SystemUI, with 1.2 to 2.7 s of black after Home went.

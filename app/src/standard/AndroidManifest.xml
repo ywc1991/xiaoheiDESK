@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <application>
         <!-- TCL's install verifier (LauncherStrategy in com.android.packageinstaller) lets an APK that declares
-             HOME through only if it is signed like the current default home and carries this tag. With Aerial
+             HOME through only if it is signed like the current default home and carries this tag. With xiaoheiDESK
              as the default home, the signature matches on an update, so this tag lets in-app updates install.
              Read from MT5879's verifier; failing log without it from a 75T7L Pro (MT9655, Android 14), #983.
              Other firmwares ignore it. -->
@@ -15,7 +15,7 @@
                  cleanyourtv #1201; not verified on a CVTE set here.
                  LAUNCHER for the same reason: China Mobile's NEWBOX (Android 9) sends Home as MAIN + HOME +
                  LAUNCHER, which matched no filter, so Home did nothing (#946, verified there by the reporter).
-                 The launcher filter of the main manifest goes, so that app lists still show Aerial once. -->
+                 The launcher filter of the main manifest goes, so that app lists still show xiaoheiDESK once. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />

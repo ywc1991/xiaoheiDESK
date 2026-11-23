@@ -26,7 +26,7 @@ import kotlin.random.Random
  * The screensaver, in the full app's look (ui/home/Screensaver.kt), over everything with Home
  * hidden beneath it.
  *
- * Aerial: Apple's films in the system player (VideoView) through [FilmProxy], a little shade at
+ * xiaoheiDESK: Apple's films in the system player (VideoView) through [FilmProxy], a little shade at
  * the top and bottom, the time top left and the place bottom left; both drift a few units every
  * two minutes so nothing sits on the same pixels all night. Three failures in a row and it is the
  * clock.
@@ -55,7 +55,7 @@ class SaverView(context: Context, mode: ScreensaverMode, private val proxy: Film
     /** Films from the phone page, played from a file rather than through the proxy. */
     private val local = mode == ScreensaverMode.Videos
     private val photos = mode == ScreensaverMode.Photos
-    private val showTime = LiteSettings.screensaverClock && (mode == ScreensaverMode.Aerial || photos)
+    private val showTime = LiteSettings.screensaverClock && (mode == ScreensaverMode.Xiaohei || photos)
 
     private val pictures = Wallpapers.saverPictures()
     private val frames = arrayOfNulls<ImageView>(2)
@@ -92,7 +92,7 @@ class SaverView(context: Context, mode: ScreensaverMode, private val proxy: Film
             setShadowLayer(Ui.px(4f), 0f, 0f, 0x66000000)
         }
         when (mode) {
-            ScreensaverMode.Aerial -> films = Aerials.load(context).shuffled()
+            ScreensaverMode.Xiaohei -> films = XiaoheiFilms.load(context).shuffled()
             // The owner's own films carry no caption, as in the full app.
             ScreensaverMode.Videos -> films = ScreensaverVideos.all(context).shuffled().map { Film(it.file.toURI().toString(), null) }
             else -> Unit
@@ -156,7 +156,7 @@ class SaverView(context: Context, mode: ScreensaverMode, private val proxy: Film
         }
         v.setOnCompletionListener { play() }
         v.setOnErrorListener { _: MediaPlayer, what: Int, extra: Int ->
-            Log.i("AerialLite", "film failed: $what/$extra")
+            Log.i("XiaoheiLite", "film failed: $what/$extra")
             fail()
             true
         }

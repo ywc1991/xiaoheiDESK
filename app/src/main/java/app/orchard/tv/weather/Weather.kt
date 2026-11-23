@@ -52,6 +52,13 @@ data class DayPoint(val date: String, val max: Int, val min: Int, val kind: Weat
 data class WeatherForecast(val hours: List<HourPoint>, val days: List<DayPoint>)
 
 /**
+ * Current air quality from Open-Meteo's Air Quality API (the same source family as the weather,
+ * keyless). [aqi] is the US AQI; [pm25]/[pm10] are µg/m³. Null values mean a reading we could not
+ * get — the panel simply hides the row rather than showing a stale or invented number.
+ */
+data class AirQuality(val aqi: Int, val pm25: Int? = null, val pm10: Int? = null)
+
+/**
  * The weather beside the home clock, from Open-Meteo: no key, reachable from China. The place is
  * the one the owner names on the phone page, or else a guess from the network's public address.
  * The guess is often wrong behind a proxy (a whole home behind one shows another country), which
@@ -67,7 +74,7 @@ data class WeatherForecast(val hours: List<HourPoint>, val days: List<DayPoint>)
  * Compose state, written on the main thread only.
  */
 object Weather {
-    private const val TAG = "AerialWeather"
+    private const val TAG = "XiaoheiWeather"
     private const val PREFS = "weather"
     private const val REFRESH_MS = 60 * 60 * 1000L
     private const val RETRY_MS = 10 * 60 * 1000L
@@ -92,6 +99,9 @@ object Weather {
     /** Today's hours and the coming week, once the weather has been selected on Home. */
     var forecast by mutableStateOf<WeatherForecast?>(null); private set
 
+    /** Current air quality, loaded with the forecast. Kept across restarts for up to [STALE_MS]. */
+    var air by mutableStateOf<AirQuality?>(null); private set
+
     private lateinit var prefs: SharedPreferences
     private lateinit var app: Context
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -99,6 +109,7 @@ object Weather {
     private var lastAttempt = 0L
     private var job: Job? = null
     private var forecastJob: Job? = null
+    private var airJob: Job? = null
     /** Last MET response, already converted; shared by the clock and the forecast panel. */
     @Volatile
     private var metNoCache: Pair<Long, String>? = null
@@ -117,6 +128,16 @@ object Weather {
                 high = prefs.getInt("high", NONE).takeIf { it != NONE },
                 low = prefs.getInt("low", NONE).takeIf { it != NONE },
                 code = prefs.getInt("code", 0),
+            )
+        }
+        // Air quality is a separate, optional source. A stale or missing reading just hides the row.
+        if (System.currentTimeMillis() - prefs.getLong("air_fetched_at", 0) < STALE_MS &&
+            prefs.contains("air_aqi")
+        ) {
+            air = AirQuality(
+                prefs.getInt("air_aqi", 0),
+                prefs.getInt("air_pm25", NONE).takeIf { it != NONE },
+                prefs.getInt("air_pm10", NONE).takeIf { it != NONE },
             )
         }
     }
@@ -225,6 +246,43 @@ object Weather {
                 .getOrNull() ?: return@launch
             forecast = f
         }
+        loadAir()
+    }
+
+    /**
+     * Air quality is a separate host and a separate job: a slow or blocked air-quality endpoint
+     * never delays the hourly forecast, and a stale-but-recent reading stays on screen if it fails.
+     */
+    fun loadAir() {
+        airJob?.cancel()
+        airJob = scope.launch {
+            val reading = withContext(Dispatchers.IO) {
+                runCatching { fetchAir() }.onFailure { Log.w(TAG, "air quality unavailable", it) }.getOrNull()
+            }
+            if (reading != null) {
+                air = reading
+                prefs.edit {
+                    putLong("air_fetched_at", System.currentTimeMillis())
+                    putInt("air_aqi", reading.aqi)
+                    putInt("air_pm25", reading.pm25 ?: NONE)
+                    putInt("air_pm10", reading.pm10 ?: NONE)
+                }
+            }
+        }
+    }
+
+    /** Off the main thread. Open-Meteo's air-quality host; the same coordinates as the weather. */
+    private fun fetchAir(): AirQuality? {
+        val (lat, lon) = coordinates()
+        val url = "https://air-quality-api.open-meteo.com/v1/air-quality" +
+            "?latitude=$lat&longitude=$lon&current=us_aqi,pm2_5,pm10&timezone=auto"
+        val raw = get(url, connectMs = 5_000, readMs = 8_000)
+        if (!raw.trimStart().startsWith("{")) return null
+        val current = JSONObject(raw).optJSONObject("current") ?: return null
+        fun field(key: String) = if (current.isNull(key)) null
+            else runCatching { current.getDouble(key).roundToInt() }.getOrNull()
+        val aqi = field("us_aqi") ?: return null
+        return AirQuality(aqi = aqi, pm25 = field("pm2_5"), pm10 = field("pm10"))
     }
 
     private fun fetchForecast(): WeatherForecast {
@@ -439,7 +497,7 @@ object Weather {
 
     /**
      * Names the place (from the phone page) and fetches its weather at once. Chinese names are
-     * looked up in Aerial's own list first, others (pinyin, places abroad) in Open-Meteo's geocoder.
+     * looked up in xiaoheiDESK's own list first, others (pinyin, places abroad) in Open-Meteo's geocoder.
      * False when there is no such place.
      */
     suspend fun choose(name: String): Boolean {

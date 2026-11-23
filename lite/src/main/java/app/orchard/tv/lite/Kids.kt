@@ -142,7 +142,7 @@ object Kids {
     private const val PREFS = "restricted"
     private const val TICK_MS = 10_000L
     private const val FRONT_TICK_MS = 2_000L
-    private const val TAG = "AerialLite"
+    private const val TAG = "XiaoheiLite"
     const val COLUMNS = 4
 
     private lateinit var app: Context

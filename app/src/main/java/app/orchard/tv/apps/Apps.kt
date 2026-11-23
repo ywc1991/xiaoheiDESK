@@ -53,10 +53,10 @@ data class AppEntry(
     fun launchIntent(): Intent {
         val carried = source?.let { Intent(it.intent) } ?: shortcut?.let { Intent(it) }
         if (carried != null) return carried
-        // TCL's AMS on MStar m7221 (75V2, Android 8) names Aerial, the current default home, as the
+        // TCL's AMS on MStar m7221 (75V2, Android 8) names xiaoheiDESK, the current default home, as the
         // launcher of every start it makes; the app then dies in Activity.attach with
         // `Package app.orchard.tv does not belong to <uid>` (#590). That crash is in the launched
-        // process, so nothing here can catch it, and Aerial's options fix does not reach it: on such
+        // process, so nothing here can catch it, and xiaoheiDESK's options fix does not reach it: on such
         // a firmware the bare component is sent, which the rewrite leaves alone. Property empty (the
         // firmware does not rewrite) keeps the launcher category.
         return if (rewritesLauncher) Intent().setComponent(component)
@@ -71,7 +71,7 @@ data class AppEntry(
 /**
  * True when the firmware keeps a boot launcher in `persist.sys.launcher.component`, the same firmware
  * that rewrites the launcher of every start (see [AppEntry.launchIntent]). Read once: it changes only
- * with a setprop, and never by Aerial.
+ * with a setprop, and never by xiaoheiDESK.
  */
 internal val rewritesLauncher: Boolean by lazy {
     runCatching {
@@ -128,7 +128,7 @@ fun folderEntry(folder: Folder, art: TileArt): AppEntry = AppEntry(
 )
 
 object AppCatalog {
-    private const val TAG = "AerialTiles"
+    private const val TAG = "XiaoheiTiles"
     /** Xiaomi's app store declares only this category, not CATEGORY_LAUNCHER (MiTV-MFTR0). */
     private const val CATEGORY_APPSTORE_LAUNCHER = "android.intent.category.APPSTORE_LAUNCHER"
 
@@ -154,7 +154,7 @@ object AppCatalog {
     )
 
     /**
-     * Firmware apps drawn as Aerial's own tiles (see [TileArtFactory.forSystem]). None of them
+     * Firmware apps drawn as xiaoheiDESK's own tiles (see [TileArtFactory.forSystem]). None of them
      * declares a standard app category, so they are listed by package, each checked on its TV.
      */
     private val SYSTEM_TILES = mapOf(
@@ -309,9 +309,9 @@ object AppCatalog {
     /**
      * Places inside firmware apps worth a tile of their own. Xiaomi's children's mode lives in
      * PatchWall, which owners otherwise never open: it is where the children's channel is, and the
-     * reason to go back to PatchWall at all in a home with Aerial (issue #332). Started directly
+     * reason to go back to PatchWall at all in a home with xiaoheiDESK (issue #332). Started directly
      * (KidsHomeActivity on MiTV-MFTR0), it is not PatchWall's home screen, so Home Guard leaves it
-     * in front; Home comes back to Aerial.
+     * in front; Home comes back to xiaoheiDESK.
      */
     private fun shortcuts(context: Context, pm: PackageManager): List<AppEntry> {
         val kids = Intent("android.intent.action.ENTER_KIDS_MODE").setPackage("com.mitv.tvhome")
@@ -350,7 +350,7 @@ object AppCatalog {
      * (雷鸟, MT5879) has no launcher entry at all, and the maker's content (欢网 membership) is
      * only there (issues #110, #98). The ones Home Guard keeps away while it runs, else the other
      * Homes that are not fallbacks. Opening the tile goes through HomeGuardService.openStockLauncher,
-     * so the guard leaves it in front until Aerial is back. Launchers with an entry of their own
+     * so the guard leaves it in front until xiaoheiDESK is back. Launchers with an entry of their own
      * (Xiaomi's PatchWall) keep that one.
      */
     private fun stockLaunchers(pm: PackageManager): List<ActivityInfo> {
@@ -458,12 +458,12 @@ object AppCatalog {
             label = runCatching { info.loadLabel(pm).toString().trim() }.getOrDefault("").ifEmpty { pkg }
             val banner = banner(pm, info, leanback)
             // A launcher declared only as a Home has an icon for phones at best (TCL's cyberui: the
-            // default robot), so it is drawn as Aerial's own.
+            // default robot), so it is drawn as xiaoheiDESK's own.
             val own = if (stockHome) SystemTile.Home
                 else if (system) SYSTEM_TILES[pkg] ?: byCategory[pkg]?.takeIf { banner == null } else null
             val custom = CustomIcons.load(pkg)
-            // Aerial's own tiles for the firmware's apps keep their look; any other app's
-            // ready-made picture comes before what Aerial would draw from its banner or icon.
+            // xiaoheiDESK's own tiles for the firmware's apps keep their look; any other app's
+            // ready-made picture comes before what xiaoheiDESK would draw from its banner or icon.
             val library = if (custom == null && (own == null || IconLibrary.pick(pkg) == IconLibrary.Pick.Library)) IconLibrary.load(pkg) else null
             val recipe = TileRecipes.of(pkg)
             // A tile that cannot be drawn used to drop the app from Home altogether, without a word

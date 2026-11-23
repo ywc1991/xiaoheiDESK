@@ -182,7 +182,7 @@ class NetworkStatusTest {
     }
 
     @Test
-    fun vpnThatLeavesAerialOutStillShows() {
+    fun vpnThatLeavesXiaoheiOutStillShows() {
         setDefault(ConnectivityManager.TYPE_ETHERNET, NetworkCapabilities.TRANSPORT_ETHERNET)
         assertEquals(false, SystemProbe.network(context).vpn)
         addPhysical(100, ConnectivityManager.TYPE_VPN, NetworkCapabilities.TRANSPORT_VPN)

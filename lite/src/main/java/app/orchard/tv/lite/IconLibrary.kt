@@ -13,7 +13,7 @@ import java.io.File
  * pictures of apps installed here are downloaded, into files/library. Off the main thread.
  */
 object IconLibrary {
-    private const val TAG = "AerialLite"
+    private const val TAG = "XiaoheiLite"
     private const val BASE = "https://aerial.qust.me/icons/"
     private const val CHECK_EVERY_MS = 12 * 60 * 60 * 1000L
     private const val RETRY_MS = 10 * 60 * 1000L

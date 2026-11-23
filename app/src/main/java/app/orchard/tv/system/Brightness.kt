@@ -53,7 +53,7 @@ object Brightness {
         runCatching { context.packageManager.getPackageInfo("com.sony.dtv.configsettings", 0) }.isSuccess
 
     /**
-     * Hisense VIDAA: screen_brightness takes Aerial's writes and the panel stays as it was; the
+     * Hisense VIDAA: screen_brightness takes xiaoheiDESK's writes and the panel stays as it was; the
      * backlight is the vendor middleware's (com.jamdeo.flow), which apps cannot reach. Seen on four
      * VIDAA_TV builds: 75E8H (m7642, Android 9, #1025), 85E3H (Android 9, #1130), MT9653
      * (Android 11, #1133) and E3S Pro+ (Amlogic, Android 11, #1141). Known by its launcher or its
@@ -65,8 +65,8 @@ object Brightness {
         }
 
     /**
-     * Level Aerial last pushed to the MiTV panel. The middleware's getter reports animated values
-     * and the firmware refuses third-party writes to its own setting, so Aerial tracks the level it
+     * Level xiaoheiDESK last pushed to the MiTV panel. The middleware's getter reports animated values
+     * and the firmware refuses third-party writes to its own setting, so xiaoheiDESK tracks the level it
      * set, seeded once per process from the panel itself when it has none.
      */
     private var mitvLevel: Int? = null
@@ -82,7 +82,7 @@ object Brightness {
     private fun stepPercent(percent: Int, direction: Int): Int =
         (if (direction > 0) (percent / 5 + 1) * 5 else ((percent + 4) / 5 - 1) * 5).coerceIn(1, 100)
 
-    /** Current level as 0..1, or null when Aerial cannot change it on this TV. */
+    /** Current level as 0..1, or null when xiaoheiDESK cannot change it on this TV. */
     fun level(context: Context): Float? = level(context, probeSkyworth = true)
 
     private fun level(context: Context, probeSkyworth: Boolean): Float? {
@@ -96,7 +96,7 @@ object Brightness {
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) return null
                 Settings.Global.getInt(r, XIAOMI_BACKLIGHT, 50) / 100f
             }
-            // The MiTV middleware is driven over its own binder and Aerial keeps the level in its own
+            // The MiTV middleware is driven over its own binder and xiaoheiDESK keeps the level in its own
             // preferences, so this path does not need WRITE_SETTINGS.
             MitvPanel.usable(context) -> (mitvLevel ?: MitvPanel.level(context) ?: storedLevel(context) ?: 50) / 100f
             // A Xiaomi TV where neither place works: open the TV's own backlight slider rather than
@@ -155,7 +155,7 @@ object Brightness {
         // has both never has its panel probed or moved this way.
         if (!isTcl(context) && !usesXiaomiBacklight(context) && MitvPanel.usable(context)) {
             runCatching {
-                // Start the relative step from the level Aerial set last: the middleware's getter is
+                // Start the relative step from the level xiaoheiDESK set last: the middleware's getter is
                 // animated, so a panel reading taken mid-step is only the seed of the first step
                 // after a restart.
                 val from = mitvLevel ?: MitvPanel.level(context) ?: storedLevel(context) ?: percent
@@ -231,7 +231,7 @@ private object TclPicture {
  * The newer TCL picture interface, com.tcl.tv.pq.TvBacklightManager in the shared library
  * com.tcl.tv.display (/system_ext/framework), which the manifest asks for as optional. Found and
  * checked by a user on a TCL 85T7MPRO (MT9655, Android 14), whose TTvPictureManager does not
- * drive the panel: from a local build of Aerial, setBacklight(EN_APPLY_CURRENT, level,
+ * drive the panel: from a local build of xiaoheiDESK, setBacklight(EN_APPLY_CURRENT, level,
  * EN_TCL_ACT_EXEC_SAVE) moved the panel 38 → 39 → 38 and read back the same, no permission
  * needed (issue #656). Scale 1–100, as TCL's slider. A write that fails or does not read back
  * gives it up for the process, and Control Center opens TCL's picture panel as before.

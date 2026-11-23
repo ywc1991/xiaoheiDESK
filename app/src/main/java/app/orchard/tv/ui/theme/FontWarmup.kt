@@ -22,7 +22,7 @@ object FontWarmup {
         if (started) return
         started = true
         val app = context.applicationContext
-        thread(name = "AerialFonts", priority = Thread.NORM_PRIORITY) {
+        thread(name = "XiaoheiFonts", priority = Thread.NORM_PRIORITY) {
             runCatching {
                 val resolver = createFontFamilyResolver(app)
                 val faces = listOf(

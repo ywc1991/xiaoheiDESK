@@ -25,7 +25,7 @@ import app.orchard.tv.apps.TileArt
 import app.orchard.tv.apps.TileArtFactory
 import app.orchard.tv.apps.folderEntry
 import app.orchard.tv.apps.sourceEntry
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.settings.Restricted
 import app.orchard.tv.system.XgimiBoost
 import app.orchard.tv.system.Brightness
@@ -112,7 +112,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     var sources by mutableStateOf<List<TvSource>>(emptyList()); private set
     var homeStatus by mutableStateOf(HomeStatus.NotDefault); private set
 
-    /** Panel brightness 0..1, or null when Aerial cannot change it on this TV. */
+    /** Panel brightness 0..1, or null when xiaoheiDESK cannot change it on this TV. */
     var brightness by mutableStateOf<Float?>(null); private set
     var brightnessBoost by mutableStateOf<Boolean?>(null); private set
 
@@ -147,7 +147,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     /**
      * Paused only by Home's bounce on Xiaomi (HomeGuardService.backOnPause), and being brought
      * straight back: the wallpaper's film plays on as if still resumed. Let go, it left the window
-     * black where the film showed through until Aerial was back 150 ms later, and then started over
+     * black where the film showed through until xiaoheiDESK was back 150 ms later, and then started over
      * (MiTV-MFTR0, Android 14).
      */
     var homeBounce by mutableStateOf(false)
@@ -155,7 +155,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     /** In front for the wallpaper's film: resumed, or only bouncing off Home (homeBounce). */
     val filmFront: Boolean get() = resumed || homeBounce
 
-    /** Aerial's screensaver is up (see MainActivity's idle timer). */
+    /** xiaoheiDESK's screensaver is up (see MainActivity's idle timer). */
     var screensaverVisible by mutableStateOf(false)
     val screensaverSkips = ScreensaverSkips()
 
@@ -198,10 +198,10 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { snapshotFlow { SourceLooks.all }.drop(1).collect { if (loaded) arrange() } }
         // An app renamed on the phone page.
         viewModelScope.launch { snapshotFlow { AppNames.all }.drop(1).collect { if (loaded) arrange() } }
-        viewModelScope.launch { snapshotFlow { AerialSettings.previewApps }.drop(1).collect { if (loaded) arrange() } }
+        viewModelScope.launch { snapshotFlow { XiaoheiSettings.previewApps }.drop(1).collect { if (loaded) arrange() } }
         // Into or out of Kids and Elders mode, or its tiles chosen: another Home.
         viewModelScope.launch {
-            snapshotFlow { listOf(Restricted.active, Restricted.enabled, Restricted.allowed, overlay == Overlay.Kids, AerialSettings.pinSet) }.drop(1).collect {
+            snapshotFlow { listOf(Restricted.active, Restricted.enabled, Restricted.allowed, overlay == Overlay.Kids, XiaoheiSettings.pinSet) }.drop(1).collect {
                 if (loaded) { arrange(); prepareFaces() }
             }
         }
@@ -215,14 +215,14 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         // Another number of apps a row: the artwork again if four a row wants it larger, else
         // every face at the new size, before the tiles draw them.
         viewModelScope.launch {
-            snapshotFlow { AerialSettings.homeColumns }.drop(1).collect {
+            snapshotFlow { XiaoheiSettings.homeColumns }.drop(1).collect {
                 if (TileArtFactory.fitColumns()) reload() else if (loaded) prepareFaces()
             }
         }
     }
 
     /**
-     * Installed from the APK alone (issue #213): nothing granted Aerial what install.sh does, and
+     * Installed from the APK alone (issue #213): nothing granted xiaoheiDESK what install.sh does, and
      * Home is still the stock launcher. Control Center's setup page says how to finish, once, a
      * few seconds in, when Home Guard would have bound if it were on.
      */
@@ -244,8 +244,8 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     private var packagesSeen = 0
 
     /**
-     * Apps installed or removed while Aerial was in the background (from an app store in front)
-     * send no broadcast Aerial hears: it listens only while started. Catch up when Home comes back
+     * Apps installed or removed while xiaoheiDESK was in the background (from an app store in front)
+     * send no broadcast xiaoheiDESK hears: it listens only while started. Catch up when Home comes back
      * (issue #55). Before Android 8 there is no change counter; the reload is cheap, tiles are cached.
      */
     fun reloadIfPackagesChanged() {
@@ -323,7 +323,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
      */
     private fun prepareFaces() {
         val shown = apps + folderApps.values.flatten()
-        val row = apps.take(AerialSettings.homeColumns)
+        val row = apps.take(XiaoheiSettings.homeColumns)
         facesJob?.cancel()
         facesJob = viewModelScope.launch {
             val started = SystemClock.uptimeMillis()
@@ -335,9 +335,9 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /**
-     * Taking over early in a boot, Aerial can list the apps before the system has registered them
+     * Taking over early in a boot, xiaoheiDESK can list the apps before the system has registered them
      * all, and apps that were already installed send no broadcast later: the missing ones stayed
-     * missing until Aerial restarted (Konka LED60R1, issue #394; old Konka on Android 5.1, #170).
+     * missing until xiaoheiDESK restarted (Konka LED60R1, issue #394; old Konka on Android 5.1, #170).
      * Looks again a minute and three minutes into the boot, and changes Home only if the list did.
      */
     private fun catchUpAfterBoot() {
@@ -358,10 +358,10 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun arrange() {
         // Pinned TV inputs share the grid, order and hiding with the apps.
-        val pinned = sources.filter { it.id in AerialSettings.pinnedSources }.map { sourceEntry(context, it) }
+        val pinned = sources.filter { it.id in XiaoheiSettings.pinnedSources }.map { sourceEntry(context, it) }
         AppCatalog.pinnedSources = pinned
         AppCatalog.sources = sources
-        // The inputs Android itself lists can play behind Home through a TvView; the ones Aerial
+        // The inputs Android itself lists can play behind Home through a TvView; the ones xiaoheiDESK
         // makes up for TCL, Skyworth and the like open only in the maker's own player.
         Wallpapers.setSources(
             sources.filter { (it.kind == SourceKind.Hdmi || it.kind == SourceKind.DisplayPort) && '/' in it.id }
@@ -376,9 +376,9 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
             folderEntry(folder, art)
         }
         // With a PIN set the phone page can set the mode up too.
-        val kids = Restricted.enabled || overlay == Overlay.Kids || AerialSettings.pinSet
+        val kids = Restricted.enabled || overlay == Overlay.Kids || XiaoheiSettings.pinSet
         kidsCandidates = if (!kids) emptyList() else {
-            val unpinned = sources.filter { it.id !in AerialSettings.pinnedSources }.map { sourceEntry(context, it) }
+            val unpinned = sources.filter { it.id !in XiaoheiSettings.pinnedSources }.map { sourceEntry(context, it) }
             arrangement.home.flatMap { e -> e.folder?.let { arrangement.folders[it.id].orEmpty() } ?: listOf(e) } +
                 arrangement.hidden + unpinned
         }
@@ -386,7 +386,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         if (kids) noteKidsPackages()
         apps = when {
             Restricted.active -> Restricted.allowed.mapNotNull { key -> kidsCandidates.firstOrNull { it.key == key } }
-            else -> AerialSettings.previewApps.takeIf { it > 0 }?.let { arrangement.home.take(it) } ?: arrangement.home
+            else -> XiaoheiSettings.previewApps.takeIf { it > 0 }?.let { arrangement.home.take(it) } ?: arrangement.home
         }
         AppCatalog.home = arrangement.home
         AppCatalog.folderApps = arrangement.folders
@@ -426,7 +426,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Opens the mode's setup: with the PIN, or choosing one first, since leaving the mode needs it. */
     fun setUpKidsMode() {
-        if (!AerialSettings.pinSet) overlay = Overlay.Pin(PinMode.Create) { overlay = Overlay.Kids }
+        if (!XiaoheiSettings.pinSet) overlay = Overlay.Pin(PinMode.Create) { overlay = Overlay.Kids }
         else whenUnlocked { overlay = Overlay.Kids }
     }
 
@@ -493,8 +493,8 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     /** What the TV opens when switched on, named as Home names it; null for nothing. */
     fun bootTargetLabel(): String? {
-        AerialSettings.bootApp?.let { pkg -> return entry(pkg)?.label ?: hiddenApps.firstOrNull { it.key == pkg }?.label ?: pkg }
-        val id = AerialSettings.bootSource ?: return null
+        XiaoheiSettings.bootApp?.let { pkg -> return entry(pkg)?.label ?: hiddenApps.firstOrNull { it.key == pkg }?.label ?: pkg }
+        val id = XiaoheiSettings.bootSource ?: return null
         return entry(SOURCE_KEY_PREFIX + id)?.label ?: sources.firstOrNull { it.id == id }?.label
     }
 
@@ -504,7 +504,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
      */
     fun chooseBootTarget(pkg: String? = null, sourceId: String? = null) {
         val before = bootTargetLabel()
-        if (pkg != null) AerialSettings.chooseBootApp(pkg) else AerialSettings.chooseBootSource(sourceId)
+        if (pkg != null) XiaoheiSettings.chooseBootApp(pkg) else XiaoheiSettings.chooseBootSource(sourceId)
         val after = bootTargetLabel()
         when {
             after == null -> before?.let { notify(context.getString(R.string.notice_boot_off, it)) }
@@ -520,7 +520,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Pins a TV input to Home (as the first tile, where it is easiest to reach) or takes it off. */
     fun setSourcePinned(source: TvSource, pinned: Boolean) {
-        AerialSettings.setPinned(source.id, pinned)
+        XiaoheiSettings.setPinned(source.id, pinned)
         arrange()
         if (pinned) {
             val key = apps.firstOrNull { it.source?.id == source.id }?.key
@@ -555,14 +555,14 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     /**
      * What Control Center shows that changes while it is open with nothing to tell us: whether Home
-     * Guard is bound (it binds a few seconds after Aerial starts, and the panel kept showing "not the
+     * Guard is bound (it binds a few seconds after xiaoheiDESK starts, and the panel kept showing "not the
      * default home screen" until it was opened again) and the brightness, if something else sets it.
      * The volume and the network have broadcasts of their own (refreshSystem, refreshNetwork), and the
      * input list is not rebuilt here. Assigning equal values redraws nothing.
      */
     /**
      * Inputs again, for the inputs page while it lists none. Skyworth skyT963 (1AA46_V58FP,
-     * Android 9) fills its source list some 30 s after boot, after Aerial has loaded and while it
+     * Android 9) fills its source list some 30 s after boot, after xiaoheiDESK has loaded and while it
      * stays in front, so nothing re-probed it (PR #507, by Sakurasan, checked on that TV).
      */
     fun refreshSources() {
@@ -638,7 +638,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Runs [action] at once, or after the parental PIN when one is set (issue #10). */
     fun whenUnlocked(action: () -> Unit) {
-        if (!AerialSettings.locked) action()
+        if (!XiaoheiSettings.locked) action()
         else overlay = Overlay.Pin(PinMode.Unlock) { overlay = Overlay.None; action() }
     }
 
@@ -676,7 +676,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
      */
     fun onHomePressed(resetFocus: Boolean = true) {
         screensaverVisible = false
-        AerialSettings.relock()
+        XiaoheiSettings.relock()
         overlay = Overlay.None
         movingKey = null
         if (resetFocus) homeResetPending = true

@@ -23,7 +23,7 @@ import java.io.File
  * TV, say) follow, drawn as if installed; they only need their manifest and resources.
  */
 object TileSheet {
-    private const val TAG = "AerialTiles"
+    private const val TAG = "XiaoheiTiles"
     private const val COLUMNS = 6
     private const val GAP = 24
     private const val LABEL = 44

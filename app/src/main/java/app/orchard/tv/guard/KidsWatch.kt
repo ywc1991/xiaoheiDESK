@@ -17,8 +17,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import app.orchard.tv.MainActivity
 import app.orchard.tv.R
-import app.orchard.tv.dream.AerialDream
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.dream.XiaoheiDream
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.settings.KidsLock
 import app.orchard.tv.settings.Restricted
 import app.orchard.tv.system.DiagLog
@@ -26,14 +26,14 @@ import app.orchard.tv.system.SystemProbe
 
 /**
  * Kids and Elders mode while the TV is on, wherever it is (Restricted): counts the time spent in
- * apps and inputs (not on Aerial's Home or its screensaver), starts breaks, warns 5 and 1 minutes
- * before a lock, and brings Aerial back over whatever is in front once locked.
+ * apps and inputs (not on xiaoheiDESK's Home or its screensaver), starts breaks, warns 5 and 1 minutes
+ * before a lock, and brings xiaoheiDESK back over whatever is in front once locked.
  *
  * Other apps are kept away by Home Guard as their windows come up (HomeGuardService). Without it,
  * where usage stats may be read, the app in front is looked at every few seconds instead; without
- * either, only Home itself is limited and the time is counted from Aerial's own pauses.
+ * either, only Home itself is limited and the time is counted from xiaoheiDESK's own pauses.
  *
- * Runs in Aerial's process on the main thread, started by Home and by Home Guard, whichever comes first.
+ * Runs in xiaoheiDESK's process on the main thread, started by Home and by Home Guard, whichever comes first.
  */
 object KidsWatch {
     private const val TICK_MS = 10_000L
@@ -51,7 +51,7 @@ object KidsWatch {
     private var warnedStep = 0
     private var broughtBackAt = Long.MIN_VALUE / 2
 
-    /** Aerial's Home is resumed (MainActivity): time there is not counted. */
+    /** xiaoheiDESK's Home is resumed (MainActivity): time there is not counted. */
     var homeInFront = false
         set(value) {
             field = value
@@ -71,7 +71,7 @@ object KidsWatch {
     fun start(context: Context) {
         if (app == null) {
             app = context.applicationContext
-            AerialSettings.init(context)
+            XiaoheiSettings.init(context)
             Restricted.init(context)
             ContextCompat.registerReceiver(app!!, screenOff, IntentFilter(Intent.ACTION_SCREEN_OFF), ContextCompat.RECEIVER_NOT_EXPORTED)
         }
@@ -104,7 +104,7 @@ object KidsWatch {
         val since = if (lastTickAt == 0L) 0L else (at - lastTickAt).coerceAtLeast(0L)
         lastTickAt = at
         val interactive = ctx.getSystemService<PowerManager>()?.isInteractive != false
-        val watching = Restricted.active && interactive && !homeInFront && !AerialDream.showing
+        val watching = Restricted.active && interactive && !homeInFront && !XiaoheiDream.showing
         if (watching) {
             idleMs = 0
             // A gap longer than two ticks is the process held up (standby), not watching.
@@ -154,10 +154,10 @@ object KidsWatch {
         val now = SystemClock.uptimeMillis()
         if (now - broughtBackAt < 3_000) return
         broughtBackAt = now
-        DiagLog.i("kids: bringing Aerial back, $why")
-        if (HomeGuardService.bringAerialBack()) return
+        DiagLog.i("kids: bringing xiaoheiDESK back, $why")
+        if (HomeGuardService.bringXiaoheiBack()) return
         runCatching { ctx.startActivity(MainActivity.bringBackIntent(ctx)) }
-            .onFailure { DiagLog.i("kids: could not bring Aerial back: $it") }
+            .onFailure { DiagLog.i("kids: could not bring xiaoheiDESK back: $it") }
     }
 
     private val appCache = HashMap<String, Boolean>()

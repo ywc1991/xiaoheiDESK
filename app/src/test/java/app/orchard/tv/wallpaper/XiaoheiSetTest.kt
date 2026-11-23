@@ -16,75 +16,75 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28])
-class AerialSetTest {
+class XiaoheiSetTest {
     private val app: Application = RuntimeEnvironment.getApplication()
     private var day = "2026-10-29"
 
     @Before
     fun setUp() {
         app.getSharedPreferences("aerial_set", 0).edit().clear().commit()
-        AerialSet.today = { day }
+        XiaoheiSet.today = { day }
     }
 
     @After
     fun tearDown() {
-        AerialSet.today = { java.time.LocalDate.now().toString() }
+        XiaoheiSet.today = { java.time.LocalDate.now().toString() }
     }
 
     @Test
     fun startsWithOneFilmAndNothingNewTheSameDay() {
-        assertEquals(1, AerialSet.films(app).size)
-        assertFalse(AerialSet.due(app))
-        assertNull(AerialSet.takeDaily(app))
+        assertEquals(1, XiaoheiSet.films(app).size)
+        assertFalse(XiaoheiSet.due(app))
+        assertNull(XiaoheiSet.takeDaily(app))
     }
 
     @Test
     fun aNewDayBringsOneNewFilmFirst() {
-        val first = AerialSet.films(app).single()
+        val first = XiaoheiSet.films(app).single()
         day = "2026-10-30"
-        assertTrue(AerialSet.due(app))
-        val new = AerialSet.takeDaily(app)
+        assertTrue(XiaoheiSet.due(app))
+        val new = XiaoheiSet.takeDaily(app)
         assertNotNull(new)
         new!!
-        assertEquals(listOf(new.id, first.id), AerialSet.films(app).map { it.id })
+        assertEquals(listOf(new.id, first.id), XiaoheiSet.films(app).map { it.id })
         // Only one a day.
-        assertNull(AerialSet.takeDaily(app))
+        assertNull(XiaoheiSet.takeDaily(app))
     }
 
     @Test
     fun theNewFilmIsTheOneChosenAhead() {
-        AerialSet.films(app)
+        XiaoheiSet.films(app)
         day = "2026-10-30"
-        val ahead = AerialSet.nextNew(app)
-        assertEquals(ahead.id, AerialSet.takeDaily(app)?.id)
+        val ahead = XiaoheiSet.nextNew(app)
+        assertEquals(ahead.id, XiaoheiSet.takeDaily(app)?.id)
     }
 
     @Test
     fun keepsAtMostThreeNewestFirstWithoutRepeats() {
-        AerialSet.films(app)
-        val added = (1..4).map { AerialSet.addNew(app).id }
-        val kept = AerialSet.films(app).map { it.id }
-        assertEquals(AerialSet.MAX, kept.size)
-        assertEquals(added.reversed().take(AerialSet.MAX), kept)
+        XiaoheiSet.films(app)
+        val added = (1..4).map { XiaoheiSet.addNew(app).id }
+        val kept = XiaoheiSet.films(app).map { it.id }
+        assertEquals(XiaoheiSet.MAX, kept.size)
+        assertEquals(added.reversed().take(XiaoheiSet.MAX), kept)
         assertEquals(kept.size, kept.toSet().size)
     }
 
     @Test
     fun playlistStartsAtTheCurrentFilmAndGoesRound() {
-        AerialSet.films(app)
-        AerialSet.addNew(app)
-        AerialSet.addNew(app)
-        val set = AerialSet.films(app).map { it.id }
-        val list = AerialSet.playlist(app, set[1]).map { it.id }
+        XiaoheiSet.films(app)
+        XiaoheiSet.addNew(app)
+        XiaoheiSet.addNew(app)
+        val set = XiaoheiSet.films(app).map { it.id }
+        val list = XiaoheiSet.playlist(app, set[1]).map { it.id }
         assertEquals(listOf(set[1], set[2], set[0]), list)
     }
 
     @Test
     fun aFilmFromOutsideTheSetJoinsIt() {
-        AerialSet.films(app)
-        val other = Aerials.all(app).first { it.id !in AerialSet.films(app).map { f -> f.id } }
-        val list = AerialSet.playlist(app, other.id)
+        XiaoheiSet.films(app)
+        val other = XiaoheiFilms.all(app).first { it.id !in XiaoheiSet.films(app).map { f -> f.id } }
+        val list = XiaoheiSet.playlist(app, other.id)
         assertEquals(other.id, list.first().id)
-        assertTrue(AerialSet.films(app).any { it.id == other.id })
+        assertTrue(XiaoheiSet.films(app).any { it.id == other.id })
     }
 }

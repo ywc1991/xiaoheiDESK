@@ -78,7 +78,7 @@ import app.orchard.tv.apps.SourceLooks
 import app.orchard.tv.HomeViewModel
 import app.orchard.tv.Overlay
 import app.orchard.tv.R
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.settings.Restricted
 import app.orchard.tv.guard.KidsWatch
 import app.orchard.tv.apps.AppEntry
@@ -87,7 +87,7 @@ import app.orchard.tv.ui.wallpaper.SheetCovers
 import app.orchard.tv.ui.control.DatePanel
 import app.orchard.tv.ui.control.WeatherPanel
 import app.orchard.tv.ui.wallpaper.WallpaperSheet
-import app.orchard.tv.wallpaper.AerialFormats
+import app.orchard.tv.wallpaper.XiaoheiFormats
 import app.orchard.tv.wallpaper.ScreensaverMode
 import app.orchard.tv.wallpaper.Wallpapers
 import app.orchard.tv.ui.components.liquidGlass
@@ -154,11 +154,14 @@ private const val CC_WARM_AFTER_MS = 3_000L
 
 private val GridMargin = 56.dp
 
+/** Extra downward nudge for the app icon row on the shelf (owner: the icons sat a touch too high). */
+private val IconRowDrop = 24.dp
+
 /** The highest the row above may sit once Home has scrolled into the grid: clear of the status pill. */
 private val RowAboveTop = 72.dp
 
 /**
- * The gap between tiles for [columns] a row (AerialSettings.homeColumns): about a fifth of a tile,
+ * The gap between tiles for [columns] a row (XiaoheiSettings.homeColumns): about a fifth of a tile,
  * as tvOS keeps it when it fits six, so four or six look like five scaled rather than packed.
  */
 internal fun gridGap(columns: Int): Dp = when (columns) {
@@ -219,7 +222,8 @@ private class GridMetrics(screenW: Dp, screenH: Dp, val columns: Int, oneRow: Bo
      * between the rows, or on the plate, which grows by [firstGap]. Lifting the row for them as
      * well showed the second row nearly three times as far (issue #540).
      */
-    val topRowY = when {
+    /** The shelf row position before the owner's downward nudge. */
+    private val topRowYBase = when {
         !oneRow -> maxOf(twoRowFit, twoRowFloor)
         peek -> screenH - pitchY - 12.dp - firstGap
         // Nothing peeks under the row, so it goes as low as it fits: the plate as far from the
@@ -227,6 +231,14 @@ private class GridMetrics(screenW: Dp, screenH: Dp, val columns: Int, oneRow: Bo
         plate -> screenH - tileH - (PlateMarginBottom + PlatePadV) - firstGap
         else -> screenH - tileH - 70.dp
     }
+
+    /**
+     * Where the top row actually sits. A single-row shelf sits low but the owner wanted the icons a
+     * touch lower still; two rows are already laid against the bottom edge, so they keep [topRowYBase]
+     * or the second row would be clipped. Everything that follows (slot, plate, scroll target) reads
+     * this value, so the whole row and its glass move together.
+     */
+    val topRowY = topRowYBase + if (oneRow) IconRowDrop else 0.dp
 
     /**
      * Where a row rests once you go down into the grid: the row above stays in view, its top under
@@ -250,7 +262,8 @@ private class GridMetrics(screenW: Dp, screenH: Dp, val columns: Int, oneRow: Bo
      * under the large clock, so the second row and its names clear the bottom edge. Nothing in
      * almost every layout; it used to lift whenever a name went under the second row.
      */
-    val shelfLift = if (oneRow) 0.dp else topRowY - twoRowFit
+    // Anchored to the un-nudged base so the one-row drop is not cancelled out when row two lifts.
+    val shelfLift = if (oneRow) 0.dp else topRowYBase - twoRowFit
 
     /** The rows on the shelf, over the plate: the top row, and in two-row mode the second too. */
     val shelfRows = if (oneRow) 1 else 2
@@ -328,7 +341,7 @@ fun HomeScreen(
     var pillFocused by remember { mutableStateOf(false) }
     var lastFocusedIndex by remember { mutableStateOf(0) }
     val focusedIndex = apps.indexOfFirst { it.key == focusedKey }
-    val columns = AerialSettings.homeColumns
+    val columns = XiaoheiSettings.homeColumns
     val focusedRow = if (pillFocused || focusedIndex < 0) 0 else focusedIndex / columns
     // Kids mode's lock covers Home: nothing under it takes focus.
     val kidsLock = if (Restricted.active) Restricted.lock else null
@@ -358,8 +371,8 @@ fun HomeScreen(
     // to the screensaver's own films.
     var filmFailed by remember(vm.screensaverVisible) { mutableStateOf(false) }
     val filmSaverChosen = remember(vm.screensaverVisible) {
-        vm.screensaverVisible && Wallpapers.selectedId == Wallpapers.LIVE && Wallpapers.screensaver == ScreensaverMode.Aerial &&
-            AerialFormats.screensaverCarriesWallpaper(appContext) &&
+        vm.screensaverVisible && Wallpapers.selectedId == Wallpapers.LIVE && Wallpapers.screensaver == ScreensaverMode.Xiaohei &&
+            XiaoheiFormats.screensaverCarriesWallpaper(appContext) &&
             (filmCover.value > 0.5f || focusedRow == 0 && overlay == Overlay.None && moving == null)
     }
     val filmSaver = filmSaverChosen && !filmFailed
@@ -483,7 +496,7 @@ fun HomeScreen(
     // A peek is purely visual: it never becomes an overlay, so the grid keeps its focus and the
     // backdrop stays as it is. Pressing OK on the corner opens the real, interactive panel.
     val peekPanel = focusedCorner.takeIf {
-        AerialSettings.cornerAutoPeek &&
+        XiaoheiSettings.cornerAutoPeek &&
             overlay == Overlay.None && moving == null && kidsLock == null && windowFocused && !vm.screensaverVisible
     }
     LaunchedEffect(windowFocused, vm.homeResetPending, vm.loaded) {
@@ -502,7 +515,7 @@ fun HomeScreen(
         dragged = false
         // Handled even when that is turned off: unhandled, Back would close Home itself.
         if (focusedRow > 0 || scrolled) focusApp(focusedIndex.coerceAtLeast(0) % columns)
-        else if (AerialSettings.backStartsScreensaver) onStartScreensaver()
+        else if (XiaoheiSettings.backStartsScreensaver) onStartScreensaver()
     }
 
     BoxWithConstraints(
@@ -547,7 +560,7 @@ fun HomeScreen(
                     }
                     NativeKeyEvent.KEYCODE_SETTINGS -> {
                         // The remote's gear key reaches Home where no firmware answers it: a stock
-                        // Android TV launcher opens the settings on it, and with Aerial as Home it did
+                        // Android TV launcher opens the settings on it, and with xiaoheiDESK as Home it did
                         // nothing (Riviera RLED-GLT32TPQ10, MediaTek, Android 14, issue #1190).
                         // Kids and Elders mode keeps the settings shut, as Control Center does.
                         if (kidsLock != null || Restricted.active) return@onPreviewKeyEvent true
@@ -572,17 +585,17 @@ fun HomeScreen(
     ) {
         val rows = (apps.size + columns - 1) / columns
         // With a single row of apps the two-row layout would leave the bottom of the screen empty.
-        val oneRow = AerialSettings.oneRowHome || rows <= 1
+        val oneRow = XiaoheiSettings.oneRowHome || rows <= 1
         // In two rows the second is on screen already: down to it stays on the shelf, under the
         // same picture and plate, and only the row after it goes into the grid (issue #633: the
         // grid's frosted picture flashed up on the way to an app in the second row).
         val inGrid = focusedRow >= if (oneRow) 1 else 2
         // With every name shown, the top row's go on its glass plate, which grows to hold them.
-        val plateNames = AerialSettings.showAllNames && AerialSettings.homePlate
-        val peek = AerialSettings.peekNextRow
-        val hasPlate = AerialSettings.homePlate
-        val largeClock = AerialSettings.largeClock
-        val clockRightNow = AerialSettings.clockRight
+        val plateNames = XiaoheiSettings.showAllNames && XiaoheiSettings.homePlate
+        val peek = XiaoheiSettings.peekNextRow
+        val hasPlate = XiaoheiSettings.homePlate
+        val largeClock = XiaoheiSettings.largeClock
+        val clockRightNow = XiaoheiSettings.clockRight
         val metrics = remember(maxWidth, maxHeight, columns, oneRow, plateNames, peek, hasPlate, largeClock, clockRightNow) {
             GridMetrics(maxWidth, maxHeight, columns, oneRow, plateNames, peek, hasPlate, largeClock, clockRightNow)
         }
@@ -677,8 +690,8 @@ fun HomeScreen(
                 standIn = overlay == Overlay.None || overlay is Overlay.ControlCenter || overlay is Overlay.Wallpaper ||
                     (overlay is Overlay.AppMenu && overlay.inFolder == null),
                 panel = overlay != Overlay.None,
-                otherFormatSaver = vm.screensaverVisible && !filmSaver && Wallpapers.screensaver == ScreensaverMode.Aerial &&
-                    !AerialFormats.screensaverCarriesWallpaper(appContext),
+                otherFormatSaver = vm.screensaverVisible && !filmSaver && Wallpapers.screensaver == ScreensaverMode.Xiaohei &&
+                    !XiaoheiFormats.screensaverCarriesWallpaper(appContext),
                 lastInputAt = { vm.lastInputAt },
                 live = liveFilm,
             )
@@ -726,7 +739,7 @@ fun HomeScreen(
             // there are, which sit at its left: sized to three apps it read as a stray panel (#284).
             // In two rows it holds both: under the top row alone, the second sat beside it on the
             // bare wallpaper, as if left off the shelf.
-            val plate = if (apps.isEmpty() || !AerialSettings.homePlate) null else with(density) {
+            val plate = if (apps.isEmpty() || !XiaoheiSettings.homePlate) null else with(density) {
                 val second = if (metrics.shelfRows > 1) metrics.shelfSecond else 0.dp
                 Rect(
                     (metrics.margin - PlatePadH).toPx(),
@@ -777,10 +790,10 @@ fun HomeScreen(
                     .fillMaxSize()
                     .offset { IntOffset(0, -scroll.value.roundToInt()) },
             ) {
-                val clockRight = AerialSettings.clockRight
+                val clockRight = XiaoheiSettings.clockRight
                 // The large clock stands over the top row; the small one is the time and weather in
                 // one line, top left or beside the pill, so the wallpaper keeps the screen.
-                if (AerialSettings.largeClock) {
+                if (XiaoheiSettings.largeClock) {
                     ShelfClock(
                         now = now,
                         alignEnd = clockRight,
@@ -911,7 +924,7 @@ fun HomeScreen(
                 // It only becomes focusable while out, and its four directions all point back to a
                 // middle tile, so it never joins the corner <-> shelf navigation chain (Home toggle
                 // and corner-panel focus stay exactly as before).
-                if (AerialSettings.showDeskCat) {
+                if (XiaoheiSettings.showDeskCat) {
                     CatCompanion(
                         modifier = Modifier
                             .diagLayer("cat")
@@ -922,9 +935,9 @@ fun HomeScreen(
                                 // reachable by moving left from there. Never bounce back into the
                                 // shelf — that trapped focus and made the corners unreachable.
                                 // Down/left return to the shelf; right stays put.
-                                if (!AerialSettings.largeClock) up = pillRequester
+                                if (!XiaoheiSettings.largeClock) up = pillRequester
                                 if (back != null) {
-                                    if (AerialSettings.largeClock) up = requester(back.key)
+                                    if (XiaoheiSettings.largeClock) up = requester(back.key)
                                     down = requester(back.key)
                                     left = requester(back.key)
                                 }
@@ -959,7 +972,7 @@ fun HomeScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End,
         ) {
-            if (!AerialSettings.largeClock) {
+            if (!XiaoheiSettings.largeClock) {
                 CornerWeather(
                     onClick = { vm.overlay = Overlay.Weather },
                     enabled = gridEnabled && moving == null,
@@ -975,7 +988,7 @@ fun HomeScreen(
                         .graphicsLayer { alpha = 1f - (scroll.value / collapsePx * 1.6f).coerceIn(0f, 1f) },
                 )
             }
-            if (!AerialSettings.largeClock && AerialSettings.clockRight) {
+            if (!XiaoheiSettings.largeClock && XiaoheiSettings.clockRight) {
                 CornerClock(
                     now = now,
                     onClick = { vm.overlay = Overlay.Date },
@@ -1132,8 +1145,8 @@ fun HomeScreen(
                 val entry = vm.entry(key)
                 val source = entry?.source
                 when {
-                    source != null -> vm.chooseBootTarget(sourceId = source.id.takeIf { it != AerialSettings.bootSource })
-                    entry != null -> vm.chooseBootTarget(pkg = key.takeIf { it != AerialSettings.bootApp })
+                    source != null -> vm.chooseBootTarget(sourceId = source.id.takeIf { it != XiaoheiSettings.bootSource })
+                    entry != null -> vm.chooseBootTarget(pkg = key.takeIf { it != XiaoheiSettings.bootApp })
                 }
             },
             onSourceDevice = { id, device ->
@@ -1211,7 +1224,7 @@ fun HomeScreen(
             onPin = { on ->
                 if (on) vm.overlay = Overlay.Pin(PinMode.Create) { vm.overlay = Overlay.Wallpaper }
                 // Kids mode cannot be left without a PIN: it goes with it.
-                else vm.whenUnlocked { AerialSettings.choosePin(null); Restricted.chooseEnabled(false); vm.overlay = Overlay.Wallpaper }
+                else vm.whenUnlocked { XiaoheiSettings.choosePin(null); Restricted.chooseEnabled(false); vm.overlay = Overlay.Wallpaper }
             },
         )
 

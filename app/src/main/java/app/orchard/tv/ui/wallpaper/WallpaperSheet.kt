@@ -70,7 +70,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import app.orchard.tv.R
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.settings.ArtScope
 import app.orchard.tv.settings.Restricted
 import app.orchard.tv.settings.RestrictedKind
@@ -91,10 +91,10 @@ import app.orchard.tv.ui.theme.Motion
 import app.orchard.tv.ui.theme.Palette
 import app.orchard.tv.ui.theme.Type
 import app.orchard.tv.wallpaper.PhoneServer
-import app.orchard.tv.wallpaper.AerialFormats
-import app.orchard.tv.wallpaper.AerialQuality
-import app.orchard.tv.wallpaper.AerialSet
-import app.orchard.tv.wallpaper.AerialStream
+import app.orchard.tv.wallpaper.XiaoheiFormats
+import app.orchard.tv.wallpaper.XiaoheiQuality
+import app.orchard.tv.wallpaper.XiaoheiSet
+import app.orchard.tv.wallpaper.XiaoheiStream
 import app.orchard.tv.wallpaper.ScreensaverMode
 import app.orchard.tv.system.SystemScreensaver
 import app.orchard.tv.wallpaper.Wallpaper
@@ -187,7 +187,7 @@ fun WallpaperSheet(
                     Choices(
                         R.string.st_play, stringResource(R.string.st_play_hint), note,
                         listOf(false to R.string.st_play_still, true to R.string.st_play_always),
-                        AerialSettings.wallpaperAlwaysMoves, AerialSettings::chooseWallpaperAlwaysMoves, first = true,
+                        XiaoheiSettings.wallpaperAlwaysMoves, XiaoheiSettings::chooseWallpaperAlwaysMoves, first = true,
                     )
                 }
 
@@ -198,38 +198,38 @@ fun WallpaperSheet(
                     Choices(
                         R.string.st_layout, stringResource(R.string.st_home_layout_hint), note,
                         listOf(true to R.string.st_home_one_row, false to R.string.st_home_standard),
-                        AerialSettings.oneRowHome, AerialSettings::chooseOneRowHome, first = true,
+                        XiaoheiSettings.oneRowHome, XiaoheiSettings::chooseOneRowHome, first = true,
                     )
                     // Two rows show the second row whole; only one row has a peek to hide.
-                    if (AerialSettings.oneRowHome) Choices(
+                    if (XiaoheiSettings.oneRowHome) Choices(
                         R.string.st_peek, stringResource(R.string.st_peek_hint), note,
                         listOf(true to R.string.st_peek_show, false to R.string.st_peek_hide),
-                        AerialSettings.peekNextRow, AerialSettings::choosePeekNextRow,
+                        XiaoheiSettings.peekNextRow, XiaoheiSettings::choosePeekNextRow,
                     )
                     Choices(
                         R.string.st_columns, stringResource(R.string.st_columns_hint), note,
-                        AerialSettings.HOME_COLUMNS.map { it to it.toString() },
-                        AerialSettings.homeColumns, AerialSettings::chooseHomeColumns,
+                        XiaoheiSettings.HOME_COLUMNS.map { it to it.toString() },
+                        XiaoheiSettings.homeColumns, XiaoheiSettings::chooseHomeColumns,
                     )
                     Choices(
                         R.string.st_plate, stringResource(R.string.st_plate_hint), note,
                         listOf(true to R.string.st_plate_glass, false to R.string.st_plate_none),
-                        AerialSettings.homePlate, AerialSettings::chooseHomePlate,
+                        XiaoheiSettings.homePlate, XiaoheiSettings::chooseHomePlate,
                     )
                     Choices(
                         R.string.st_names, stringResource(R.string.st_names_hint), note,
                         listOf(false to R.string.st_names_focused, true to R.string.st_names_all),
-                        AerialSettings.showAllNames, AerialSettings::chooseShowAllNames,
+                        XiaoheiSettings.showAllNames, XiaoheiSettings::chooseShowAllNames,
                     )
                     Choices(
                         R.string.st_desk_cat, stringResource(R.string.st_desk_cat_hint), note,
                         listOf(true to R.string.st_on, false to R.string.st_off),
-                        AerialSettings.showDeskCat, AerialSettings::chooseShowDeskCat,
+                        XiaoheiSettings.showDeskCat, XiaoheiSettings::chooseShowDeskCat,
                     )
                     Choices(
                         R.string.st_corner_peek, stringResource(R.string.st_corner_peek_hint), note,
                         listOf(false to R.string.st_off, true to R.string.st_on),
-                        AerialSettings.cornerAutoPeek, AerialSettings::chooseCornerAutoPeek,
+                        XiaoheiSettings.cornerAutoPeek, XiaoheiSettings::chooseCornerAutoPeek,
                     )
                     // Apps taken off Home are kept with the rest of how Home looks.
                     SettingRow(R.string.st_hidden_apps, stringResource(R.string.st_hidden_apps_hint), note) {
@@ -245,44 +245,44 @@ fun WallpaperSheet(
                     Choices(
                         R.string.st_clock, stringResource(R.string.st_clock_hint), note,
                         listOf(false to R.string.st_clock_left, true to R.string.st_clock_right),
-                        AerialSettings.clockRight, AerialSettings::chooseClockRight, first = true,
+                        XiaoheiSettings.clockRight, XiaoheiSettings::chooseClockRight, first = true,
                     )
                     Choices(
                         R.string.st_clock_size, stringResource(R.string.st_clock_size_hint), note,
                         listOf(false to R.string.st_clock_small, true to R.string.st_clock_large),
-                        AerialSettings.largeClock, AerialSettings::chooseLargeClock,
+                        XiaoheiSettings.largeClock, XiaoheiSettings::chooseLargeClock,
                     )
                     Choices(
                         R.string.wp_weather, null, note,
                         listOf(true to R.string.st_on, false to R.string.st_off),
-                        AerialSettings.showWeather, AerialSettings::chooseShowWeather,
+                        XiaoheiSettings.showWeather, XiaoheiSettings::chooseShowWeather,
                     )
                 }
                 Spacer(Modifier.height(10.dp))
                 Group { note ->
                     Choices(
                         R.string.st_focus_style,
-                        stringResource(if (AerialSettings.focusStyle == FocusStyle.HighContrast) R.string.st_focus_high_hint else R.string.st_focus_standard_hint),
+                        stringResource(if (XiaoheiSettings.focusStyle == FocusStyle.HighContrast) R.string.st_focus_high_hint else R.string.st_focus_standard_hint),
                         note,
                         listOf(FocusStyle.HighContrast to R.string.st_focus_high, FocusStyle.Standard to R.string.st_focus_standard),
-                        AerialSettings.focusStyle, AerialSettings::chooseFocusStyle, first = true,
+                        XiaoheiSettings.focusStyle, XiaoheiSettings::chooseFocusStyle, first = true,
                     )
                     Choices(
                         R.string.st_sounds,
-                        stringResource(if (AerialSettings.uiSounds == UiSounds.Tv) R.string.st_sounds_tv_hint else R.string.st_sounds_hint),
+                        stringResource(if (XiaoheiSettings.uiSounds == UiSounds.Tv) R.string.st_sounds_tv_hint else R.string.st_sounds_hint),
                         note,
-                        listOf(UiSounds.Tv to R.string.st_sounds_tv, UiSounds.Aerial to R.string.st_sounds_aerial, UiSounds.Off to R.string.st_off),
-                        AerialSettings.uiSounds, { AerialSettings.chooseUiSounds(it); Sounds.prepare() },
+                        listOf(UiSounds.Tv to R.string.st_sounds_tv, UiSounds.Xiaohei to R.string.st_sounds_aerial, UiSounds.Off to R.string.st_off),
+                        XiaoheiSettings.uiSounds, { XiaoheiSettings.chooseUiSounds(it); Sounds.prepare() },
                     )
                     Choices(
                         R.string.st_effects,
                         stringResource(
-                            if (AerialSettings.effects == Effects.Auto && AerialSettings.lowEnd) R.string.st_effects_auto_lite_hint
+                            if (XiaoheiSettings.effects == Effects.Auto && XiaoheiSettings.lowEnd) R.string.st_effects_auto_lite_hint
                             else R.string.st_effects_hint,
                         ),
                         note,
                         listOf(Effects.Auto to R.string.st_effects_auto, Effects.Full to R.string.st_effects_full, Effects.Lite to R.string.st_effects_lite),
-                        AerialSettings.effects, AerialSettings::chooseEffects,
+                        XiaoheiSettings.effects, XiaoheiSettings::chooseEffects,
                     )
                 }
 
@@ -297,42 +297,42 @@ fun WallpaperSheet(
                             Wallpapers.screensaver == ScreensaverMode.Usb -> stringResource(R.string.ss_usb_hint)
                             Wallpapers.screensaver == ScreensaverMode.System -> stringResource(R.string.ss_system_hint)
                             Wallpapers.screensaverFollows -> stringResource(R.string.ss_follow_hint)
-                            AerialSettings.backStartsScreensaver -> stringResource(R.string.ss_back_hint)
+                            XiaoheiSettings.backStartsScreensaver -> stringResource(R.string.ss_back_hint)
                             else -> null
                         },
                         note, first = true,
                     ) { ScreensaverChoice(onStartScreensaver) }
                     // Only the qualities this TV can play; a 1080p-only TV has nothing to choose.
-                    val qualities = remember { AerialFormats.supported(context) }
+                    val qualities = remember { XiaoheiFormats.supported(context) }
                     if (qualities.size > 1) {
-                        // The films kept on the TV (AerialSet, AerialStream): how many, how much
+                        // The films kept on the TV (XiaoheiSet, XiaoheiStream): how many, how much
                         // space at most, and how they change. In place of the quality's own note,
                         // as a note shows two lines at most.
                         val keeps = stringResource(
-                            R.string.ss_aerial_keeps,
-                            remember { android.text.format.Formatter.formatShortFileSize(context, AerialStream.keepLimit(context)) },
-                            AerialSet.MAX,
+                            R.string.ss_xiaohei_keeps,
+                            remember { android.text.format.Formatter.formatShortFileSize(context, XiaoheiStream.keepLimit(context)) },
+                            XiaoheiSet.MAX,
                         )
                         Choices(
                             R.string.ss_quality, keeps, note,
-                            listOf(AerialQuality.Auto to R.string.ss_quality_auto, AerialQuality.Hd to R.string.ss_quality_hd) +
-                                listOf(AerialQuality.Uhd to R.string.ss_quality_uhd, AerialQuality.DolbyVision to R.string.ss_quality_dv)
+                            listOf(XiaoheiQuality.Auto to R.string.ss_quality_auto, XiaoheiQuality.Hd to R.string.ss_quality_hd) +
+                                listOf(XiaoheiQuality.Uhd to R.string.ss_quality_uhd, XiaoheiQuality.DolbyVision to R.string.ss_quality_dv)
                                     .filter { it.first in qualities },
-                            AerialSettings.aerialQuality, AerialSettings::chooseAerialQuality,
+                            XiaoheiSettings.xiaoheiQuality, XiaoheiSettings::chooseXiaoheiQuality,
                         )
                     }
                     // Off by default since 1.1.12: the picture is left to itself (owner).
-                    if (Wallpapers.screensaver == ScreensaverMode.Aerial || Wallpapers.screensaver == ScreensaverMode.Photos ||
+                    if (Wallpapers.screensaver == ScreensaverMode.Xiaohei || Wallpapers.screensaver == ScreensaverMode.Photos ||
                         Wallpapers.screensaver == ScreensaverMode.Gallery || Wallpapers.screensaver == ScreensaverMode.Usb) Choices(
                         R.string.ss_show_time, stringResource(R.string.ss_show_time_hint), note,
                         listOf(false to R.string.st_off, true to R.string.st_on),
-                        AerialSettings.screensaverClock, AerialSettings::chooseScreensaverClock,
+                        XiaoheiSettings.screensaverClock, XiaoheiSettings::chooseScreensaverClock,
                     )
-                    // A thin white mat around the picture, like a framed print (all Aerial modes).
+                    // A thin white mat around the picture, like a framed print (all xiaoheiDESK modes).
                     if (Wallpapers.screensaver != ScreensaverMode.System) Choices(
                         R.string.ss_frame, stringResource(R.string.ss_frame_hint), note,
                         listOf(true to R.string.st_on, false to R.string.st_off),
-                        AerialSettings.screensaverFrame, AerialSettings::chooseScreensaverFrame,
+                        XiaoheiSettings.screensaverFrame, XiaoheiSettings::chooseScreensaverFrame,
                     )
                     // Which school of online museum paintings the gallery draws from (owner 1.1.20).
                     if (Wallpapers.screensaver == ScreensaverMode.Gallery) Choices(
@@ -342,22 +342,22 @@ fun WallpaperSheet(
                             ArtScope.Chinese to R.string.ss_art_scope_cn,
                             ArtScope.Western to R.string.ss_art_scope_west,
                         ),
-                        AerialSettings.artScope, AerialSettings::chooseArtScope,
+                        XiaoheiSettings.artScope, XiaoheiSettings::chooseArtScope,
                     )
                     // Gallery / USB pictures: show the whole picture or crop it to fill the screen.
                     if (Wallpapers.screensaver == ScreensaverMode.Gallery || Wallpapers.screensaver == ScreensaverMode.Usb) Choices(
                         R.string.ss_art_fit, stringResource(R.string.ss_art_fit_hint), note,
                         listOf(false to R.string.ss_art_fit_fill, true to R.string.ss_art_fit_whole),
-                        AerialSettings.artFitWhole, AerialSettings::chooseArtFitWhole,
+                        XiaoheiSettings.artFitWhole, XiaoheiSettings::chooseArtFitWhole,
                     )
                     // How long each picture stays up, photos, gallery and USB alike (owner).
                     if (Wallpapers.screensaver == ScreensaverMode.Photos ||
                         Wallpapers.screensaver == ScreensaverMode.Gallery || Wallpapers.screensaver == ScreensaverMode.Usb) Choices(
                         R.string.ss_slide, stringResource(R.string.ss_slide_hint), note,
-                        AerialSettings.ART_SLIDE_SECONDS.map { it to stringResource(R.string.ss_slide_seconds, it) },
-                        AerialSettings.artSlideSeconds, AerialSettings::chooseArtSlideSeconds,
+                        XiaoheiSettings.ART_SLIDE_SECONDS.map { it to stringResource(R.string.ss_slide_seconds, it) },
+                        XiaoheiSettings.artSlideSeconds, XiaoheiSettings::chooseArtSlideSeconds,
                     )
-                    // The firmware's screensaver starts on the firmware's timer: Aerial's delay
+                    // The firmware's screensaver starts on the firmware's timer: xiaoheiDESK's delay
                     // did nothing there, and Xiaomi's 1 minute came before the 5 chosen (issue #675).
                     if (Wallpapers.screensaver == ScreensaverMode.System) SettingRow(R.string.ss_delay, null, note) {
                         val delay = remember { SystemScreensaver.firmwareDelayMs(context) }
@@ -372,15 +372,15 @@ fun WallpaperSheet(
                         )
                     } else Choices(
                         R.string.ss_delay, null, note,
-                        AerialSettings.screensaverChoices.map {
-                            it to if (it == AerialSettings.NEVER) stringResource(R.string.ss_never) else stringResource(R.string.ss_minutes, it)
+                        XiaoheiSettings.screensaverChoices.map {
+                            it to if (it == XiaoheiSettings.NEVER) stringResource(R.string.ss_never) else stringResource(R.string.ss_minutes, it)
                         },
-                        AerialSettings.screensaverMinutes, AerialSettings::chooseScreensaverMinutes,
+                        XiaoheiSettings.screensaverMinutes, XiaoheiSettings::chooseScreensaverMinutes,
                     )
                     Choices(
                         R.string.ss_back, stringResource(R.string.ss_back_choice_hint), note,
                         listOf(true to R.string.ss_back_on, false to R.string.ss_back_off),
-                        AerialSettings.backStartsScreensaver, AerialSettings::chooseBackStartsScreensaver,
+                        XiaoheiSettings.backStartsScreensaver, XiaoheiSettings::chooseBackStartsScreensaver,
                     )
                 }
 
@@ -664,8 +664,8 @@ private fun <T> Choices(
 private fun PinChoice(onPin: (on: Boolean) -> Unit, onFocused: () -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         listOf(false to R.string.st_pin_off, true to R.string.st_pin_on).forEach { (on, label) ->
-            Chip(stringResource(label), on = AerialSettings.pinSet == on, onFocused = onFocused) {
-                if (AerialSettings.pinSet != on) onPin(on)
+            Chip(stringResource(label), on = XiaoheiSettings.pinSet == on, onFocused = onFocused) {
+                if (XiaoheiSettings.pinSet != on) onPin(on)
             }
         }
     }
@@ -743,7 +743,7 @@ private fun ScreensaverChoice(onStart: () -> Unit) {
     // The choice first, then the action that tries it.
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         listOf(
-            ScreensaverMode.Aerial to R.string.ss_aerial,
+            ScreensaverMode.Xiaohei to R.string.ss_xiaohei,
             ScreensaverMode.Photos to R.string.ss_photos,
             ScreensaverMode.Gallery to R.string.ss_gallery,
             ScreensaverMode.Usb to R.string.ss_usb,

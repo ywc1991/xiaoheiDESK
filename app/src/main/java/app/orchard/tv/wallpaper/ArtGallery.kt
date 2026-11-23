@@ -2,7 +2,7 @@ package app.orchard.tv.wallpaper
 
 import android.content.Context
 import android.graphics.BitmapFactory
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.settings.ArtScope
 import app.orchard.tv.system.DiagLog
 import kotlinx.coroutines.Dispatchers
@@ -57,7 +57,7 @@ object ArtGallery {
             // Keep only the chosen school before downloading, so a Western-only run never spends
             // data on the Chinese paintings (or the other way round). The slot index is taken from
             // the full list, so a cached file always matches its URL whatever the scope (owner 1.1.20).
-            val scope = AerialSettings.artScope
+            val scope = XiaoheiSettings.artScope
             val indices = (0 until all.length()).filter { i ->
                 scope == ArtScope.All || all.getJSONObject(i).optString("c") == scope.key
             }

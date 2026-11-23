@@ -69,7 +69,7 @@ object SystemProbe {
     fun network(context: Context): NetworkStatus {
         val cm = context.getSystemService<ConnectivityManager>() ?: return NetworkStatus()
         var caps = cm.getNetworkCapabilities(cm.currentNetwork() ?: return NetworkStatus()) ?: return NetworkStatus()
-        // Also one that leaves Aerial out (a proxy app's per-app list), which is not the default here.
+        // Also one that leaves xiaoheiDESK out (a proxy app's per-app list), which is not the default here.
         @Suppress("DEPRECATION")
         val vpn = caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) || runCatching {
             cm.allNetworks.any { cm.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true && cm.getNetworkInfo(it)?.isConnected == true }
@@ -122,7 +122,7 @@ object SystemProbe {
         )
     }
 
-    /** Android 5.x has no way to read the mute state, so remember what Aerial last set. */
+    /** Android 5.x has no way to read the mute state, so remember what xiaoheiDESK last set. */
     private var legacyMuted = false
 
     /**
@@ -209,7 +209,7 @@ object SystemProbe {
      * Xiaomi's settings menu as the popup its settings app shows on a broadcast, for where its
      * activity closes at once. On Android 6 (Mi TV 4 MiTV4-ANSM0, issue #834; Mi Box 3S, the
      * comment there by recall350) entry.MainActivity only hosts that popup over PatchWall and
-     * finishes with any other Home in front, no crash; the broadcast showed it over Aerial with the
+     * finishes with any other Home in front, no crash; the broadcast showed it over xiaoheiDESK with the
      * remote working. MiTV-MFTR0 (Android 14) has the receiver too, but its activity opens.
      */
     private val XIAOMI_SETTINGS_POPUP = Intent("com.xiaomi.intent.action.show.globalsetting").setPackage("com.xiaomi.mitv.settings")
@@ -260,10 +260,10 @@ object SystemProbe {
 
     // TCL MT5879 answers ACTION_WIFI_SETTINGS with its Wi-Fi side panel.
     /**
-     * Where a viewer who installed only the APK (from a USB stick, issue #213) can make Aerial Home
+     * Where a viewer who installed only the APK (from a USB stick, issue #213) can make xiaoheiDESK Home
      * without a computer, or null where the TV has no such page: Accessibility for Home Guard
      * (Xiaomi MiTV-MFTR0 has it, TCL MT5879 not), the Home picker (only the standard build is a
-     * Home; Xiaomi's firmware ignores the choice), and notification access, which brings Aerial
+     * Home; Xiaomi's firmware ignores the choice), and notification access, which brings xiaoheiDESK
      * back after a standby kill.
      */
     fun guardSettingsIntent(context: Context): Intent? = resolvable(context, Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -444,7 +444,7 @@ object SystemProbe {
         runCatching { context.packageManager.getServiceInfo(SKYWORTH_PICTURE_PANEL, 0) }.isSuccess
 
     /**
-     * Opens the TV's own picture settings where brightness lives, for TVs whose backlight Aerial
+     * Opens the TV's own picture settings where brightness lives, for TVs whose backlight xiaoheiDESK
      * cannot set itself. TCL keeps it in a side panel that its settings app shows as a service;
      * Skyworth/Coocaa too (see [SKYWORTH_PICTURE_PANEL]).
      * Xiaomi's settings app shows its backlight slider on a broadcast: older Xiaomi TVs have no
@@ -597,7 +597,7 @@ object SystemProbe {
     /**
      * Coocaa's Quick Panel (Skyworth 75A7D, 8R134_A7D, Android 11): the firmware opens its own
      * signal-source panel on the remote's input key, from a window of com.coocaa.os.ccosservice,
-     * and lets the key through as well, so Aerial's Inputs page was drawn under it.
+     * and lets the key through as well, so xiaoheiDESK's Inputs page was drawn under it.
      */
     fun coocaaInputPanel(context: Context): Boolean = runCatching {
         context.packageManager.getServiceInfo(

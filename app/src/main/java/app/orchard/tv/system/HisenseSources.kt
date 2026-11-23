@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
  * select a port. Reading HDMI 3 and switching from an ordinary app were verified on this TV.
  */
 internal object HisenseSources {
-    private const val TAG = "AerialHisenseSources"
+    private const val TAG = "XiaoheiHisenseSources"
     private const val TRANSITION_PACKAGE = "com.hisense.tv.tiletransition"
     private const val SWITCH_ACTION = "com.jamdeo.tv.policy.SILO_SWITCH_EVENT"
     private const val SOURCE_EXTRA = "silo_input_src_id"

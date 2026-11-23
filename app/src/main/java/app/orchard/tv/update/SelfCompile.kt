@@ -14,25 +14,25 @@ import app.orchard.tv.system.DiagLog
 import java.io.File
 
 /**
- * Has the system compile an Aerial that runs uncompiled, by installing the running APK over itself
+ * Has the system compile an xiaoheiDESK that runs uncompiled, by installing the running APK over itself
  * together with its own dex metadata (assets/aerial-dm), the way an update from Control Center does
  * (Updates.installBySession). The same version again is an ordinary replace: settings, wallpaper,
  * photos and the permissions ADB granted stay.
  *
  * Installed from a USB stick, an app store, TCL 多屏互动 or a phone's ADB tool, and on the update
- * from 1.71 to 1.72, Aerial runs uncompiled (odex about 48 KB, against about 8 MB compiled on
+ * from 1.71 to 1.72, xiaoheiDESK runs uncompiled (odex about 48 KB, against about 8 MB compiled on
  * Xiaomi MiTV-MFTR0 and TCL MT5879), its main thread about twice as slow, until the next update from
  * Control Center (docs/PERF-2026-10-30.md).
  *
  * Android 12 and later: by itself, once per version, a while after another app has come in front,
- * so that Aerial's restart is not seen; no confirmation is asked there. Android 7 to 11: first,
- * at the same moment, the package manager is asked to compile Aerial where it is (PackageCompile):
+ * so that xiaoheiDESK's restart is not seen; no confirmation is asked there. Android 7 to 11: first,
+ * at the same moment, the package manager is asked to compile xiaoheiDESK where it is (PackageCompile):
  * no confirmation, no reinstall, the compiled code from the next start. Only where that fails do
  * Android 9 to 11 offer the reinstall as a row in Control Center ([offered]), which asks for a
  * confirmation; Android 7 and 8 take no dex metadata at install, so there nothing else helps.
  */
 object SelfCompile {
-    private const val TAG = "AerialUpdates"
+    private const val TAG = "XiaoheiUpdates"
     private const val PREFS = "self_compile"
     private const val KEY_TRIED = "tried_version"
     private const val KEY_ASKED_SYSTEM = "system_install"
@@ -41,7 +41,7 @@ object SelfCompile {
     /** Below this the oat file holds no compiled code (only verified: tens of KB). */
     private const val COMPILED_BYTES = 1L shl 20
 
-    /** How long another app stays in front before Aerial reinstalls itself behind it. */
+    /** How long another app stays in front before xiaoheiDESK reinstalls itself behind it. */
     private const val AUTO_DELAY_MS = 20_000L
 
     /** Android 9 to 11: Control Center offers the reinstall (it needs the owner's confirmation). */
@@ -85,7 +85,7 @@ object SelfCompile {
         return odex < COMPILED_BYTES && Updates.ownDexMetadata(context) != null
     }
 
-    /** Once per process, off the main thread (it reads the APK): is Aerial uncompiled? */
+    /** Once per process, off the main thread (it reads the APK): is xiaoheiDESK uncompiled? */
     fun init(context: Context) {
         if (checkedThisRun) return
         checkedThisRun = true
@@ -100,7 +100,7 @@ object SelfCompile {
     /**
      * Compiled since [init] looked, by ADB's `cmd package compile` or the system's dexopt while
      * the TV idles: the row goes. The process stays, so it was still offered on TCL MT5879
-     * (Android 11) after a 多屏互动 install compiled with ADB just after Aerial started.
+     * (Android 11) after a 多屏互动 install compiled with ADB just after xiaoheiDESK started.
      * Only the file's length: cheap enough for the main thread.
      */
     fun recheck(context: Context) {
@@ -139,9 +139,9 @@ object SelfCompile {
     }
 
     /**
-     * Android 7 to 11: the package manager compiles Aerial where it is (PackageCompile), with the
+     * Android 7 to 11: the package manager compiles xiaoheiDESK where it is (PackageCompile), with the
      * Baseline Profile that ProfileInstaller wrote at the first start; with no profile there,
-     * everything ("speed"). Once per install; if Aerial is still uncompiled after it, Android 9 to
+     * everything ("speed"). Once per install; if xiaoheiDESK is still uncompiled after it, Android 9 to
      * 11 offer the reinstall in Control Center. Off the main thread: it takes tens of seconds.
      */
     private fun askSystem(context: Context) {

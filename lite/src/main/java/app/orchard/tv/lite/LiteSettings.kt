@@ -15,9 +15,9 @@ enum class FocusStyle(val key: String) {
     }
 }
 
-/** As the full app's UiSounds: the TV's own key sounds, Aerial's, or none. */
+/** As the full app's UiSounds: the TV's own key sounds, xiaoheiDESK's, or none. */
 enum class UiSounds(val key: String) {
-    Tv("tv"), Aerial("aerial"), Off("off");
+    Tv("tv"), xiaoheiDESK("aerial"), Off("off");
 
     companion object {
         fun of(key: String?) = entries.firstOrNull { it.key == key }
@@ -34,7 +34,7 @@ enum class Effects(val key: String) {
 }
 
 /**
- * Lite's preferences, under the full app's names and defaults (settings/AerialSettings.kt), so the
+ * Lite's preferences, under the full app's names and defaults (settings/XiaoheiSettings.kt), so the
  * two read alike and the phone page's settings mean the same. Main thread only.
  */
 object LiteSettings {
@@ -89,10 +89,10 @@ object LiteSettings {
         showWeather = prefs.getBoolean("show_weather", true)
         screensaverClock = prefs.getBoolean("screensaver_clock", true)
         backStartsScreensaver = prefs.getBoolean("back_starts_screensaver", true)
-        // As the full app: the TV's own sounds where its key sound switch is on, else Aerial's.
+        // As the full app: the TV's own sounds where its key sound switch is on, else xiaoheiDESK's.
         uiSounds = UiSounds.of(prefs.getString("ui_sounds_kind", null)) ?: if (
             runCatching { Settings.System.getInt(context.contentResolver, Settings.System.SOUND_EFFECTS_ENABLED, 1) }.getOrDefault(1) == 1
-        ) UiSounds.Tv else UiSounds.Aerial
+        ) UiSounds.Tv else UiSounds.xiaoheiDESK
         effects = Effects.of(prefs.getString("effects", null))
         screensaverMinutes = prefs.getInt("screensaver_minutes", 5)
         bootApp = prefs.getString("boot_app", null)

@@ -39,6 +39,6 @@ internal object LegacyUpdateStorage {
             if (base === current) break
             current = base
         }
-        Log.w("AerialUpdates", "no activity to request legacy update storage permission")
+        Log.w("XiaoheiUpdates", "no activity to request legacy update storage permission")
     }
 }

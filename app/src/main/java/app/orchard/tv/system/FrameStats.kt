@@ -32,7 +32,7 @@ object FrameStats {
 
     @RequiresApi(24)
     private fun listen(window: Window) {
-        val t = thread ?: HandlerThread("AerialFrames").also { it.start(); thread = it }
+        val t = thread ?: HandlerThread("XiaoheiFrames").also { it.start(); thread = it }
         val from = SystemClock.uptimeMillis() + SKIP_START_MS
         window.addOnFrameMetricsAvailableListener({ _, metrics, _ ->
             // Home's first seconds are its start (up to a second a frame on TCL MT5879), not the

@@ -4,9 +4,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /** The place name shown as an aerial plays: tvOS changes it as the camera moves on. */
-class AerialCaptionTest {
+class XiaoheiCaptionTest {
     private fun aerial(vararg captions: Pair<Int, String>) =
-        Aerial("id", "Hawaii", "landscape", "url", "uhd", "dv", captions.toList())
+        Xiaohei("id", "Hawaii", "landscape", "url", "uhd", "dv", captions.toList())
 
     @Test fun theLabelUntilTheFirstCaption() {
         val film = aerial(5 to "Kauai", 40 to "Waimea Canyon")

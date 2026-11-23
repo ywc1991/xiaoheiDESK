@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "v": "1.1.22",
+      "zh": [
+        "整个应用里属于上游 Aerial 的命名全部改成 xiaoheiDESK：代码里的类名、文件名、主题名、字符串资源键、日志标签、线程名、诊断输出，以及中文以外的界面文案。",
+        "功能、设置项、已保存的偏好、屏保与壁纸、U 盘图库、手机遥控、Home 守护、应用内升级全部保持不变，升级安装后原来的设置继续生效。",
+        "日志标签随之变化：抓日志时用 XiaoheiGuard / XiaoheiStream / XiaoheiDiag 等（原 AerialGuard 等）。"
+      ],
+      "en": [
+        "Every upstream Aerial name inside the app is now xiaoheiDESK: class names, file names, the theme, string resource keys, log tags, thread names, diagnostics output and the English UI text.",
+        "Nothing else changes: features, settings, saved preferences, screensaver and wallpapers, USB gallery, phone remote, Home Guard and in-app updates all stay as they were, and existing settings keep working after the update.",
+        "Log tags change with it: use XiaoheiGuard / XiaoheiStream / XiaoheiDiag and so on when reading logcat."
+      ]
+    },
+    {
       "v": "1.1.21",
       "zh": [
         "修复 U 盘 / 名画屏保刚打开时黑屏几秒的问题：在桌面闲置的最后 8 秒，就提前把 U 盘图库扫描好、第一张画解码好，屏保一出现直接显示，不再先黑一阵。",

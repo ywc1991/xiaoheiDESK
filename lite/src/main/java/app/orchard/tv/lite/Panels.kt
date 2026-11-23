@@ -106,7 +106,7 @@ enum class CcPage { Main, Boot, Inputs }
 /**
  * Control Center, as the full app's ControlCenter main page: the time and date with the network,
  * three round buttons (inputs, network, settings), volume and brightness, Personalize, what the TV
- * starts on, and whether Aerial is the TV's Home. Home stays sharp behind it under a dark veil.
+ * starts on, and whether xiaoheiDESK is the TV's Home. Home stays sharp behind it under a dark veil.
  * The network and settings sit behind the parental PIN ([locked]).
  */
 class ControlCenter(
@@ -531,7 +531,7 @@ class Personalize(
                 listOf(FocusStyle.HighContrast to R.string.st_focus_high, FocusStyle.Standard to R.string.st_focus_standard),
                 LiteSettings.focusStyle) { LiteSettings.chooseFocusStyle(it); onLayout() }
             choices(R.string.st_sounds, string(if (LiteSettings.uiSounds == UiSounds.Tv) R.string.st_sounds_tv_hint else R.string.st_sounds_hint),
-                listOf(UiSounds.Tv to R.string.st_sounds_tv, UiSounds.Aerial to R.string.st_sounds_aerial, UiSounds.Off to R.string.st_off),
+                listOf(UiSounds.Tv to R.string.st_sounds_tv, UiSounds.xiaoheiDESK to R.string.st_sounds_aerial, UiSounds.Off to R.string.st_off),
                 LiteSettings.uiSounds) { LiteSettings.chooseUiSounds(it); Sounds.prepare() }
             choices(R.string.st_effects,
                 string(if (LiteSettings.effects == Effects.Auto && !(context as android.app.Activity).window.decorView.isHardwareAccelerated) R.string.st_effects_auto_lite_hint else R.string.st_effects_hint),
@@ -543,7 +543,7 @@ class Personalize(
         val mode = Wallpapers.screensaver
         group {
             val kinds = listOf(
-                ScreensaverMode.Aerial to R.string.ss_aerial,
+                ScreensaverMode.Xiaohei to R.string.ss_xiaohei,
                 ScreensaverMode.Photos to R.string.ss_photos,
                 ScreensaverMode.Clock to R.string.ss_clock,
                 ScreensaverMode.Videos to R.string.ss_videos,
@@ -556,7 +556,7 @@ class Personalize(
                 else -> null
             }, kinds + start)
             // The clock screensaver is its clock, and the others show none.
-            if (mode == ScreensaverMode.Aerial || mode == ScreensaverMode.Photos) choices(R.string.ss_show_time, string(R.string.ss_show_time_hint),
+            if (mode == ScreensaverMode.Xiaohei || mode == ScreensaverMode.Photos) choices(R.string.ss_show_time, string(R.string.ss_show_time_hint),
                 listOf(true to R.string.st_on, false to R.string.st_off), LiteSettings.screensaverClock) { LiteSettings.chooseScreensaverClock(it) }
             choices(R.string.ss_delay, null, LiteSettings.screensaverChoices.map { it to if (it == LiteSettings.NEVER) string(R.string.ss_never) else context.getString(R.string.ss_minutes, it) },
                 LiteSettings.screensaverMinutes) { LiteSettings.chooseScreensaverMinutes(it) }

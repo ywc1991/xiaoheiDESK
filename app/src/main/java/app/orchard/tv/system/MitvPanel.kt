@@ -33,7 +33,7 @@ import android.util.Log
  * control is usable and the next read picks the panel up again.
  */
 object MitvPanel {
-    private const val TAG = "AerialMitvPanel"
+    private const val TAG = "XiaoheiMitvPanel"
 
     /** `Settings.System` key the TV's own backlight UI reads and writes. */
     const val SETTING = "backLightForNormal"
@@ -122,7 +122,7 @@ object MitvPanel {
      * Current panel level 1-100, as the firmware's `getBacklightStatus` reports it.
      *
      * [SETTING] is only the fallback seed: this firmware refuses third-party writes to it, so after
-     * Aerial moves the panel the setting still holds whatever the TV's own menu left there.
+     * xiaoheiDESK moves the panel the setting still holds whatever the TV's own menu left there.
      */
     fun level(context: Context): Int? = readBacklight(context) ?: settingLevel(context)
 
@@ -135,7 +135,7 @@ object MitvPanel {
      *
      * The middleware's `setBacklightValue` is a **relative step**, not an absolute level: the
      * firmware's impl does `SetBacklight(getBacklightStatus() + value)`. Sending an absolute value
-     * therefore slams the panel around (25 -> 119, 30 -> 196 …). Callers pass the level Aerial set
+     * therefore slams the panel around (25 -> 119, 30 -> 196 …). Callers pass the level xiaoheiDESK set
      * last, not what the getter reports, because that one is animated and mid-step.
      */
     fun setBacklight(context: Context, from: Int, to: Int) {

@@ -22,14 +22,14 @@ import java.util.concurrent.Executors
  * also written to Android/data/app.orchard.tv/files/aerial-diag.log, which `adb pull` can fetch.
  */
 object DiagLog {
-    private const val TAG = "AerialDiag"
+    private const val TAG = "XiaoheiDiag"
     private const val KEEP = 600
     private const val FILE_LIMIT = 1 shl 20
 
     private val lines = ArrayDeque<String>()
     // Made on the first line written to the file, so a release build without diag has no thread.
     private val writer by lazy {
-        Executors.newSingleThreadExecutor { Thread(it, "AerialDiag").apply { isDaemon = true } }
+        Executors.newSingleThreadExecutor { Thread(it, "XiaoheiDiag").apply { isDaemon = true } }
     }
     private val stamp = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US)
     @Volatile private var file: File? = null
@@ -45,7 +45,7 @@ object DiagLog {
     /**
      * Experiments for a black Home, set over ADB (ConfigReceiver) and read when Home starts:
      * mode_switch lets Home change the display's refresh rate (off in a diagnostic build, the only
-     * Android 12+ display change Aerial makes); soft_layer draws Home in software, past the GPU.
+     * Android 12+ display change xiaoheiDESK makes); soft_layer draws Home in software, past the GPU.
      */
     fun modeSwitch(context: Context): Boolean = prefs(context).getBoolean("mode_switch", !BuildConfig.DIAG)
     fun softLayer(context: Context): Boolean = prefs(context).getBoolean("soft_layer", false)

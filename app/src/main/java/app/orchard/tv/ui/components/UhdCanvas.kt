@@ -23,10 +23,10 @@ import app.orchard.tv.system.DiagLog
 import kotlin.math.roundToInt
 
 /**
- * Draws Home into a buffer at the panel's resolution when the system gives Aerial a smaller UI.
+ * Draws Home into a buffer at the panel's resolution when the system gives xiaoheiDESK a smaller UI.
  * TCL 75Q10L (MT9655, Android 14, issue #607) has a 1920×1080 UI on a 3840×2160 panel: TCL's own
  * launcher gets a 3840×2160 buffer that the hardware composer sends to the panel 1:1, while
- * Aerial's 1080p window is scaled up and its text is soft.
+ * xiaoheiDESK's 1080p window is scaled up and its text is soft.
  *
  * Layout does not change: Compose still lays out the 960×540dp canvas in the 1080p window, and
  * keys and focus go to that window as before. Only the drawing moves: [Stage] records its
@@ -148,7 +148,7 @@ object UhdCanvas {
 
     @RequiresApi(29)
     private class Stage(context: Context) : FrameLayout(context), SurfaceHolder.Callback {
-        private val root = RenderNode("AerialUhd")
+        private val root = RenderNode("XiaoheiUhd")
         private val renderer = HardwareRenderer().apply {
             setContentRoot(root)
             isOpaque = false

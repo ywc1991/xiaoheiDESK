@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import app.orchard.tv.R
 
 /**
- * Pixels per dp of Aerial's 960×540 design canvas on this screen: 2 for a 1080p UI, 4 for a TV
+ * Pixels per dp of xiaoheiDESK's 960×540 design canvas on this screen: 2 for a 1080p UI, 4 for a TV
  * that draws its UI at 4K. Anything rasterized ahead of time (tile art, wallpapers) is sized from
  * this too, so it stays as sharp as the text drawn live.
  */

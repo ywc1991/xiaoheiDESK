@@ -171,6 +171,41 @@ private fun Header() {
             GlyphIcon(glyphFor(now.kind, now.day), Palette.Label, 34.dp, level = rainLevel(now.code))
         }
     }
+    AirQualityLine()
+}
+
+/** Current air quality under the place and reading, colour-coded by the US AQI band. Optional. */
+@Composable
+private fun AirQualityLine() {
+    val air = Weather.air ?: return
+    Spacer(Modifier.height(6.dp))
+    val label = when {
+        air.aqi <= 50 -> stringResource(R.string.wx_air_good)
+        air.aqi <= 100 -> stringResource(R.string.wx_air_moderate)
+        air.aqi <= 150 -> stringResource(R.string.wx_air_light)
+        air.aqi <= 200 -> stringResource(R.string.wx_air_medium)
+        air.aqi <= 300 -> stringResource(R.string.wx_air_heavy)
+        else -> stringResource(R.string.wx_air_severe)
+    }
+    val tint = when {
+        air.aqi <= 50 -> Palette.Green
+        air.aqi <= 100 -> Color(0xFFFFD60A)
+        air.aqi <= 150 -> Palette.Orange
+        air.aqi <= 200 -> Palette.Red
+        air.aqi <= 300 -> Color(0xFFBF5AF2)
+        else -> Color(0xFF8E5933)
+    }
+    val pm = air.pm25?.let { stringResource(R.string.wx_air_pm25, it) } ?: ""
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.width(8.dp).height(8.dp).clip(RoundedCornerShape(4.dp)).background(tint))
+        Spacer(Modifier.width(7.dp))
+        BasicText(
+            stringResource(R.string.wx_air_line, air.aqi, label, pm),
+            style = Type.Caption.copy(color = Palette.SecondaryLabel),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
 }
 
 @Composable

@@ -92,7 +92,7 @@ import app.orchard.tv.HomeViewModel
 import app.orchard.tv.Overlay
 import app.orchard.tv.R
 import app.orchard.tv.apps.SourceLooks
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.settings.Restricted
 import app.orchard.tv.settings.RestrictedKind
 import app.orchard.tv.ui.home.kidsTimeLine
@@ -151,8 +151,8 @@ fun ControlCenter(
     }
 
     LaunchedEffect(visible) { if (visible) Updates.checkIfStale(maxAgeMs = Updates.CONTROL_CENTER_MAX_AGE_MS) }
-    // Whether Aerial is the default home, read again each time the panel opens. Recreated after a
-    // standby kill, Aerial kept the "not the default home screen" it read while the firmware was
+    // Whether xiaoheiDESK is the default home, read again each time the panel opens. Recreated after a
+    // standby kill, xiaoheiDESK kept the "not the default home screen" it read while the firmware was
     // still waking, and the activity's polling (MainActivity) never ran: Xiaomi MiTV-AZFP0,
     // Android 9, whose log showed onCreate but no onStart for that instance (issue #892).
     LaunchedEffect(visible) { if (visible) vm.refreshPanel() }
@@ -376,7 +376,7 @@ private fun MainPage(vm: HomeViewModel, now: LocalDateTime, takeFocus: Boolean, 
             onClick = { vm.overlay = Overlay.ControlCenter(CcPage.Update) },
         )
 
-        // Android 9 to 11, Aerial running uncompiled: reinstalling itself has the system compile it,
+        // Android 9 to 11, xiaoheiDESK running uncompiled: reinstalling itself has the system compile it,
         // which needs the owner's confirmation there (SelfCompile; 12+ does it by itself).
         LaunchedEffect(Unit) { SelfCompile.recheck(context) }
         if (SelfCompile.offered) {
@@ -558,7 +558,7 @@ private fun UpdateNotes(notes: List<ReleaseNotes>) {
 }
 
 /**
- * For a TV where Aerial was installed from the APK alone (a USB stick, an app store): it opens, but
+ * For a TV where xiaoheiDESK was installed from the APK alone (a USB stick, an app store): it opens, but
  * Home, power-on and wake still go to the stock launcher (issue #213). The settings pages that can
  * fix that on the TV itself, where the TV has them, and a QR code to the website's page with this
  * TV's install command, which does all of it.
@@ -712,7 +712,7 @@ private fun VolumeRow(vm: HomeViewModel, returnTo: FocusRequester) {
 }
 
 /**
- * Brightness where Aerial may change it; otherwise a row that opens the TV's picture settings, and
+ * Brightness where xiaoheiDESK may change it; otherwise a row that opens the TV's picture settings, and
  * says so: a bare "Brightness" with no slider read as broken (Vidda 85V1F-S, FFalcon, issue #130).
  */
 @Composable
@@ -722,7 +722,7 @@ private fun BrightnessRow(vm: HomeViewModel) {
     // class (SystemProbe.xgimiBrightnessLevel) and, on this firmware, writes through it too, so the
     // row is a slider of the light engine's own levels (1..10) rather than a percentage of the
     // system setting that moves nothing. Poll the HAL while the row is on screen: the level can be
-    // changed from the TV's own overlay, which does not pause Aerial, so no onResume or
+    // changed from the TV's own overlay, which does not pause xiaoheiDESK, so no onResume or
     // screen_brightness observer ever fires for it.
     val xgimi = remember { SystemProbe.xgimiBrightnessLevel() != null }
     LaunchedEffect(xgimi) {
@@ -784,7 +784,7 @@ private fun InputsPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.c
                 onClick = { onOpen(source.intent) },
             )
         }
-        // Switching is this page's one job; what Aerial does with the inputs is a page further in.
+        // Switching is this page's one job; what xiaoheiDESK does with the inputs is a page further in.
         if (vm.sources.isNotEmpty()) {
             Spacer(Modifier.height(10.dp))
             MenuRow(Glyph.Gear, stringResource(R.string.cc_inputs_settings), onClick = { vm.overlay = Overlay.ControlCenter(CcPage.InputSettings) })
@@ -793,7 +793,7 @@ private fun InputsPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.c
 }
 
 /**
- * What Aerial does with the inputs: which ones are tiles on Home (any number) and which one the
+ * What xiaoheiDESK does with the inputs: which ones are tiles on Home (any number) and which one the
  * TV starts on (one, or none). Kept apart from the list that switches inputs.
  */
 @Composable
@@ -811,7 +811,7 @@ private fun InputSettingsPage(vm: HomeViewModel, takeFocus: Boolean) {
         Spacer(Modifier.height(10.dp))
         BasicText(stringResource(R.string.cc_inputs_pin), style = Type.Callout, modifier = Modifier.padding(start = 14.dp, bottom = 6.dp))
         vm.sources.forEachIndexed { i, source ->
-            val pinned = source.id in AerialSettings.pinnedSources
+            val pinned = source.id in XiaoheiSettings.pinnedSources
             ChoiceRow(
                 text = name(source),
                 selected = pinned,
@@ -829,12 +829,12 @@ private fun InputSettingsPage(vm: HomeViewModel, takeFocus: Boolean) {
         BasicText(stringResource(R.string.cc_inputs_boot), style = Type.Callout, modifier = Modifier.padding(start = 14.dp, bottom = 6.dp))
         ChoiceRow(
             text = stringResource(R.string.cc_inputs_boot_none),
-            selected = !AerialSettings.hasBootTarget,
+            selected = !XiaoheiSettings.hasBootTarget,
             focusRequester = null,
             onClick = { vm.chooseBootTarget() },
         )
         // An app is chosen from its tile's menu; here it only shows, and "nothing" clears it.
-        AerialSettings.bootApp?.let { pkg ->
+        XiaoheiSettings.bootApp?.let { pkg ->
             ChoiceRow(
                 text = vm.entry(pkg)?.label ?: pkg,
                 selected = true,
@@ -845,7 +845,7 @@ private fun InputSettingsPage(vm: HomeViewModel, takeFocus: Boolean) {
         vm.sources.forEach { source ->
             ChoiceRow(
                 text = name(source),
-                selected = source.id == AerialSettings.bootSource,
+                selected = source.id == XiaoheiSettings.bootSource,
                 focusRequester = null,
                 onClick = { vm.chooseBootTarget(sourceId = source.id) },
             )

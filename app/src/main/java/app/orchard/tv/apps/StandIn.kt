@@ -7,11 +7,11 @@ import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 
 /**
- * An entry of the same page that Aerial may start, for a launcher entry that needs a permission
- * Aerial cannot hold. Xiaomi's PatchWall lists `.MainActivityUserMode`, which requires its
+ * An entry of the same page that xiaoheiDESK may start, for a launcher entry that needs a permission
+ * xiaoheiDESK cannot hold. Xiaomi's PatchWall lists `.MainActivityUserMode`, which requires its
  * signature permission HOME_STATE; `.MainActivity` beside it shows the same home and needs none
  * (MiTV-ANSP0, Android 9, issue #971; the same two entries on MiTV-MFTR0, Android 11). With
- * Aerial as the default home, the "Desktop" tile did nothing at all. Context.checkSelfPermission is
+ * xiaoheiDESK as the default home, the "Desktop" tile did nothing at all. Context.checkSelfPermission is
  * Android 6+; ContextCompat keeps this from crashing Android 5.
  */
 object StandIn {

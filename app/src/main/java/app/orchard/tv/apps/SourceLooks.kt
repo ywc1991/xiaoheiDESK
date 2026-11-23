@@ -13,7 +13,7 @@ import org.json.JSONObject
  * What is plugged into an input, chosen from the tile's menu (issues #172, #210): the tile then
  * shows that device's colours and [mark] alone, its name on the caption under it. [mark] is filled
  * path data in a [markBox]-unit square: a brand's logo from Simple Icons (CC0, 24 units), otherwise
- * a Material Symbols Rounded shape (Apache 2.0, 960 units), as Aerial's glyphs.
+ * a Material Symbols Rounded shape (Apache 2.0, 960 units), as xiaoheiDESK's glyphs.
  */
 enum class SourceDevice(val key: String, @StringRes val label: Int, val top: Int, val bottom: Int, val mark: String, val markBox: Float = 960f) {
     AppleTv(

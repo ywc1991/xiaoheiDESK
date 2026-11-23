@@ -11,7 +11,7 @@ import java.util.UUID
 
 data class ScreensaverVideo(val id: String, val name: String, val file: File)
 
-/** The owner's local films. No videos are bundled with Aerial or fetched from a third-party host. */
+/** The owner's local films. No videos are bundled with xiaoheiDESK or fetched from a third-party host. */
 object ScreensaverVideos {
     /** Under 2^31, so a film never reaches a path that counts bytes in an int. */
     const val MAX_FILE_BYTES = 2_000_000_000L
@@ -69,7 +69,7 @@ object ScreensaverVideos {
             }
             add(context, part, name)
         } catch (e: IOException) {
-            Log.w("AerialVideos", "screensaver video upload broke off", e)
+            Log.w("XiaoheiVideos", "screensaver video upload broke off", e)
             null
         } finally { part.delete() }
     }
@@ -105,7 +105,7 @@ object ScreensaverVideos {
             check(staging.renameTo(target))
             ScreensaverVideo(id, title, File(target, "video.mp4"))
         } catch (e: Exception) {
-            Log.w("AerialVideos", "could not store a screensaver video", e)
+            Log.w("XiaoheiVideos", "could not store a screensaver video", e)
             null
         } finally { staging.deleteRecursively() }
     }

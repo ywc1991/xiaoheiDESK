@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.ui.theme.Glyph
 import app.orchard.tv.ui.theme.drawGlyph
 import androidx.compose.ui.graphics.ImageBitmap
@@ -59,7 +59,7 @@ class TileArt(
     val placeholder: Boolean = false,
 )
 
-/** Firmware apps Aerial draws its own tile for, each in the color that tells the kind apart. */
+/** Firmware apps xiaoheiDESK draws its own tile for, each in the color that tells the kind apart. */
 enum class SystemTile(top: Long, bottom: Long, val glyph: Glyph) {
     Settings(0xFF8E8E93, 0xFF48484A, Glyph.Gear),
     Photos(0xFFFFB340, 0xFFFF5E3A, Glyph.Photo),
@@ -96,12 +96,12 @@ object TileArtFactory {
     }
 
     /**
-     * Sizes the artwork for AerialSettings.homeColumns; true when that changed it, and the tiles
+     * Sizes the artwork for XiaoheiSettings.homeColumns; true when that changed it, and the tiles
      * want drawing again. 176dp: the 147dp tile of five a row at its 1.15× focus scale, with a
      * little to spare; 222dp the 187dp one of four. Six a row stays at five's: it is smaller still.
      */
     fun fitColumns(): Boolean {
-        val dp = if (AerialSettings.homeColumns == 4) 222 else 176
+        val dp = if (XiaoheiSettings.homeColumns == 4) 222 else 176
         val w = (dp * density).roundToInt().coerceIn(352, 888)
         if (w == W) return false
         W = w
@@ -110,7 +110,7 @@ object TileArtFactory {
     }
 
     /**
-     * Icons drawn in Aerial's one look ([unify]) rather than in their own colors. Banners are
+     * Icons drawn in xiaoheiDESK's one look ([unify]) rather than in their own colors. Banners are
      * the app's own art for TV and are left as they are.
      */
     @Volatile var unified = true
@@ -193,7 +193,7 @@ object TileArtFactory {
         val back = colorTile(top, bottom)
         Canvas(back).apply {
             val two = sub != null
-            // Every mark in the same square box, as Aerial's glyphs: Material's own 960-unit box,
+            // Every mark in the same square box, as xiaoheiDESK's glyphs: Material's own 960-unit box,
             // whose y runs from -960 to 0, or a logo's 24-unit box inset by Material's margin.
             val g = H * (if (two) 0.36f else 0.42f)
             val box = device?.markBox ?: 960f
@@ -226,13 +226,13 @@ object TileArtFactory {
     }
 
     /**
-     * A firmware app (settings, photos, weather...) drawn as Aerial's own tile: a white glyph over
+     * A firmware app (settings, photos, weather...) drawn as xiaoheiDESK's own tile: a white glyph over
      * a color that tells the kind apart, the way tvOS draws its system apps. TV makers ship these
      * with phone icons that look different on every TV and unlike the apps around them.
      */
     fun forSystem(kind: SystemTile): TileArt = glyphTile(kind.top, kind.bottom, kind.glyph)
 
-    /** One of Aerial's own glyphs in white over [top] to [bottom]; also for [TileRecipe.glyph]. */
+    /** One of xiaoheiDESK's own glyphs in white over [top] to [bottom]; also for [TileRecipe.glyph]. */
     fun glyphTile(top: Int, bottom: Int, glyph: Glyph): TileArt {
         val back = colorTile(top, bottom)
         // The glyph on its own layer, so it shifts against the color when the tile leans. The
@@ -299,7 +299,7 @@ object TileArtFactory {
         return finish(back, null)
     }
 
-    /** Aerial's own tile color: a diagonal gradient with soft light from the top left. */
+    /** xiaoheiDESK's own tile color: a diagonal gradient with soft light from the top left. */
     private fun colorTile(top: Int, bottom: Int): Bitmap = layer {
         drawRect(0f, 0f, W.toFloat(), H.toFloat(), Paint().apply {
             shader = LinearGradient(0f, 0f, W * 0.4f, H.toFloat(), top, bottom, Shader.TileMode.CLAMP)
@@ -554,7 +554,7 @@ object TileArtFactory {
     }
 
     /**
-     * Aerial's one look for tiles made from icons, as tvOS draws its own apps: the logo in white,
+     * xiaoheiDESK's one look for tiles made from icons, as tvOS draws its own apps: the logo in white,
      * on a gradient in the app's color. The plate the icon came on ([top] to [bottom]) gives that
      * color when it has one; a white, black or grey plate does not, and the logo's own color is
      * used instead. A logo that is itself grey on such a plate gets graphite.

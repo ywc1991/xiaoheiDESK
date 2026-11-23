@@ -30,9 +30,9 @@
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Both granted only over ADB by tools/install.sh, never requested in the app:
-         - WRITE_SECURE_SETTINGS lets Aerial turn Home Guard back on after firmwares that
+         - WRITE_SECURE_SETTINGS lets xiaoheiDESK turn Home Guard back on after firmwares that
            force-stop third-party apps on standby (Xiaomi) have switched it off.
-         - SYSTEM_ALERT_WINDOW is Android's exemption for opening Aerial right after boot. -->
+         - SYSTEM_ALERT_WINDOW is Android's exemption for opening xiaoheiDESK right after boot. -->
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -44,7 +44,7 @@
          Android 6, issue #81); granted over ADB. -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
-    <!-- RevivalSync: the sync adapter that restarts Aerial after a force-stop. -->
+    <!-- RevivalSync: the sync adapter that restarts xiaoheiDESK after a force-stop. -->
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <!-- Up to Android 5.1 RevivalSync's account lookup and the account it adds need these; without
@@ -80,7 +80,7 @@
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
         android:banner="@drawable/banner"
-        android:theme="@style/Theme.Aerial"
+        android:theme="@style/Theme.Xiaohei"
         android:allowBackup="false"
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
@@ -92,7 +92,7 @@
         <uses-library android:name="com.tcl.tv.display" android:required="false" />
 
         <!-- The HOME intent filter is added by the "standard" flavor (src/standard).
-             Not in recent apps: where the firmware keeps Home for itself, Aerial's task is a standard
+             Not in recent apps: where the firmware keeps Home for itself, xiaoheiDESK's task is a standard
              one and showed as a card first in the list that switched to nothing (MiTV-MFTR0, #324). -->
         <activity
             android:name=".MainActivity"
@@ -111,7 +111,7 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
             <!-- Most Chinese TV launchers (Xiaomi PatchWall, Raybird, Huanshi) list only apps with
-                 this category: installed from a USB stick, Aerial had no icon to open it by
+                 this category: installed from a USB stick, xiaoheiDESK had no icon to open it by
                  (issues #207, #213). -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -140,7 +140,7 @@
         </receiver>
 
         <service
-            android:name=".dream.AerialDream"
+            android:name=".dream.XiaoheiDream"
             android:label="@string/app_name"
             android:exported="true"
             android:permission="android.permission.BIND_DREAM_SERVICE">

@@ -1,9 +1,9 @@
 package app.orchard.tv.apps
 
 /**
- * How Aerial redraws one app's tile when what the app ships reads badly on Home: a banner crowded
+ * How xiaoheiDESK redraws one app's tile when what the app ships reads badly on Home: a banner crowded
  * with text, or a phone icon whose plate the tile cannot carry. Everything comes from the app's own
- * icon; a recipe only says how to lay it out, so no artwork of another brand ships with Aerial.
+ * icon; a recipe only says how to lay it out, so no artwork of another brand ships with xiaoheiDESK.
  */
 class TileRecipe(
     /** Built from the icon even when the app has a TV banner. */
@@ -13,9 +13,9 @@ class TileRecipe(
     val bottom: Int? = null,
     /** The logo drawn in white. Only for logos of one color on a plate of another. */
     val white: Boolean = false,
-    /** The logo keeps its own colors on its own plate, outside Aerial's one look: a white logo would lose what tells it apart. */
+    /** The logo keeps its own colors on its own plate, outside xiaoheiDESK's one look: a white logo would lose what tells it apart. */
     val keepColors: Boolean = false,
-    /** Drawn as Aerial's own glyph over [top]..[bottom], for apps whose art is only their name. */
+    /** Drawn as xiaoheiDESK's own glyph over [top]..[bottom], for apps whose art is only their name. */
     val glyph: app.orchard.tv.ui.theme.Glyph? = null,
 )
 

@@ -32,7 +32,7 @@ internal object CecHome {
     /** The setting that names the input in front, while the feature is configured; else null. */
     fun inputSettingKey(context: Context): String? {
         // Home Guard binds before credential storage opens, even when CEC Home is disabled.
-        // Reading it here crashed Aerial at boot on Hisense H55E9A (Android 8).
+        // Reading it here crashed xiaoheiDESK at boot on Hisense H55E9A (Android 8).
         if (!GuardSetup.isUserUnlocked(context)) return null
         val config = prefs(context)
         if (config.getString("cec_home_input", null) == null) return null
@@ -80,7 +80,7 @@ internal object CecHome {
                 isAppleTv(vendor, name)
             }
             val report = "CEC input=${port.id} device=$label manualApple=$manualAppleTv apple=$recognized"
-            if (report != lastReport) { lastReport = report; Log.i("AerialGuard", report) }
+            if (report != lastReport) { lastReport = report; Log.i("XiaoheiGuard", report) }
             if (!recognized) return@mapNotNull null
             val address = Regex("HDMI[0-9a-fA-F]{4}([0-9a-fA-F]{2})$")
                 .find(device.id)?.groupValues?.get(1)?.toIntOrNull(16)
@@ -109,18 +109,18 @@ internal object CecHome {
                     try {
                         val press = byteArrayOf(address.toByte(), 0x44, 0x09)
                         val result = Os.write(fd, press, 0, press.size)
-                        Log.i("AerialGuard", "CEC Home press result=$result")
+                        Log.i("XiaoheiGuard", "CEC Home press result=$result")
                         Thread.sleep(100)
                     } finally {
                         val release = byteArrayOf(address.toByte(), 0x45)
                         val result = Os.write(fd, release, 0, release.size)
-                        Log.i("AerialGuard", "CEC Home release result=$result")
+                        Log.i("XiaoheiGuard", "CEC Home release result=$result")
                     }
                 } finally {
                     Os.close(fd)
                 }
-                Log.i("AerialGuard", "CEC Home sent to logical address $address")
-            }.onFailure { Log.w("AerialGuard", "CEC Home send failed", it) }
+                Log.i("XiaoheiGuard", "CEC Home sent to logical address $address")
+            }.onFailure { Log.w("XiaoheiGuard", "CEC Home send failed", it) }
         }
     }
 }

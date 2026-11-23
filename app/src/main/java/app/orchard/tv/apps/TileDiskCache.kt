@@ -26,11 +26,11 @@ import java.util.Locale
  * meanwhile, longer on slower TVs (issue #294); reading one back is a few small PNG decodes.
  *
  * A file is used only while its key matches: the app's update time and custom picture, the tile
- * size, the icon style, the language (the label is in it) and Aerial's version (the drawing may
+ * size, the icon style, the language (the label is in it) and xiaoheiDESK's version (the drawing may
  * change between versions).
  */
 object TileDiskCache {
-    private const val TAG = "AerialTiles"
+    private const val TAG = "XiaoheiTiles"
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var dir: File
 

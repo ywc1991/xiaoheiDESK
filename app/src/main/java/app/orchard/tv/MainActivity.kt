@@ -61,7 +61,7 @@ import app.orchard.tv.guard.GuardSetup
 import app.orchard.tv.guard.HomeGuardService
 import app.orchard.tv.ui.home.FilmAfterInput
 import app.orchard.tv.ui.home.HomeScreen
-import app.orchard.tv.ui.home.AerialStart
+import app.orchard.tv.ui.home.XiaoheiStart
 import app.orchard.tv.ui.home.LiveFilm
 import app.orchard.tv.ui.home.asFocusedTile
 import app.orchard.tv.ui.theme.LocalReducedMotion
@@ -69,7 +69,7 @@ import app.orchard.tv.ui.home.TileFaces
 import app.orchard.tv.ui.theme.FontWarmup
 import app.orchard.tv.ui.theme.canvasDensity
 import app.orchard.tv.ui.components.UhdCanvas
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.settings.Restricted
 import app.orchard.tv.guard.KidsWatch
 import app.orchard.tv.apps.SOURCE_KEY_PREFIX
@@ -78,7 +78,7 @@ import app.orchard.tv.wallpaper.Wallpapers
 import app.orchard.tv.system.BootOpen
 import app.orchard.tv.system.DiagLog
 import app.orchard.tv.system.FrameStats
-import app.orchard.tv.wallpaper.AerialFormats
+import app.orchard.tv.wallpaper.XiaoheiFormats
 import app.orchard.tv.wallpaper.ScreensaverMode
 import app.orchard.tv.system.SystemScreensaver
 import app.orchard.tv.system.Diagnostics
@@ -164,14 +164,14 @@ class MainActivity : ComponentActivity() {
 
     /**
      * Where the firmware ships its own FallbackHome (not one of AOSP's), leaves the locked boot to
-     * it: Aerial only comes back once the user is unlocked, by the guard or the boot receiver.
+     * it: xiaoheiDESK only comes back once the user is unlocked, by the guard or the boot receiver.
      * Redmi Projector 4 and 5 Pro (ASU mt5873, Android 13, com.asu.settings.FallbackHome) stayed
      * on the boot animation for good, with no network and no ADB, from 1.47 on, when Home Guard
      * stopped crashing the process before the unlock and the locked start below got to stay in
      * front; 1.36, before Home was direct-boot aware, booted fine (issues #684 #688). Not seen on
      * that TV: we have none; the hand-over itself was walked on the Android 13 Google TV emulator.
      * Once per process, so a FallbackHome that steps aside before the unlock cannot start a loop;
-     * and only when it starts, or Home would be restarted to Aerial again.
+     * and only when it starts, or Home would be restarted to xiaoheiDESK again.
      */
     private fun handOverToFirmwareFallbackHome(): Boolean {
         if (handedOverAtBoot) return false
@@ -205,11 +205,11 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Started fresh into a task of its own by something other than a Home intent while Aerial is the
+     * Started fresh into a task of its own by something other than a Home intent while xiaoheiDESK is the
      * system's Home: starts itself again as Home ([bringBackIntent]) and closes this task. Coocaa's
      * launcher opens the default Home's launcher entry at boot (Skyworth 8R734_A7HP, Android 13),
      * which made a standard task, and on that firmware a standard task kept its surface hidden: no
-     * keys, an ANR, a kill, until the guard brought Aerial back as Home.
+     * keys, an ANR, a kill, until the guard brought xiaoheiDESK back as Home.
      */
     private fun reopenAsHome(): Boolean {
         val started = intent ?: return false
@@ -254,7 +254,7 @@ class MainActivity : ComponentActivity() {
         IconLibrary.init(this)
         SourceLooks.init(this)
         AppNames.init(this)
-        AerialSettings.init(this)
+        XiaoheiSettings.init(this)
         Restricted.init(this)
         KidsWatch.start(this)
         // After the settings: the artwork's size follows the number of apps a row.
@@ -286,7 +286,7 @@ class MainActivity : ComponentActivity() {
 
         val home: @Composable () -> Unit = {
             // TVs ship at different densities for the same 1080p panel (Xiaomi 320dpi, TCL 240dpi),
-            // which would make the same layout bigger on one and smaller on the other. Aerial is
+            // which would make the same layout bigger on one and smaller on the other. xiaoheiDESK is
             // designed on a 960×540 canvas, so it scales that canvas to whatever the panel is.
             val canvas = Density(
                 density = canvasDensity(resources.displayMetrics),
@@ -316,7 +316,7 @@ class MainActivity : ComponentActivity() {
             ContextCompat.RECEIVER_NOT_EXPORTED,
         )
         // Control Center shows things that change while it is open (Home Guard binds a few seconds
-        // after Aerial starts): look again every few seconds, only while it is open and Aerial is on screen.
+        // after xiaoheiDESK starts): look again every few seconds, only while it is open and xiaoheiDESK is on screen.
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 snapshotFlow { vm.overlay is Overlay.ControlCenter }.collectLatest { open ->
@@ -334,7 +334,7 @@ class MainActivity : ComponentActivity() {
             // This window already went through onStart and onResume while locked (both returned
             // early) and the system will not call them again unless it stops and starts the
             // activity: do their work for the state it is in now. Doing it unconditionally would
-            // register receivers while stopped, or mark Aerial resumed with the screen off.
+            // register receivers while stopped, or mark xiaoheiDESK resumed with the screen off.
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) startWork()
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) resumeWork()
         }
@@ -349,14 +349,14 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * The system is short of memory. On a 1-2 GB TV Aerial is killed in the background while a
+     * The system is short of memory. On a 1-2 GB TV xiaoheiDESK is killed in the background while a
      * video plays, and Home then starts cold at the next press of Home (issue #294); what it can
      * make again cheaply goes first, so that it is less likely to be the process picked.
      */
     @Suppress("DEPRECATION")
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        // Memory running low, or Aerial in the background on the system's list to kill. Not merely
+        // Memory running low, or xiaoheiDESK in the background on the system's list to kill. Not merely
         // Home out of sight (UI_HIDDEN, every time an app opens): coming back, the first moves along
         // the row would make the focused faces again on the main thread.
         if (level < TRIM_MEMORY_RUNNING_LOW || level == TRIM_MEMORY_UI_HIDDEN) return
@@ -376,8 +376,8 @@ class MainActivity : ComponentActivity() {
     private var bootSourceOpenedAt = Long.MIN_VALUE / 2
 
     /**
-     * Woken with Aerial still in front (TCL keeps it through standby). Where the firmware killed
-     * Aerial instead (Xiaomi), Home Guard brings it back with [EXTRA_WOKE].
+     * Woken with xiaoheiDESK still in front (TCL keeps it through standby). Where the firmware killed
+     * xiaoheiDESK instead (Xiaomi), Home Guard brings it back with [EXTRA_WOKE].
      */
     private val screenOnReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -393,7 +393,7 @@ class MainActivity : ComponentActivity() {
         if (SystemClock.elapsedRealtime() > 3 * 60 * 1000L) {
             // In the diagnostics: an app to start on that never opened at power-on (MiTV4-ANSM0,
             // Android 6.0.1, issue #1009) may be Home created later than this.
-            if (AerialSettings.bootSource != null || AerialSettings.bootApp != null) {
+            if (XiaoheiSettings.bootSource != null || XiaoheiSettings.bootApp != null) {
                 DiagLog.i("boot target: Home first created ${SystemClock.elapsedRealtime() / 1000} s after boot, too late to open it")
             }
             return false
@@ -412,8 +412,8 @@ class MainActivity : ComponentActivity() {
      */
     /** [again]: the target was opened and then covered at once (Home Guard's EXTRA_REOPEN_BOOT). */
     private fun openBootSource(reason: String, again: Boolean = false) {
-        val id = AerialSettings.bootSource
-        val pkg = AerialSettings.bootApp
+        val id = XiaoheiSettings.bootSource
+        val pkg = XiaoheiSettings.bootApp
         if (id == null && pkg == null) return
         // In Kids and Elders mode only what the mode shows.
         if (Restricted.active && (pkg ?: (SOURCE_KEY_PREFIX + id)) !in Restricted.allowed) {
@@ -428,8 +428,8 @@ class MainActivity : ComponentActivity() {
         bootSourceOpenedAt = SystemClock.elapsedRealtime()
         lifecycleScope.launch {
             // An app opens from its own entry at once: listing every app took 6.5 s at power-on on
-            // Xiaomi MiTV-MFTR0 once Aerial came up earlier in the boot, all of it on PatchWall's
-            // heels. Inputs and Aerial's own tiles (AppCatalog.shortcuts) only Home lists.
+            // Xiaomi MiTV-MFTR0 once xiaoheiDESK came up earlier in the boot, all of it on PatchWall's
+            // heels. Inputs and xiaoheiDESK's own tiles (AppCatalog.shortcuts) only Home lists.
             val direct = pkg?.let { p ->
                 runCatching {
                     val launch = packageManager.getLeanbackLaunchIntentForPackage(p) ?: packageManager.getLaunchIntentForPackage(p)
@@ -472,7 +472,7 @@ class MainActivity : ComponentActivity() {
     private fun preferSmoothestRefreshRate() {
         if (Build.VERSION.SDK_INT < 31) return
         // Twice the frames is twice the GPU's work: Lite stays at the rate the TV chose.
-        if (AerialSettings.lite) return DiagLog.i("refresh rate left as it is (lite effects)")
+        if (XiaoheiSettings.lite) return DiagLog.i("refresh rate left as it is (lite effects)")
         val display = display ?: return
         val current = display.mode
         val seamless = current.alternativeRefreshRates
@@ -512,7 +512,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Volume keys that reach Aerial's window are a volume step each (Android's own handling of a
+     * Volume keys that reach xiaoheiDESK's window are a volume step each (Android's own handling of a
      * key no view takes), repeats included. Where the TV's firmware already acts on the key before
      * it gets here, that is a second step, and a press whose lift never comes runs the volume to
      * 0 or 100. Seen on Skyworth / Coocaa: 8R134_A7D and 8R145_P3DM (RTD2885N, Android 11),
@@ -598,9 +598,9 @@ class MainActivity : ComponentActivity() {
         super.onWindowFocusChanged(hasFocus)
         DiagLog.i("window focus $hasFocus")
         if (!hasFocus) SystemScreensaver.noteHomeHidden()
-        // A window of the TV's over Aerial's screensaver, still resumed beneath it: a key of the
+        // A window of the TV's over xiaoheiDESK's screensaver, still resumed beneath it: a key of the
         // firmware's own was pressed. Coocaa C10's hotkey popup sometimes took focus before the
-        // key's lift reached Aerial, and the screensaver went on under it (issue #915, the
+        // key's lift reached xiaoheiDESK, and the screensaver went on under it (issue #915, the
         // reporter's WindowManager log).
         if (!hasFocus && vm.resumed && vm.screensaverVisible) {
             DiagLog.i("a window came over the screensaver; ending it")
@@ -622,17 +622,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // ---- Screensaver: Aerial's own, before the firmware's ad-carrying one can start ----
+    // ---- Screensaver: xiaoheiDESK's own, before the firmware's ad-carrying one can start ----
 
     private val idleHandler = Handler(Looper.getMainLooper())
     private val showScreensaver = Runnable { if (vm.resumed) startScreensaver(asked = false) }
 
-    /** The Dolby Vision screensaver's start, fetched to disk while Home is still up (AerialStart.prepareAhead). */
+    /** The Dolby Vision screensaver's start, fetched to disk while Home is still up (XiaoheiStart.prepareAhead). */
     private val prepareScreensaver = Runnable {
-        if (vm.resumed && !vm.screensaverVisible) lifecycleScope.launch { AerialStart.prepareAhead(this@MainActivity, SAVER_AHEAD_MS) }
+        if (vm.resumed && !vm.screensaverVisible) lifecycleScope.launch { XiaoheiStart.prepareAhead(this@MainActivity, SAVER_AHEAD_MS) }
     }
 
-    /** Home's bounce did not bring Aerial back in time: the film lets its decoder go as usual. */
+    /** Home's bounce did not bring xiaoheiDESK back in time: the film lets its decoder go as usual. */
     private val endHomeBounce = Runnable {
         if (vm.homeBounce) DiagLog.i("not back from Home's bounce; the film lets go")
         vm.homeBounce = false
@@ -641,26 +641,26 @@ class MainActivity : ComponentActivity() {
     /**
      * [asked]: Back, or "Start now", rather than the idle timer.
      *
-     * Where Aerial's dream is the TV's screensaver (TCL), that dream is the one shown either way:
+     * Where xiaoheiDESK's dream is the TV's screensaver (TCL), that dream is the one shown either way:
      * Home's own screensaver was a second one, which the TV's timer then replaced with the dream
-     * (in its own quality), and which never held it off (TCL MT5879). With "System" chosen, Aerial
+     * (in its own quality), and which never held it off (TCL MT5879). With "System" chosen, xiaoheiDESK
      * starts nothing on the timer, and Back starts the firmware's.
      */
     private fun startScreensaver(asked: Boolean) {
-        AerialSettings.relock()
+        XiaoheiSettings.relock()
         // A parent who left Kids mode has walked away.
         Restricted.rearm()
         if (Wallpapers.screensaver == ScreensaverMode.System) {
             if (asked && !SystemScreensaver.startFirmware(this)) DiagLog.i("no system screensaver to start")
             return
         }
-        // Aerials over the aerial wallpaper: Home carries the wallpaper's film on, the same player in
+        // XiaoheiFilms over the aerial wallpaper: Home carries the wallpaper's film on, the same player in
         // the same format, so there is no black between them; the dream would be a new player in a
         // new window, and showed black even in 4K (TCL MT5879). Not with Dolby Vision chosen by hand,
-        // which the wallpaper does not play (AerialFormats.screensaverCarriesWallpaper).
-        val carry = Wallpapers.selectedId == Wallpapers.LIVE && Wallpapers.screensaver == ScreensaverMode.Aerial &&
-            AerialFormats.screensaverCarriesWallpaper(this)
-        if (!carry && !dreamFails(this) && SystemScreensaver.isAerials(this)) {
+        // which the wallpaper does not play (XiaoheiFormats.screensaverCarriesWallpaper).
+        val carry = Wallpapers.selectedId == Wallpapers.LIVE && Wallpapers.screensaver == ScreensaverMode.Xiaohei &&
+            XiaoheiFormats.screensaverCarriesWallpaper(this)
+        if (!carry && !dreamFails(this) && SystemScreensaver.isXiaohei(this)) {
             // The dream's film needs the decoder the wallpaper's holds: TCL MT5879 failed Dolby
             // Vision beside it and the dream fell back to 4K HEVC.
             LiveFilm.onHome?.letDecoderGo()
@@ -677,14 +677,14 @@ class MainActivity : ComponentActivity() {
         // Holding the screen on keeps the firmware's screensaver from starting over ours. After a
         // long stretch, let go so the TV's own power policy can still turn the panel off. Not
         // where the screen never goes off: letting go only handed it to the firmware's
-        // screensaver, Xiaomi's a minute later, 4 h into Aerial's (MiTV-MFTR0, 2026-10-27 03:35).
+        // screensaver, Xiaomi's a minute later, 4 h into xiaoheiDESK's (MiTV-MFTR0, 2026-10-27 03:35).
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if (!screenNeverOff()) idleHandler.postDelayed(releaseScreen, SCREENSAVER_HOLD_MS)
     }
     private val releaseScreen = Runnable { window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
 
     /**
-     * When Aerial last asked the system for its dream. The dream's starter closes at once and Home
+     * When xiaoheiDESK last asked the system for its dream. The dream's starter closes at once and Home
      * resumes; a dream that shows pauses it again within a moment. Hisense VIDAA (MT9655, Android
      * 14, issue #525; T963D4, Android 11, issue #533) never shows it, so Home stayed in front, its
      * wallpaper's film let go for nothing.
@@ -698,13 +698,13 @@ class MainActivity : ComponentActivity() {
         if (!vm.resumed || !hasWindowFocus()) return@Runnable
         SystemScreensaver.forgetDreamAsked()
         noteDreamFails(this)
-        DiagLog.i("the system's dream did not show; Aerial's own screensaver instead")
+        DiagLog.i("the system's dream did not show; xiaoheiDESK's own screensaver instead")
         LiveFilm.onHome?.goOn()
         startScreensaver(asked = false)
     }
     private var swallowKeyUp = -1
 
-    /** Keys whose press reached Aerial and which have not been lifted yet; see dispatchKeyEvent. */
+    /** Keys whose press reached xiaoheiDESK and which have not been lifted yet; see dispatchKeyEvent. */
     private val keysDown = HashSet<Int>()
 
     /**
@@ -722,11 +722,11 @@ class MainActivity : ComponentActivity() {
         vm.lastInputAt = SystemClock.uptimeMillis()
         idleHandler.removeCallbacks(showScreensaver)
         idleHandler.removeCallbacks(prepareScreensaver)
-        // Not once paused: keys still reach Aerial between onPause and the opened app's window
+        // Not once paused: keys still reach xiaoheiDESK between onPause and the opened app's window
         // taking focus (TCL MT5879: a press 18 ms after onPause, focus gone 400 ms later), and a
         // timer set then would start the screensaver over the app's video (issue #974).
         if (!vm.resumed) return
-        if (AerialSettings.screensaverMinutes != AerialSettings.NEVER) {
+        if (XiaoheiSettings.screensaverMinutes != XiaoheiSettings.NEVER) {
             val idle = idleBeforeScreensaver()
             idleHandler.postDelayed(showScreensaver, idle)
             if (idle > SAVER_AHEAD_MS) idleHandler.postDelayed(prepareScreensaver, idle - SAVER_AHEAD_MS)
@@ -743,7 +743,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Aerial's screensaver has to start before the firmware's (ad-carrying) one. Xiaomi keeps its
+     * xiaoheiDESK's screensaver has to start before the firmware's (ad-carrying) one. Xiaomi keeps its
      * delay in system/screen_saver_timeout: 120000 on some MiTV-MFTR0 units, 480000 on others, -1
      * when off. Start 15 s ahead of it when it is shorter than the delay chosen in Personalize.
      */
@@ -757,8 +757,8 @@ class MainActivity : ComponentActivity() {
         runCatching { Settings.System.getLong(contentResolver, Settings.System.SCREEN_OFF_TIMEOUT) }.getOrDefault(0L) >= 24 * 60 * 60 * 1000L
 
     private fun idleBeforeScreensaver(): Long {
-        val chosen = AerialSettings.screensaverMinutes * 60_000L
-        // Where Aerial's dream is the TV's screensaver, the TV starts it on its own after
+        val chosen = XiaoheiSettings.screensaverMinutes * 60_000L
+        // Where xiaoheiDESK's dream is the TV's screensaver, the TV starts it on its own after
         // screen_off_timeout (TCL MT5879: 2 minutes); Home starts its own first, so that the
         // aerial wallpaper's film can carry on (startScreensaver).
         val firmware = firmwareScreensaverDelay() ?: dreamDelay()?.takeUnless { holdsOffTheDream() }
@@ -770,20 +770,20 @@ class MainActivity : ComponentActivity() {
         runCatching { Settings.System.getLong(contentResolver, "screen_saver_timeout") }.getOrNull()?.takeIf { it > 0 }
 
     private fun dreamDelay(): Long? =
-        if (SystemScreensaver.isAerials(this)) runCatching { Settings.System.getLong(contentResolver, Settings.System.SCREEN_OFF_TIMEOUT) }.getOrNull()?.takeIf { it > 0 } else null
+        if (SystemScreensaver.isXiaohei(this)) runCatching { Settings.System.getLong(contentResolver, Settings.System.SCREEN_OFF_TIMEOUT) }.getOrNull()?.takeIf { it > 0 } else null
 
     /**
-     * Where the TV's own delay for Aerial's dream is shorter than the one chosen in Personalize,
+     * Where the TV's own delay for xiaoheiDESK's dream is shorter than the one chosen in Personalize,
      * Home holds the screen on until its own screensaver starts, rather than starting 15 s ahead
      * of the TV: Coocaa C10 keeps screen_off_timeout at 60 s and its settings do not change it, so
-     * every choice came out as 45 s (#732). Only Aerial's dream is held off this way; a firmware
+     * every choice came out as 45 s (#732). Only xiaoheiDESK's dream is held off this way; a firmware
      * screensaver of its own (screen_saver_timeout) is still beaten to it. The flag is the Home
      * window's, so it lets go as the dream covers Home and the TV's power policy goes on from there.
      */
     private fun holdsOffTheDream(): Boolean {
         if (firmwareScreensaverDelay() != null) return false
         val dream = dreamDelay() ?: return false
-        return AerialSettings.screensaverMinutes * 60_000L > dream - 15_000L
+        return XiaoheiSettings.screensaverMinutes * 60_000L > dream - 15_000L
     }
 
     private fun hideScreensaver() {
@@ -808,7 +808,7 @@ class MainActivity : ComponentActivity() {
         }
         if (keysLogged++ < 200) DiagLog.i("key ${KeyEvent.keyCodeToString(event.keyCode)} ${if (event.action == KeyEvent.ACTION_DOWN) "down" else "up"} #${event.repeatCount} at ${event.eventTime}, view focused ${currentFocus != null}")
         restartIdleTimer()
-        // A lift whose press never reached Aerial: Coocaa C10's hotkey service takes the press of
+        // A lift whose press never reached xiaoheiDESK: Coocaa C10's hotkey service takes the press of
         // its focus and settings keys and lets only the lift through (issue #915, the reporter's
         // WindowManager log). In the screensaver that lift ends it as a press would.
         val loneLift = event.action == KeyEvent.ACTION_UP && !event.isCanceled && event.keyCode !in keysDown
@@ -868,7 +868,7 @@ class MainActivity : ComponentActivity() {
             return
         }
         if (intent.hasCategory(Intent.CATEGORY_HOME) || intent.action == Intent.ACTION_MAIN) {
-            // Since 1.11 Home Guard answers Home from an app by bringing Aerial back with this same
+            // Since 1.11 Home Guard answers Home from an app by bringing xiaoheiDESK back with this same
             // intent, so the intent alone cannot tell Home-on-Home from coming back from an app.
             vm.onHomePressed(resetFocus = !openedAppSinceHome)
             openedAppSinceHome = false
@@ -921,14 +921,14 @@ class MainActivity : ComponentActivity() {
             // A request leaves VPNs out unless told otherwise; the status pill shows one coming up (issue #809).
             else cm.registerNetworkCallback(NetworkRequest.Builder().removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN).build(), networkCallback)
         }
-        // Apps can change while Aerial is in the background without it hearing about it: the
+        // Apps can change while xiaoheiDESK is in the background without it hearing about it: the
         // package receiver above is unregistered in onStop, so nothing arrives then.
         // reloadIfPackagesChanged (above) already reloads when PackageManager's change counter has
         // moved (Android 8+), and reloads unconditionally on older Android, where there is none.
         // Reloading here as well threw that check away: every return to Home rebuilt all the tiles
         // for nothing (measured 100-380 ms, main thread held 204 ms at times), and on a cold start
         // it cancelled the load init() had begun and ran it again. On this TCL the guard brings
-        // Aerial back several times a minute, so each bounce cost a full rebuild.
+        // xiaoheiDESK back several times a minute, so each bounce cost a full rebuild.
         Wallpapers.refreshDailyIfStale()
         Wallpapers.rotateIfDue()
         Weather.refreshIfStale()
@@ -954,7 +954,7 @@ class MainActivity : ComponentActivity() {
         }
         restartIdleTimer()
         GuardSetup.setHomeInFront(this, true)
-        HomeGuardService.onAerialResumed()
+        HomeGuardService.onXiaoheiResumed()
         Updates.onHomeResumed()
         vm.refreshSystem()
         if (!resumedInProcess) {
@@ -968,7 +968,7 @@ class MainActivity : ComponentActivity() {
         leftForAnApp = false
         LaunchFallback.next()?.let { page ->
             // Only where the page truly closed: Hisense's network page (85E5N, MT9653, Android 11)
-            // is a panel over Aerial, which resumes beneath it without window focus, and the next
+            // is a panel over xiaoheiDESK, which resumes beneath it without window focus, and the next
             // page then opened beside the panel (issues #948 #976, the reporters' logs).
             idleHandler.postDelayed({
                 if (vm.resumed && hasWindowFocus()) {
@@ -990,8 +990,8 @@ class MainActivity : ComponentActivity() {
         DiagLog.i("onPause")
         leftForAnApp = openedAppSinceHome
         GuardSetup.setHomeInFront(this, false)
-        if (HomeGuardService.onAerialPaused()) {
-            // Only Home's bounce: the film plays on, unless Aerial is not back soon after all
+        if (HomeGuardService.onXiaoheiPaused()) {
+            // Only Home's bounce: the film plays on, unless xiaoheiDESK is not back soon after all
             // (Home pressed again and again, the recent apps opened).
             vm.homeBounce = true
             idleHandler.removeCallbacks(endHomeBounce)
@@ -1014,7 +1014,7 @@ class MainActivity : ComponentActivity() {
         idleHandler.removeCallbacks(endHomeBounce)
         vm.homeBounce = false
         // An app, the screensaver or standby in front: the PIN is asked again, as in Lite (#718).
-        AerialSettings.relock()
+        XiaoheiSettings.relock()
         unregisterReceiver(packageReceiver)
         unregisterReceiver(volumeReceiver)
         unregisterReceiver(dayReceiver)
@@ -1029,7 +1029,7 @@ class MainActivity : ComponentActivity() {
             return
         }
         // The TV's settings app behind the parental PIN as well, not only Control Center's button.
-        if (AerialSettings.locked && SystemProbe.isSettingsApp(this, app.packageName)) {
+        if (XiaoheiSettings.locked && SystemProbe.isSettingsApp(this, app.packageName)) {
             vm.whenUnlocked { launch(app, bounds) }
             return
         }
@@ -1043,8 +1043,8 @@ class MainActivity : ComponentActivity() {
             ActivityOptions.makeScaleUpAnimation(
                 window.decorView, it.left.toInt(), it.top.toInt(), it.width.toInt(), it.height.toInt(),
             ).toBundle().apply {
-                // The options name Aerial's package, and on TCL 65C6 (MStar m7221, Android 8) the
-                // app opened with them ran as Aerial's: 云视听极光 failed its settings read for a
+                // The options name xiaoheiDESK's package, and on TCL 65C6 (MStar m7221, Android 8) the
+                // app opened with them ran as xiaoheiDESK's: 云视听极光 failed its settings read for a
                 // package not its own and 凤凰秀's packer refused to load; both opened from adb
                 // (issue #590). A scale-up needs no package; not yet tried on that TV.
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) remove("android:activity.packageName")
@@ -1073,7 +1073,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** The stock launcher's own entry, or one of the same page Aerial may start (StandIn, issue #971). */
+    /** The stock launcher's own entry, or one of the same page xiaoheiDESK may start (StandIn, issue #971). */
     private fun isHomeApp(pkg: String): Boolean = runCatching {
         packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), 0)
             .any { it.activityInfo.packageName == pkg }
@@ -1100,7 +1100,7 @@ class MainActivity : ComponentActivity() {
         // Older Konka: the input first, then its page, which only shows what is on (issue #710).
         if (KonkaSources.needsSwitch(intent)) {
             val app = applicationContext
-            kotlin.concurrent.thread(name = "AerialKonkaInput") {
+            kotlin.concurrent.thread(name = "XiaoheiKonkaInput") {
                 KonkaSources.switchTo(app, intent)
                 runOnUiThread { startPage(intent) }
             }
@@ -1138,11 +1138,11 @@ class MainActivity : ComponentActivity() {
     }
 
     companion object {
-        /** How long the film waits for Aerial to come back from Home's bounce (MFTR0: 120-290 ms). */
+        /** How long the film waits for xiaoheiDESK to come back from Home's bounce (MFTR0: 120-290 ms). */
         private const val HOME_BOUNCE_MS = 500L
 
         /**
-         * How long after coming back from a page that closed at once Aerial waits for its window's
+         * How long after coming back from a page that closed at once xiaoheiDESK waits for its window's
          * focus before opening the next page (LaunchFallback). Focus followed onResume within
          * 50 ms on Xiaomi MiTV-MFFU0 (issue #984's log).
          */
@@ -1157,7 +1157,7 @@ class MainActivity : ComponentActivity() {
         /**
          * The system's dream did not show when asked (see dreamCheck): for the rest of the process,
          * and from the second time on this firmware build also for later ones. Known only for the
-         * process, every first screensaver after Aerial restarted waited on a dream that never came
+         * process, every first screensaver after xiaoheiDESK restarted waited on a dream that never came
          * and showed black meanwhile (Coocaa C10, Android 9, issue #915). Twice, so that one slow
          * start does not give up a dream that works; a dream that shows, or a firmware update,
          * starts the count again.
@@ -1185,7 +1185,7 @@ class MainActivity : ComponentActivity() {
          */
         fun dreamShowedAfter(context: Context, blackMs: Long) {
             if (blackMs <= DREAM_BLACK_MS) return noteDreamShown(context)
-            DiagLog.i("the system's dream showed after $blackMs ms of black; Aerial's own screensaver from now on")
+            DiagLog.i("the system's dream showed after $blackMs ms of black; xiaoheiDESK's own screensaver from now on")
             noteDreamFails(context)
         }
 
@@ -1199,9 +1199,9 @@ class MainActivity : ComponentActivity() {
         private const val DREAM_FAILS = "dream_fails"
 
         /**
-         * Whether Aerial was last left for an app it opened itself, and has not been back since.
+         * Whether xiaoheiDESK was last left for an app it opened itself, and has not been back since.
          * BootReceiver leaves such an app in front: Xiaomi MiTV-ANTL0 (Android 5.1.1) sent
-         * BOOT_COMPLETED three minutes after Aerial had come up as Home, and Aerial then covered
+         * BOOT_COMPLETED three minutes after xiaoheiDESK had come up as Home, and xiaoheiDESK then covered
          * the live TV or Bilibili the user had opened from it, once per boot (issue #1024's log).
          */
         @Volatile
@@ -1216,17 +1216,17 @@ class MainActivity : ComponentActivity() {
         private val AOSP_FALLBACK_HOMES = setOf("com.android.settings.FallbackHome", "com.android.tv.settings.system.FallbackHome", "com.android.tv.settings.ui.activity.FallbackHome")
 
         /**
-         * How Home Guard and the boot receiver bring Aerial back: the same task the launcher entry uses,
-         * unless Aerial is the system's Home. Then it is a Home intent (CATEGORY_HOME, package only, no
+         * How Home Guard and the boot receiver bring xiaoheiDESK back: the same task the launcher entry uses,
+         * unless xiaoheiDESK is the system's Home. Then it is a Home intent (CATEGORY_HOME, package only, no
          * component), so the system makes it a home-type task. On Skyworth 8R734_A7HP (titanite,
          * Android 13) a fresh standard task for MainActivity kept its task surface hidden in
          * SurfaceFlinger (flags 0x1) while WindowManager had it visible and focused: input found the
          * window NOT_VISIBLE and every key ended in an ANR, then a kill and the same again. That
          * firmware's Task.prepareSurfaces re-applies the visibility every frame only for home-type
-         * root tasks, and Aerial started as Home showed and took keys at once. Where Aerial is not the
+         * root tasks, and xiaoheiDESK started as Home showed and took keys at once. Where xiaoheiDESK is not the
          * system's Home the category stays off: it made the system open a second, home-type task with
          * a fresh MainActivity every time (Xiaomi MiTV-MFTR0, 1.11). Only on Coocaa firmware from
-         * Android 13 ([hidesStandardTasks]): other TVs with Aerial as their Home keep the start they had.
+         * Android 13 ([hidesStandardTasks]): other TVs with xiaoheiDESK as their Home keep the start they had.
          */
         fun bringBackIntent(context: Context): Intent {
             val home = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
@@ -1247,7 +1247,7 @@ class MainActivity : ComponentActivity() {
                 runCatching { context.packageManager.getPackageInfo("com.tianci.system", 0) }.isSuccess
 
         /**
-         * Whether the system's Home is Aerial. Also when no Home is chosen yet but Aerial is one of
+         * Whether the system's Home is xiaoheiDESK. Also when no Home is chosen yet but xiaoheiDESK is one of
          * them (the system's resolver comes back): early in a boot, or with a second Home such as
          * Dangbei's launcher installed next to it.
          */
@@ -1271,7 +1271,7 @@ class MainActivity : ComponentActivity() {
         /** `adb shell am start -a app.orchard.tv.PREVIEW_SCREENSAVER -n app.orchard.tv/.MainActivity` */
         const val ACTION_PREVIEW_SCREENSAVER = "app.orchard.tv.PREVIEW_SCREENSAVER"
 
-        /** Set by Home Guard when it brings Aerial back after standby or a boot. */
+        /** Set by Home Guard when it brings xiaoheiDESK back after standby or a boot. */
         const val EXTRA_WOKE = "app.orchard.tv.WOKE"
 
         /**
@@ -1284,17 +1284,17 @@ class MainActivity : ComponentActivity() {
         const val WAKE_QUIET_MS = 400L
 
         /**
-         * When the system's screensaver (AerialDream) last ended on a key, in uptime: a second press
+         * When the system's screensaver (XiaoheiDream) last ended on a key, in uptime: a second press
          * the remote sent with it reaches Home, which takes it as waking too.
          */
         @Volatile
         var dreamWokeAt = 0L
 
         /**
-         * The key that woke AerialDream, until its lift. The rest of that press (its repeats and its
+         * The key that woke XiaoheiDream, until its lift. The rest of that press (its repeats and its
          * lift) comes to Home once the dream is gone; on TCL MT5879 the dream's teardown can hold
          * the lift back long enough for Android to repeat the key, and one Down moved focus several
-         * rows. Set by AerialDream.
+         * rows. Set by XiaoheiDream.
          */
         @Volatile var dreamWokeKey = -1
     }

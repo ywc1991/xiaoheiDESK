@@ -69,7 +69,7 @@ import app.orchard.tv.ui.components.Pressable
 import app.orchard.tv.ui.components.consumeTaps
 import app.orchard.tv.ui.components.dismissOnTap
 import app.orchard.tv.ui.components.liquidGlass
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.ui.components.smoothBackground
 import app.orchard.tv.ui.components.smoothBorder
 import app.orchard.tv.ui.components.smoothCut
@@ -263,7 +263,7 @@ fun AppMenu(
                                 if (shownApp.shortcut == null) MenuRow(Glyph.Info, stringResource(R.string.menu_info), { onInfo(shownApp.key) })
                             }
                             // What the TV starts on, for homes that switch it on to watch television.
-                            val boots = shownApp.source?.let { it.id == AerialSettings.bootSource } ?: (shownApp.key == AerialSettings.bootApp)
+                            val boots = shownApp.source?.let { it.id == XiaoheiSettings.bootSource } ?: (shownApp.key == XiaoheiSettings.bootApp)
                             MenuRow(
                                 if (boots) Glyph.Check else Glyph.Power,
                                 stringResource(if (boots) R.string.menu_boot_off else R.string.menu_boot_on),

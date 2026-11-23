@@ -11,7 +11,7 @@ import android.provider.Settings
 import app.orchard.tv.apps.IconLibrary
 import app.orchard.tv.guard.GuardSetup
 import app.orchard.tv.system.DeviceClass
-import app.orchard.tv.wallpaper.AerialQuality
+import app.orchard.tv.wallpaper.XiaoheiQuality
 import java.security.MessageDigest
 
 /**
@@ -46,7 +46,7 @@ enum class ArtScope(val key: String) {
 }
 
 enum class UiSounds(val key: String) {
-    Tv("tv"), Aerial("aerial"), Off("off");
+    Tv("tv"), Xiaohei("aerial"), Off("off");
 
     companion object {
         fun of(key: String?) = entries.firstOrNull { it.key == key }
@@ -68,8 +68,8 @@ enum class Effects(val key: String) {
     }
 }
 
-/** Aerial's own preferences. Compose state, written on the main thread only. */
-object AerialSettings {
+/** xiaoheiDESK's own preferences. Compose state, written on the main thread only. */
+object XiaoheiSettings {
     private const val PREFS = "settings"
     private var started = false
     private lateinit var app: Context
@@ -85,7 +85,7 @@ object AerialSettings {
 
     /**
      * The input to open when the TV is switched on (a set-top box, an Apple TV), by TvSource id;
-     * null for none. Home still comes back to Aerial. Issue #25.
+     * null for none. Home still comes back to xiaoheiDESK. Issue #25.
      */
     var bootSource by mutableStateOf<String?>(null); private set
 
@@ -102,7 +102,7 @@ object AerialSettings {
     var oneRowHome by mutableStateOf(true); private set
 
     /**
-     * Apps a row on Home: [HOME_COLUMNS], five by default as Aerial always had, six as tvOS 26 lays
+     * Apps a row on Home: [HOME_COLUMNS], five by default as xiaoheiDESK always had, six as tvOS 26 lays
      * them out, four for bigger tiles from the sofa. Folders follow it.
      */
     private var chosenColumns by mutableIntStateOf(DEFAULT_HOME_COLUMNS)
@@ -161,7 +161,7 @@ object AerialSettings {
     var showWeather by mutableStateOf(true); private set
 
     /**
-     * The time over Aerial's aerial and photo screensavers (issue #240: TCL's firmware puts its own
+     * The time over xiaoheiDESK's aerial and photo screensavers (issue #240: TCL's firmware puts its own
      * clock over the system screensaver). The clock screensaver is the clock and keeps it.
      */
     var screensaverClock by mutableStateOf(false); private set
@@ -180,7 +180,7 @@ object AerialSettings {
 
     /**
      * Parental PIN (issue #10): asked before TV settings open and before hidden apps come back.
-     * Kept as a SHA-256 hash. One right entry holds for a while, until Home is pressed, Aerial
+     * Kept as a SHA-256 hash. One right entry holds for a while, until Home is pressed, xiaoheiDESK
      * leaves the screen or the screensaver starts.
      */
     var pinSet by mutableStateOf(false); private set
@@ -195,9 +195,9 @@ object AerialSettings {
     private const val UNLOCK_MS = 10 * 60 * 1000L
 
     /**
-     * Minutes of no input on Home before Aerial's screensaver starts (issue #66). The firmware's own
-     * screensaver still caps it: Aerial starts just ahead of that one, see MainActivity.
-     * [NEVER] starts none, and switches off the system's while that is Aerial's (issue #333).
+     * Minutes of no input on Home before xiaoheiDESK's screensaver starts (issue #66). The firmware's own
+     * screensaver still caps it: xiaoheiDESK starts just ahead of that one, see MainActivity.
+     * [NEVER] starts none, and switches off the system's while that is xiaoheiDESK's (issue #333).
      */
     var screensaverMinutes by mutableStateOf(DEFAULT_SCREENSAVER_MINUTES); private set
 
@@ -206,7 +206,7 @@ object AerialSettings {
     val screensaverChoices = listOf(2, 5, 10, 20, NEVER)
 
     /** Which of Apple's files the aerial screensaver plays; Auto is the best this TV decodes (issues #198, #217). */
-    var aerialQuality by mutableStateOf(AerialQuality.Auto); private set
+    var xiaoheiQuality by mutableStateOf(XiaoheiQuality.Auto); private set
 
     var effects by mutableStateOf(Effects.Auto); private set
 
@@ -254,15 +254,15 @@ object AerialSettings {
         // Off unless chosen: the screensaver is left to the picture alone, no time in the corner.
         screensaverClock = prefs.getBoolean("screensaver_clock", false)
         screensaverFrame = prefs.getBoolean("screensaver_frame", true)
-        // Before 1.28 this was on or off; on meant whichever sounds Aerial played.
+        // Before 1.28 this was on or off; on meant whichever sounds xiaoheiDESK played.
         uiSounds = UiSounds.of(prefs.getString("ui_sounds_kind", null)) ?: when {
             !prefs.getBoolean("ui_sounds", true) -> UiSounds.Off
             Settings.System.getInt(app.contentResolver, Settings.System.SOUND_EFFECTS_ENABLED, 1) == 1 -> UiSounds.Tv
-            else -> UiSounds.Aerial
+            else -> UiSounds.Xiaohei
         }
         backStartsScreensaver = prefs.getBoolean("back_starts_screensaver", true)
         screensaverMinutes = prefs.getInt("screensaver_minutes", DEFAULT_SCREENSAVER_MINUTES)
-        aerialQuality = AerialQuality.of(prefs.getString("aerial_quality", null))
+        xiaoheiQuality = XiaoheiQuality.of(prefs.getString("aerial_quality", null))
         effects = Effects.of(prefs.getString("effects", null))
         lowEnd = DeviceClass.lowEnd(app)
     }
@@ -401,8 +401,8 @@ object AerialSettings {
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("back_starts_screensaver", on) }
     }
 
-    fun chooseAerialQuality(quality: AerialQuality) {
-        aerialQuality = quality
+    fun chooseXiaoheiQuality(quality: XiaoheiQuality) {
+        xiaoheiQuality = quality
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putString("aerial_quality", quality.key) }
     }
 

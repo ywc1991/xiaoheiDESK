@@ -21,7 +21,7 @@ import java.net.URL
 /**
  * Ready-made 16:9 tile pictures for popular apps, from the website (issues #575 #429 #307: tiles
  * drawn from an app's own icon read rougher than other launchers' hand-made ones). The site keeps
- * an index of package → picture; Aerial reads it at most twice a day and downloads only the
+ * an index of package → picture; xiaoheiDESK reads it at most twice a day and downloads only the
  * pictures of apps installed on this TV, into files/library. A picture the owner chose on the
  * phone page (CustomIcons) still wins. Every app with a picture here uses it, unless the phone page
  * picked the app's own art for it. (Personalize had a switch for all apps at once until 1.55; with
@@ -31,7 +31,7 @@ import java.net.URL
  * picture for that app or drops the app.
  */
 object IconLibrary {
-    private const val TAG = "AerialIcons"
+    private const val TAG = "XiaoheiIcons"
     private const val BASE = "https://aerial.qust.me/icons/"
     private const val CHECK_EVERY_MS = 12 * 60 * 60 * 1000L
     private const val RETRY_MS = 10 * 60 * 1000L

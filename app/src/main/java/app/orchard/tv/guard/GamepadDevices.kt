@@ -8,15 +8,15 @@ internal object GamepadDevices {
 
     // The built-in remote receiver of Amlogic TVs: not external, vendor and product 0x0001, yet
     // its sources include SOURCE_GAMEPAD. Counted as a gamepad, it made the guard stop filtering
-    // keys in other apps (issue #774's Android 11 rule), so Home went to PatchWall first and Aerial
+    // keys in other apps (issue #774's Android 11 rule), so Home went to PatchWall first and xiaoheiDESK
     // came back seconds later (MiTV-AZFP0, Android 9, 2026-10-30).
     private const val AMLOGIC_KEYPAD_NAME = "aml_keypad"
     private const val AMLOGIC_KEYPAD_VENDOR_ID = 0x0001
     private const val AMLOGIC_KEYPAD_PRODUCT_ID = 0x0001
 
     // The Bluetooth voice remote paired to Redmi Projector Lite (Projector_10, Android 9) declares
-    // SOURCE_GAMEPAD. Counting it as a gamepad made the guard stop filtering keys outside Aerial;
-    // the firmware's normal Home dispatch then force-stopped Aerial and cold-started it.
+    // SOURCE_GAMEPAD. Counting it as a gamepad made the guard stop filtering keys outside xiaoheiDESK;
+    // the firmware's normal Home dispatch then force-stopped xiaoheiDESK and cold-started it.
     private const val REDMI_PROJECTOR_REMOTE_NAME = "小米蓝牙语音遥控器"
     private const val XIAOMI_VENDOR_ID = 0x2717
     private const val REDMI_PROJECTOR_REMOTE_PRODUCT_ID = 0x32b8

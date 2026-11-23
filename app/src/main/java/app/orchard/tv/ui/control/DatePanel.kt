@@ -2,6 +2,7 @@ package app.orchard.tv.ui.control
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -29,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -48,6 +50,7 @@ import app.orchard.tv.ui.theme.Motion
 import app.orchard.tv.ui.theme.Palette
 import app.orchard.tv.ui.theme.Type
 import app.orchard.tv.util.Lunar
+import app.orchard.tv.util.TodayHistory
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -70,6 +73,8 @@ fun DatePanel(
     val today = remember { LocalDate.now() }
     var viewY by remember { mutableStateOf(today.year) }
     var viewM by remember { mutableStateOf(today.monthValue) }
+    // OK on the open calendar reveals a card about today: its festival and "on this day" events.
+    var detail by remember { mutableStateOf(false) }
 
     /** Step the viewed month by [delta] (-1 = previous, +1 = next), rolling the year over. */
     fun stepMonth(delta: Int) {
@@ -81,7 +86,10 @@ fun DatePanel(
         viewM = m
     }
 
-    BackHandler(enabled = visible && interactive) { onClose() }
+    fun dismiss() {
+        if (detail) detail = false else onClose()
+    }
+    BackHandler(enabled = visible && interactive) { dismiss() }
     Box(
         Modifier
             .fillMaxSize()
@@ -89,8 +97,20 @@ fun DatePanel(
                 if (visible && interactive) {
                     Modifier.onPreviewKeyEvent { e ->
                         if (e.nativeKeyEvent.action != NativeKeyEvent.ACTION_DOWN) return@onPreviewKeyEvent false
+                        // The detail card owns the keys while it is up: OK/Back closes it and
+                        // the arrows are swallowed so they cannot flip the month behind it.
+                        if (detail) {
+                            return@onPreviewKeyEvent when (e.nativeKeyEvent.keyCode) {
+                                NativeKeyEvent.KEYCODE_BACK, NativeKeyEvent.KEYCODE_DPAD_CENTER,
+                                NativeKeyEvent.KEYCODE_ENTER -> { detail = false; true }
+                                NativeKeyEvent.KEYCODE_DPAD_LEFT, NativeKeyEvent.KEYCODE_DPAD_RIGHT,
+                                NativeKeyEvent.KEYCODE_DPAD_UP, NativeKeyEvent.KEYCODE_DPAD_DOWN -> true
+                                else -> false
+                            }
+                        }
                         when (e.nativeKeyEvent.keyCode) {
                             NativeKeyEvent.KEYCODE_BACK -> { onClose(); true }
+                            NativeKeyEvent.KEYCODE_DPAD_CENTER, NativeKeyEvent.KEYCODE_ENTER -> { detail = true; true }
                             NativeKeyEvent.KEYCODE_DPAD_LEFT -> { stepMonth(-1); true }
                             NativeKeyEvent.KEYCODE_DPAD_RIGHT -> { stepMonth(1); true }
                             NativeKeyEvent.KEYCODE_DPAD_DOWN -> { viewY = today.year; viewM = today.monthValue; true }
@@ -123,7 +143,20 @@ fun DatePanel(
             )
         }
 
-        Box(Modifier.fillMaxSize().padding(top = if (interactive) 24.dp else 64.dp, start = 32.dp), contentAlignment = Alignment.TopStart) {
+        // While the detail card is up, blur the calendar behind it so the card reads as the one
+        // surface in focus. Animated so opening/closing the detail eases in and out.
+        val detailBlur by animateDpAsState(
+            targetValue = if (visible && interactive && detail) 18.dp else 0.dp,
+            animationSpec = tween(220),
+            label = "date-detail-blur",
+        )
+        Box(
+            Modifier
+                .fillMaxSize()
+                .blur(detailBlur)
+                .padding(top = if (interactive) 24.dp else 64.dp, start = 32.dp),
+            contentAlignment = Alignment.TopStart,
+        ) {
             AnimatedVisibility(
                 visible = visible,
                 enter = fadeIn(tween(200)) + scaleIn(tween(340, easing = Motion.Drawer), initialScale = 0.9f, transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)),
@@ -148,6 +181,106 @@ fun DatePanel(
                         style = Type.Caption.copy(color = Palette.TertiaryLabel),
                     )
                 }
+            }
+        }
+
+        // Today's story, layered over the calendar. Owns no focus of its own — the root Box's key
+        // handler above reads the detail flag first — so focus stays on the panel anchor and Back
+        // and OK both land here without disturbing the Home grid behind.
+        TodayDetail(visible = visible && interactive && detail, today = today, onClose = { detail = false })
+    }
+}
+
+@Composable
+private fun TodayDetail(visible: Boolean, today: LocalDate, onClose: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val events = remember(today) { TodayHistory.eventsFor(context, today) }
+    val festival = remember(today) { Lunar.festivalFor(today) }
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(tween(180)),
+        exit = fadeOut(tween(150)),
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .dismissOnTap(onClose)
+                .background(Color.Black.copy(alpha = 0.52f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(
+                Modifier
+                    .width(600.dp)
+                    .consumeTaps()
+                    .clip(RoundedCornerShape(32.dp))
+                    // An opaque base first, so neither the calendar grid nor the wallpaper reads
+                    // through the card. The glass gradient and rim go on top for the same finish
+                    // as the other panels, but the type now sits on a solid, calm surface.
+                    .background(
+                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                            listOf(Color(0xFF1C1D20), Color(0xFF131316), Color(0xFF0D0D0F)),
+                        ),
+                    )
+                    .smokeGlassPanel()
+                    .padding(28.dp),
+            ) {
+                BasicText(stringResource(R.string.date_detail_title), style = Type.Title)
+                Spacer(Modifier.height(4.dp))
+                BasicText(
+                    "${today.year}年${today.monthValue}月${today.dayOfMonth}日 · ${Lunar.fullLabel(today)}",
+                    style = Type.Callout.copy(color = Palette.SecondaryLabel),
+                )
+                Spacer(Modifier.height(20.dp))
+
+                BasicText(stringResource(R.string.date_detail_festival), style = Type.Section)
+                Spacer(Modifier.height(8.dp))
+                if (festival != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.width(8.dp).height(8.dp).clip(RoundedCornerShape(4.dp)).background(Palette.Orange))
+                        Spacer(Modifier.width(10.dp))
+                        BasicText(festival, style = Type.Headline)
+                    }
+                    Lunar.festivalInfo(festival)?.let { info ->
+                        Spacer(Modifier.height(8.dp))
+                        BasicText(
+                            info,
+                            style = Type.Callout.copy(color = Palette.SecondaryLabel),
+                            modifier = Modifier.padding(start = 18.dp),
+                        )
+                    }
+                } else {
+                    BasicText(
+                        stringResource(R.string.date_detail_none),
+                        style = Type.Callout.copy(color = Palette.TertiaryLabel),
+                    )
+                }
+
+                Spacer(Modifier.height(20.dp))
+                BasicText(stringResource(R.string.date_detail_history), style = Type.Section)
+                Spacer(Modifier.height(10.dp))
+                if (events.isEmpty()) {
+                    BasicText("—", style = Type.Callout.copy(color = Palette.TertiaryLabel))
+                } else {
+                    events.forEach { ev ->
+                        Row(Modifier.padding(vertical = 5.dp), verticalAlignment = Alignment.Top) {
+                            BasicText(
+                                TodayHistory.yearLabel(ev.year),
+                                style = Type.Callout.copy(color = Palette.Orange),
+                                maxLines = 1,
+                                modifier = Modifier.width(84.dp),
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            BasicText(ev.text, style = Type.Body, modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(20.dp))
+                BasicText(
+                    stringResource(R.string.date_detail_hint),
+                    style = Type.Caption.copy(color = Palette.TertiaryLabel),
+                )
             }
         }
     }

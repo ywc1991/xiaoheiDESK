@@ -95,7 +95,7 @@
     <string name="wp_auto_note">取所选 App 图片里的颜色做背景。</string>
     <string name="wp_screensaver">屏幕保护程序</string>
     <string name="ss_follow_hint">还没选过，跟随壁纸：航拍壁纸配航拍，其他壁纸配照片，并从这张壁纸开始。选一个就固定下来。</string>
-    <string name="ss_aerial">航拍</string>
+    <string name="ss_xiaohei">航拍</string>
     <string name="ss_photos">照片</string>
     <string name="ss_gallery">名画</string>
     <string name="ss_usb">U盘画作</string>
@@ -123,7 +123,7 @@
     <string name="ss_quality_hd">1080p</string>
     <string name="ss_quality_uhd">4K</string>
     <string name="ss_quality_dv">4K 杜比视界</string>
-    <string name="ss_aerial_keeps">航拍会在电视上存最近 %2$d 部（最多占 %1$s），壁纸和屏保轮流放这几部，每天换一部新的；在屏保里按右键换新片，左键回到上一部。</string>
+    <string name="ss_xiaohei_keeps">航拍会在电视上存最近 %2$d 部（最多占 %1$s），壁纸和屏保轮流放这几部，每天换一部新的；在屏保里按右键换新片，左键回到上一部。</string>
     <string name="st_focus_style">焦点样式</string>
     <string name="st_home_layout">主屏幕</string>
     <string name="st_layout">布局</string>
@@ -368,11 +368,24 @@
 <string name="wx_k_snow">雪</string>
 <string name="wx_k_thunder">雷阵雨</string>
 <string name="wx_loading">正在获取天气预报…</string>
+<string name="wx_air_good">优</string>
+<string name="wx_air_moderate">良</string>
+<string name="wx_air_light">轻度污染</string>
+<string name="wx_air_medium">中度污染</string>
+<string name="wx_air_heavy">重度污染</string>
+<string name="wx_air_severe">严重污染</string>
+<string name="wx_air_line">空气质量 %1$d · %2$s%3$s</string>
+<string name="wx_air_pm25"> · PM2.5 %1$d</string>
 <string name="wx_now">%1$d° %2$s</string>
 <string name="wx_range">%1$d° ~ %2$d°</string>
 <string name="wx_today">今日天气</string>
 <string name="wx_today_short">今天</string>
 <string name="wx_unknown_place">未知地点</string>
 <string name="wx_week">未来一周</string>
-<string name="date_hint">← → 切换月份 · ↓ 回到今天 · 返回键关闭</string>
+<string name="date_hint">← → 切换月份 · ↓ 回到今天 · OK 查看今日详情 · 返回键关闭</string>
+<string name="date_detail_title">今日详情</string>
+<string name="date_detail_festival">今日节日</string>
+<string name="date_detail_history">历史上的今天</string>
+<string name="date_detail_none">今天不是节日，是个因你而特别的寻常日子。</string>
+<string name="date_detail_hint">OK / 返回键关闭</string>
 </resources>

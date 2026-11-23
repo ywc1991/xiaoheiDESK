@@ -31,12 +31,12 @@ import app.orchard.tv.ui.home.rememberNow
 import app.orchard.tv.wallpaper.Wallpapers
 
 /**
- * Aerial's screensaver as the TV's system screensaver, so it starts from any app, as on Apple TV,
+ * xiaoheiDESK's screensaver as the TV's system screensaver, so it starts from any app, as on Apple TV,
  * rather than only on Home. TVs that use Android's standard screensaver (TCL among them) get it
  * set by tools/install.sh in place of the maker's own, which on TCL advertises a paid membership.
- * Xiaomi runs its own screensaver outside this mechanism; there Aerial's Home timer covers it.
+ * Xiaomi runs its own screensaver outside this mechanism; there xiaoheiDESK's Home timer covers it.
  */
-class AerialDream : DreamService(), LifecycleOwner, SavedStateRegistryOwner {
+class XiaoheiDream : DreamService(), LifecycleOwner, SavedStateRegistryOwner {
     private val registry = LifecycleRegistry(this)
     private val savedState = SavedStateRegistryController.create(this)
     private val skips = ScreensaverSkips()
@@ -108,7 +108,7 @@ class AerialDream : DreamService(), LifecycleOwner, SavedStateRegistryOwner {
     /**
      * Ends the dream as the screen goes off, so its film lets the decoder go before the TV
      * suspends, as Home's own screensaver does. TCL tc8000_ay30a2 (Amlogic, Android 11, firmware
-     * 2026) could not be woken from standby whenever AerialDream was the system screensaver, even
+     * 2026) could not be woken from standby whenever XiaoheiDream was the system screensaver, even
      * with the guard out; with Home's in-app screensaver playing as the power key was pressed, it
      * woke every time (issue #371, the reporter's experiments).
      */
@@ -131,7 +131,7 @@ class AerialDream : DreamService(), LifecycleOwner, SavedStateRegistryOwner {
         runCatching { unregisterReceiver(screenOff) }
         // Since Android 11 the dream lives in an activity: a key press finishes it, the window is
         // detached first (DESTROYED), and only then is the dream stopped. Moving back to CREATED
-        // from there throws and took Aerial down on every wake (TCL MT5879).
+        // from there throws and took xiaoheiDESK down on every wake (TCL MT5879).
         if (registry.currentState.isAtLeast(Lifecycle.State.CREATED)) registry.currentState = Lifecycle.State.CREATED
         super.onDreamingStopped()
     }
@@ -144,9 +144,9 @@ class AerialDream : DreamService(), LifecycleOwner, SavedStateRegistryOwner {
 
     companion object {
         /** The dream on screen in this process, if any. Main thread only. */
-        private var running: AerialDream? = null
+        private var running: XiaoheiDream? = null
 
-        /** Aerial's dream is on screen: Kids mode does not count it as watching. */
+        /** xiaoheiDESK's dream is on screen: Kids mode does not count it as watching. */
         val showing: Boolean get() = running != null
 
         /**

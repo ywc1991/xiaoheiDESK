@@ -47,7 +47,7 @@ class AppEntry(
 
 /**
  * Every launchable app, one tile per package, on the full app's rules (apps/Apps.kt): TV entries
- * first, then phone ones and the firmware's hidden ones; the TV's own launcher as 原桌面; Aerial's
+ * first, then phone ones and the firmware's hidden ones; the TV's own launcher as 原桌面; xiaoheiDESK's
  * own tiles for firmware apps; the icon library's picture before the app's banner or icon.
  * Tiles are made once per app version and kept as PNGs in cache/tiles.
  */
@@ -59,7 +59,7 @@ fun folderEntry(folder: Folder, tile: Bitmap): AppEntry =
     AppEntry(folder.key, folder.name, ComponentName("folder", folder.id), leanback = false, removable = false, tile = tile, folder = folder)
 
 object AppCatalog {
-    private const val TAG = "AerialLite"
+    private const val TAG = "XiaoheiLite"
     /** Xiaomi's app store declares only this category, not CATEGORY_LAUNCHER (MiTV-MFTR0). */
     private const val CATEGORY_APPSTORE_LAUNCHER = "android.intent.category.APPSTORE_LAUNCHER"
 
@@ -70,7 +70,7 @@ object AppCatalog {
         ComponentName("com.sony.dtv.searchapp", "com.ktcp.aiagent.xwability.activity.VoipHomeActivity"), // #1074
     )
 
-    /** Firmware apps drawn as Aerial's own tiles, by package, as in the full app. */
+    /** Firmware apps drawn as xiaoheiDESK's own tiles, by package, as in the full app. */
     private val SYSTEM_TILES = mapOf(
         "com.xiaomi.mitv.settings" to SystemTile.Settings,
         "com.mitv.gallery" to SystemTile.Photos,
@@ -224,8 +224,8 @@ object AppCatalog {
         val banner = banner(pm, info, leanback)
         val own = if (stockHome) SystemTile.Home
             else if (system) SYSTEM_TILES[pkg] ?: byCategory[pkg]?.takeIf { banner == null } else null
-        // Aerial's own tiles for firmware apps keep their look; any other app's ready-made picture
-        // comes before what Aerial would draw from its banner or icon.
+        // xiaoheiDESK's own tiles for firmware apps keep their look; any other app's ready-made picture
+        // comes before what xiaoheiDESK would draw from its banner or icon.
         val custom = CustomIcons.load(pkg)
         val library = if (custom == null && (own == null || IconLibrary.pick(pkg) == IconLibrary.Pick.Library)) IconLibrary.load(pkg) else null
         val recipe = TileRecipes.of(pkg)

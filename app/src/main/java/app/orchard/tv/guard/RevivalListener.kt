@@ -14,12 +14,12 @@ import java.io.FileDescriptor
 import java.io.PrintWriter
 
 /**
- * Brings Home Guard back after the firmware kills Aerial.
+ * Brings Home Guard back after the firmware kills xiaoheiDESK.
  *
  * Xiaomi force-stops every third-party app when the TV goes to standby, and Android drops a
  * force-stopped app's accessibility services from the enabled list for good. Notification
  * listeners are treated differently: the system keeps the approval and binds the listener again
- * shortly after its process dies. That rebind is the one thing that reliably restarts Aerial
+ * shortly after its process dies. That rebind is the one thing that reliably restarts xiaoheiDESK
  * after a standby, so it is used for exactly this. No notification is read or touched.
  */
 class RevivalListener : NotificationListenerService() {
@@ -55,8 +55,8 @@ class RevivalListener : NotificationListenerService() {
 
     override fun onListenerConnected() {
         if (destroyed) return
-        // The line docs/HANDOFF.md and the issues look for after a kill (logcat -s AerialGuard).
-        Log.i("AerialGuard", "revived by the notification listener binding")
+        // The line docs/HANDOFF.md and the issues look for after a kill (logcat -s XiaoheiGuard).
+        Log.i("XiaoheiGuard", "revived by the notification listener binding")
         trace("notification listener connected")
         // Keep the quick path on wake. The delayed checks also cover a binding that did not
         // arrive after this write; none of the paths may touch credential storage while locked.
@@ -131,7 +131,7 @@ class RevivalListener : NotificationListenerService() {
     }
 
     override fun dump(fd: FileDescriptor?, writer: PrintWriter, args: Array<out String>?) {
-        writer.println("Aerial revival: active=$recovering attempts=$attempt outcome=$outcome")
+        writer.println("xiaoheiDESK revival: active=$recovering attempts=$attempt outcome=$outcome")
         writer.println("userUnlocked=${GuardSetup.isUserUnlocked(this)} guardRunning=${HomeGuardService.isRunning}")
         DiagLog.dump(writer)
     }

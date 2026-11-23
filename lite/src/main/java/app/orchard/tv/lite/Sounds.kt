@@ -9,7 +9,7 @@ import android.view.KeyEvent
 
 /**
  * Interface sounds, as the full app's system/Sounds.kt: the TV's own sound effects (each TV sounds
- * as its own menus, and its key sound switch silences them), Aerial's own set (for TVs that ship
+ * as its own menus, and its key sound switch silences them), xiaoheiDESK's own set (for TVs that ship
  * with key sounds off), or none; chosen in Personalize. Lite plays one per key press: a tick for
  * the arrows, a click for OK, one for Back.
  */
@@ -27,9 +27,9 @@ object Sounds {
         prepare()
     }
 
-    /** Loads Aerial's set ahead of the first press when it is the one chosen; loading takes a moment. */
+    /** Loads xiaoheiDESK's set ahead of the first press when it is the one chosen; loading takes a moment. */
     fun prepare() {
-        if (LiteSettings.uiSounds == UiSounds.Aerial) ownPool()
+        if (LiteSettings.uiSounds == UiSounds.xiaoheiDESK) ownPool()
     }
 
     @Suppress("DEPRECATION")
@@ -45,7 +45,7 @@ object Sounds {
     }
 
     fun key(code: Int) {
-        // The TV's effect, and Aerial's sound for it: 0 a move, 1 select, 2 back.
+        // The TV's effect, and xiaoheiDESK's sound for it: 0 a move, 1 select, 2 back.
         val (effect, own) = when (code) {
             KeyEvent.KEYCODE_DPAD_UP -> AudioManager.FX_FOCUS_NAVIGATION_UP to 0
             KeyEvent.KEYCODE_DPAD_DOWN -> AudioManager.FX_FOCUS_NAVIGATION_DOWN to 0
@@ -63,7 +63,7 @@ object Sounds {
                 val on = runCatching { Settings.System.getInt(app.contentResolver, Settings.System.SOUND_EFFECTS_ENABLED, 1) != 0 }.getOrDefault(true)
                 if (on) audio?.playSoundEffect(effect, -1f)
             }
-            UiSounds.Aerial -> {
+            UiSounds.xiaoheiDESK -> {
                 val p = ownPool()
                 val (id, volume) = when (own) { 0 -> move to 0.7f; 1 -> select to 1f; else -> back to 0.9f }
                 if (id != 0) p.play(id, volume, volume, 1, 0, 1f)

@@ -57,7 +57,7 @@ class UpdateSessionTest {
         Updates.resetInstall()
         apk.parentFile!!.mkdirs()
         apk.writeBytes(byteArrayOf(1, 2, 3))
-        // Aerial installed itself last, so from Android 12 the update may go through silently.
+        // xiaoheiDESK installed itself last, so from Android 12 the update may go through silently.
         if (Build.VERSION.SDK_INT >= 31) shadowOf(app.packageManager).setInstallSourceInfo(app.packageName, app.packageName, app.packageName)
         Updates.onHomeResumed()
     }

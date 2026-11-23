@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Build
 
 /**
- * Whether this TV is one of the slow ones, for the Effects setting's Auto (AerialSettings.lite).
+ * Whether this TV is one of the slow ones, for the Effects setting's Auto (XiaoheiSettings.lite).
  * Read from what the system says about itself, not from a list of models:
  * - the firmware's own low-RAM flag (`ro.config.low_ram`): Xiaomi MiTV-MFTP0, Konka U86V9, Coocaa
  *   C10 and OPPO K9 set it; the system already trims itself there;

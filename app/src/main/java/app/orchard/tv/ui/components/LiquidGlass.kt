@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.ui.theme.Palette
 import app.orchard.tv.ui.theme.Motion
 import app.orchard.tv.wallpaper.Wallpapers
@@ -120,8 +120,8 @@ fun Modifier.liquidGlass(corner: Dp, bottomCorners: Boolean = true, seeThroughFi
                 } else if (shader == null || brush == null || root == IntSize.Zero) {
                     drawImage(flat, dstSize = IntSize(w, h), colorFilter = ColorFilter.tint(Palette.Glass))
                     drawGlassEdge(size, radius, bottomCorners)
-                } else if (AerialSettings.lite) {
-                    // Lite (AerialSettings.lite): one solid color, the frosted wallpaper's average as
+                } else if (XiaoheiSettings.lite) {
+                    // Lite (XiaoheiSettings.lite): one solid color, the frosted wallpaper's average as
                     // the glass would dim it, without the layer the glass needs every frame, which
                     // weak GPUs feel most while a panel slides in. Solid: the plain glass color is
                     // see-through and showed the tiles under the Personalize sheet.

@@ -152,8 +152,8 @@ object KidsTime {
 /**
  * Kids and Elders mode (issues #133 #604 #159 #863 #718 #1013): a Home with only the tiles chosen
  * here, nothing to rearrange, Control Center without settings, and for children optional time
- * limits. Starting it takes nothing; leaving it takes the parental PIN, and only until Aerial's
- * screensaver starts, the screen goes off or Aerial restarts ([suspended]).
+ * limits. Starting it takes nothing; leaving it takes the parental PIN, and only until xiaoheiDESK's
+ * screensaver starts, the screen goes off or xiaoheiDESK restarts ([suspended]).
  *
  * The owner's own Home (order, folders, hidden apps) is never touched: the mode keeps its own list.
  * Compose state, written on the main thread only; Home Guard reads it in the same process.
@@ -288,7 +288,7 @@ object Restricted {
     /** Out of it for now, once the PIN was right. */
     fun suspend() { suspended = true }
 
-    /** The mode comes back by itself: Aerial's screensaver started or the screen went off. */
+    /** The mode comes back by itself: xiaoheiDESK's screensaver started or the screen went off. */
     fun rearm() { if (enabled && suspended) suspended = false }
 
     /** Turned off for good, from ADB when the PIN is forgotten (ConfigReceiver kids_off). */

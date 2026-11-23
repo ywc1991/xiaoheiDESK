@@ -8,7 +8,7 @@ import androidx.compose.ui.draw.drawWithContent
 
 /**
  * Parts of Home left undrawn, to find what a slow TV's GPU spends its frames on: frame times with
- * one part gone, against all of it (tools/perf.py). Set over ADB until Aerial restarts, never saved:
+ * one part gone, against all of it (tools/perf.py). Set over ADB until xiaoheiDESK restarts, never saved:
  *   adb shell am broadcast -a app.orchard.tv.CONFIG -n app.orchard.tv/.guard.ConfigReceiver --es skip_layers picture,plate
  *   ... --es skip_layers ""        (everything back)
  * The parts: picture (the wallpaper, and the grid's glass), shade (over a film or an input's

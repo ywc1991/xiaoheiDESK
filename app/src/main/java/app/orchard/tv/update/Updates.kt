@@ -38,7 +38,7 @@ import java.util.Locale
 
 /**
  * Whether a newer xiaoheiDESK release is out. This build has its own version line (1.0.x),
- * independent of the upstream Aerial releases it is based on, so an upstream version such as
+ * independent of the upstream xiaoheiDESK releases it is based on, so an upstream version such as
  * 1.95 must never be offered: installing it would replace this desk with the stock launcher.
  *
  * The latest tag comes from our own GitHub release, with a plain version.txt in the repo (served
@@ -53,7 +53,7 @@ import java.util.Locale
  * to ten minutes. Failed checks retry while Home is in front (#912).
  */
 object Updates {
-    private const val TAG = "AerialUpdates"
+    private const val TAG = "XiaoheiUpdates"
     private const val PREFS = "updates"
     private const val REPO = "ywc1991/xiaoheiDESK"
     /** The page the QR code in Control Center opens on a phone. */
@@ -82,7 +82,7 @@ object Updates {
     val current: String = BuildConfig.VERSION_NAME.substringBefore('-')
 
     /**
-     * The upstream Aerial release this build is based on. Only the website's setup guide QR code
+     * The upstream xiaoheiDESK release this build is based on. Only the website's setup guide QR code
      * uses it (its `v=` parameter): update checks, release notes and APK downloads all follow our
      * own version line. Bump this when the custom build is rebased.
      */
@@ -265,9 +265,9 @@ object Updates {
         data class Downloading(val fraction: Float) : Install
         /** A session was submitted; neither a result nor a visible confirmation is known yet. */
         data object Waiting : Install
-        /** The system installer is open; it asks the owner and replaces Aerial, which restarts. */
+        /** The system installer is open; it asks the owner and replaces xiaoheiDESK, which restarts. */
         data object Opened : Install
-        /** Aerial may not install apps yet; the TV's setting for it is open. */
+        /** xiaoheiDESK may not install apps yet; the TV's setting for it is open. */
         data object NeedsPermission : Install
         /** Android 6 firmware requires storage access before the APK can be saved. */
         data object NeedsStoragePermission : Install
@@ -294,7 +294,7 @@ object Updates {
     /**
      * Downloads this flavor's APK of the latest release and installs it. Android 9 and later, a
      * PackageInstaller session first (installBySession), as only a session can carry the dex
-     * metadata that has the system compile Aerial as it installs. Where the session fails, the system
+     * metadata that has the system compile xiaoheiDESK as it installs. Where the session fails, the system
      * installer by ACTION_VIEW, as before Android 9: TCL's verifier (docs/devices/tcl-mt5879-cn.md)
      * passes only installs that go through com.android.packageinstaller, as Dangbei's do, and an
      * ACTION_VIEW on the APK makes the installer itself the one installing. The APK must be this package, signed
@@ -358,7 +358,7 @@ object Updates {
      * firmware turns the session down, the installer's ACTION_VIEW as before (UpdateResult).
      *
      * The session also carries the new APK's dex metadata (assets/aerial-dm, see app/build.gradle.kts)
-     * as aerial.dm, from Android 9: the system then compiles Aerial with its Baseline Profile as it
+     * as aerial.dm, from Android 9: the system then compiles xiaoheiDESK with its Baseline Profile as it
      * installs (Xiaomi MiTV-MFTR0: status speed-profile, reason install-dm). Without it the update ran
      * uncompiled until the next one, its main thread about twice as slow (docs/PERF-2026-10-30.md).
      * Should a firmware refuse the metadata, the APK alone once more ([withDm]).
@@ -482,7 +482,7 @@ object Updates {
     private const val SILENT_INSTALL_TIMEOUT_MS = 120_000L
     /**
      * Whether Android may install the update without asking: from 12, and only for the app that
-     * installed Aerial last (USER_ACTION_NOT_REQUIRED). Installed by adb (#1162's Hisense: none) or
+     * installed xiaoheiDESK last (USER_ACTION_NOT_REQUIRED). Installed by adb (#1162's Hisense: none) or
      * by the system installer, it always asks, and an answer is due as soon as before 12.
      */
     private fun mayInstallSilently(app: Context): Boolean = Build.VERSION.SDK_INT >= 31 && runCatching {
@@ -603,7 +603,7 @@ object Updates {
         DiagLog.i("self compile: not installed ($status, $message)")
     }
 
-    /** Resume failed checks; if the installer closed without replacing Aerial, reset its button. */
+    /** Resume failed checks; if the installer closed without replacing xiaoheiDESK, reset its button. */
     fun onHomeResumed() {
         homeInFront = true
         checker?.setActive(true)

@@ -18,21 +18,21 @@ import android.os.Looper
 import android.util.Log
 
 /**
- * Brings Home Guard back after the firmware kills Aerial, where the notification listener cannot.
+ * Brings Home Guard back after the firmware kills xiaoheiDESK, where the notification listener cannot.
  *
  * Android 9 refuses every notification listener on a device with ro.config.low_ram=true
  * (NotificationManagerService.canUseManagedServices), which is what MiTV-MFTP0 is, so
  * RevivalListener never binds there. The sync framework has no such limit and still binds a
  * force-stopped app: the jobs belong to the system, so force-stop leaves them in place.
  *
- * Aerial registers a sync adapter, with an account of its own, on the "settings" authority.
+ * xiaoheiDESK registers a sync adapter, with an account of its own, on the "settings" authority.
  * SettingsProvider reports every write with syncToNetwork, so SyncManager runs a local sync
  * about 30 seconds after any setting changes, and the firmware's kill is itself such a write:
- * Android drops Aerial's accessibility service from enabled_accessibility_services. Xiaomi
- * switching ADB off on wake is another. Nothing is synced; the sync only starts Aerial's process.
+ * Android drops xiaoheiDESK's accessibility service from enabled_accessibility_services. Xiaomi
+ * switching ADB off on wake is another. Nothing is synced; the sync only starts xiaoheiDESK's process.
  */
 object RevivalSync {
-    const val TAG = "AerialGuard"
+    const val TAG = "XiaoheiGuard"
     private const val AUTHORITY = "settings"
 
     fun ensure(context: Context) {
@@ -45,11 +45,11 @@ object RevivalSync {
             val account = accounts.getAccountsByType(accountType).firstOrNull()
                 ?: Account("xiaoheiDESK", accountType).also {
                     if (!accounts.addAccountExplicitly(it, null, null)) return
-                    Log.i(TAG, "added the account that lets the sync framework revive Aerial")
+                    Log.i(TAG, "added the account that lets the sync framework revive xiaoheiDESK")
                 }
             if (ContentResolver.getIsSyncable(account, AUTHORITY) <= 0) ContentResolver.setIsSyncable(account, AUTHORITY, 1)
             if (!ContentResolver.getSyncAutomatically(account, AUTHORITY)) ContentResolver.setSyncAutomatically(account, AUTHORITY, true)
-            if (!ContentResolver.getMasterSyncAutomatically()) Log.w(TAG, "auto-sync is off on this TV; the sync framework cannot revive Aerial")
+            if (!ContentResolver.getMasterSyncAutomatically()) Log.w(TAG, "auto-sync is off on this TV; the sync framework cannot revive xiaoheiDESK")
         }.onFailure { Log.w(TAG, "could not set up the sync revival", it) }
     }
 }
@@ -65,7 +65,7 @@ class RevivalSyncService : Service() {
             if (!GuardSetup.isUserUnlocked(context)) return
             GuardSetup.ensureAdb(context)
             // Runs after every settings write, mostly while the guard is fine (or not bound yet, right
-            // after Aerial is opened). Only a guard Android had switched off counts as a revival, or
+            // after xiaoheiDESK is opened). Only a guard Android had switched off counts as a revival, or
             // the LeTV check (GuardSetup.revivedOften) trips after a few writes.
             if (HomeGuardService.isRunning || !GuardSetup.ensureEnabled(context)) return
             Log.i(RevivalSync.TAG, "revived by the sync framework")

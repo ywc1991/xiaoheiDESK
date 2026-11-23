@@ -17,7 +17,7 @@ import android.provider.Settings
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import android.util.Log
-import app.orchard.tv.dream.AerialDream
+import app.orchard.tv.dream.XiaoheiDream
 import app.orchard.tv.system.DiagLog
 import app.orchard.tv.system.SystemScreensaver
 
@@ -27,10 +27,10 @@ import app.orchard.tv.system.SystemScreensaver
  * Android removes an app's accessibility services from the enabled list whenever the app is
  * force-stopped, and Xiaomi's firmware force-stops every third-party app when the TV goes to
  * standby. With WRITE_SECURE_SETTINGS (a development permission tools/install.sh grants over ADB;
- * it cannot be granted any other way) Aerial can put the service back each time it starts.
+ * it cannot be granted any other way) xiaoheiDESK can put the service back each time it starts.
  */
 object GuardSetup {
-    private const val TAG = "AerialGuard"
+    private const val TAG = "XiaoheiGuard"
 
     /** elapsedRealtime of the last time the guard had to be switched back on. */
     @Volatile
@@ -69,7 +69,7 @@ object GuardSetup {
      * Opt-in, over ADB (ConfigReceiver): Home Guard takes itself out of the accessibility list when
      * the screen goes off and is put back when it lights. A TCL tc8000_ay30a2 (Android 11) never
      * woke from standby while the guard was enabled, with or without its key filter, the app freezer
-     * or anything else of Aerial's running; with the guard disabled it woke every time (issue #371;
+     * or anything else of xiaoheiDESK's running; with the guard disabled it woke every time (issue #371;
      * the same on tcl_mt5879_cn firmware V745 but not V472, #132).
      */
     fun offInStandby(context: Context): Boolean = isUserUnlocked(context) &&
@@ -129,7 +129,7 @@ object GuardSetup {
     }
 
     /**
-     * Kept on disk while Aerial's home screen is in front, so a new process can tell how the last
+     * Kept on disk while xiaoheiDESK's home screen is in front, so a new process can tell how the last
      * one ended: still set means it died in front (a crash, an update, the firmware killing it),
      * and whatever the viewer sees now was uncovered rather than chosen.
      */
@@ -141,7 +141,7 @@ object GuardSetup {
     /**
      * [wasHomeInFront], when it was written in this boot; null when it was not (a power-on, or a
      * clock set since then). Tells a guard bound at boot from one bound after the firmware killed
-     * Aerial while the viewer was in an app.
+     * xiaoheiDESK while the viewer was in an app.
      */
     fun homeInFrontThisBoot(context: Context): Boolean? {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -154,7 +154,7 @@ object GuardSetup {
 
     /**
      * The guard saw a stock launcher's home come to the front; kept on disk, as the firmware may
-     * stop Aerial a moment later (see [stockHomeSinceHomeLeft]).
+     * stop xiaoheiDESK a moment later (see [stockHomeSinceHomeLeft]).
      */
     fun noteStockHomeInFront(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
@@ -162,9 +162,9 @@ object GuardSetup {
             .putLong(KEY_STOCK_HOME_BOOT, System.currentTimeMillis() - SystemClock.elapsedRealtime()).apply()
 
     /**
-     * Whether, in this boot, a stock launcher's home came to the front after Aerial's Home last left
-     * it. Xiaomi MiTV-MTEQ0 (Android 10) pushed PatchWall back over Aerial 40 s after power-on and
-     * stopped Aerial 2 s later; revived, the guard read "Home was not in front when Aerial died" as
+     * Whether, in this boot, a stock launcher's home came to the front after xiaoheiDESK's Home last left
+     * it. Xiaomi MiTV-MTEQ0 (Android 10) pushed PatchWall back over xiaoheiDESK 40 s after power-on and
+     * stopped xiaoheiDESK 2 s later; revived, the guard read "Home was not in front when xiaoheiDESK died" as
      * an app the viewer had opened and left PatchWall there (issue #1047, the reporter's boot log).
      */
     fun stockHomeSinceHomeLeft(context: Context): Boolean {
@@ -179,10 +179,10 @@ object GuardSetup {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_HOME_IN_FRONT, false)
 
     /**
-     * Control Center opened the system installer on a new Aerial (update/Updates.kt). When the
-     * installer is done, Aerial has been replaced and its task is gone, so whatever was under it
+     * Control Center opened the system installer on a new xiaoheiDESK (update/Updates.kt). When the
+     * installer is done, xiaoheiDESK has been replaced and its task is gone, so whatever was under it
      * shows; on Xiaomi MiTV-MFTR0 that was a PatchWall details page, not its home activity. The
-     * guard of the new Aerial brings Home back then ([installerJustClosed]). Written at once: the
+     * guard of the new xiaoheiDESK brings Home back then ([installerJustClosed]). Written at once: the
      * install kills this process.
      */
     fun noteInstallerOpened(context: Context) {
@@ -200,22 +200,22 @@ object GuardSetup {
 
     /**
      * Some firmwares (Xiaomi) switch ADB debugging off on their own, usually around standby.
-     * When the owner opts in (tools/install.sh does, with KEEP_ADB=1), Aerial switches it back on.
+     * When the owner opts in (tools/install.sh does, with KEEP_ADB=1), xiaoheiDESK switches it back on.
      */
     /**
-     * Notes that the notification listener brought Aerial back after it was stopped. LeTV's eUI
-     * (X43, issue #63) stops Aerial every few seconds to minutes; each time Aerial came back, saw
+     * Notes that the notification listener brought xiaoheiDESK back after it was stopped. LeTV's eUI
+     * (X43, issue #63) stops xiaoheiDESK every few seconds to minutes; each time xiaoheiDESK came back, saw
      * nothing in front it knew, took Home, and pulled the viewer out of the app they were in.
      */
     fun noteRevival(context: Context) {
-        // Brought back with the screen off: a standby kill (Xiaomi), not eUI stopping Aerial in use.
+        // Brought back with the screen off: a standby kill (Xiaomi), not eUI stopping xiaoheiDESK in use.
         // Counting those, a few standbys in a row made the guard leave PatchWall in front at wake.
         // Not getSystemService(Class): that is Android 6.0, and LeTV and old VIDAA TVs revive on 5.x.
         if (context.getSystemService<PowerManager>()?.isInteractive == false) return
         // One stop, one count: the sync framework and the notification listener both bring the
         // same process back, a second apart. Nor is starting at power-on a stop. On Xiaomi
         // MiTV-ASTP0 (Android 9) the boot and the first wake counted three, and PatchWall stayed
-        // in front after that wake (issue #470). Nor is an update installed over Aerial.
+        // in front after that wake (issue #470). Nor is an update installed over xiaoheiDESK.
         if (revivalNoted || SystemClock.elapsedRealtime() < BOOT_START_MS) return
         revivalNoted = true
         val updatedAt = runCatching { context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime }.getOrDefault(0L)
@@ -231,7 +231,7 @@ object GuardSetup {
     private var revivalNoted = false
     private const val BOOT_START_MS = 2 * 60 * 1000L
 
-    /** Whether the firmware has stopped Aerial three times or more in the last ten minutes. */
+    /** Whether the firmware has stopped xiaoheiDESK three times or more in the last ten minutes. */
     fun revivedOften(context: Context): Boolean = recentRevivals(context, System.currentTimeMillis()).size >= 3
 
     /**
@@ -279,7 +279,7 @@ object GuardSetup {
     /**
      * adb_enabled=1 does not mean adbd listens: after a reboot the MiTV4-ANSM0 firmware
      * (Android 6) left adbd out of TCP mode, and only a 0→1 transition of the setting brought
-     * it back (issue #454) — Aerial writing 1 over an unchanged 1 restarts nothing. Probe the
+     * it back (issue #454) — xiaoheiDESK writing 1 over an unchanged 1 restarts nothing. Probe the
      * port, and when it is closed walk the setting through 0 and back. Only in the first
      * minutes after a boot, and once: that is when the setting can lie; a TV used over USB
      * debugging also has the port closed, by choice. Up to Android 10: from 11 network ADB is
@@ -326,10 +326,10 @@ object GuardSetup {
     /**
      * Android 5.x: the guard is enabled in settings, yet the accessibility manager lists no such
      * service, shows "no services installed" and writes accessibility_enabled back to 0. Hisense
-     * VIDAA MSD6A828 (5.1.1) did so after every boot until Aerial was installed again, which makes
+     * VIDAA MSD6A828 (5.1.1) did so after every boot until xiaoheiDESK was installed again, which makes
      * it read the installed services again (issue #578); Skyworth 8S70 (5.0.1) went without the
-     * guard until Aerial was revived minutes later (#579). A package change makes it read them as
-     * an install does, so Aerial changes one of its own components' state there and back.
+     * guard until xiaoheiDESK was revived minutes later (#579). A package change makes it read them as
+     * an install does, so xiaoheiDESK changes one of its own components' state there and back.
      */
     fun rescanIfMissing(context: Context) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) return
@@ -354,8 +354,8 @@ object GuardSetup {
     }
 
     /**
-     * Enabled but not running: seen on TCL after Aerial is updated, where Android keeps the
-     * setting but never binds the new version. Writing the list without Aerial and then with it
+     * Enabled but not running: seen on TCL after xiaoheiDESK is updated, where Android keeps the
+     * setting but never binds the new version. Writing the list without xiaoheiDESK and then with it
      * makes Android bind it again.
      */
     fun rebindIfStalled(context: Context) {
@@ -371,7 +371,7 @@ object GuardSetup {
         if (others.size == entries.size) return // not enabled at all; ensureEnabled handles that
         runCatching {
             // A guard that had to be bound again counts as revived: whatever is in front came up
-            // while it was not watching (MiTV-MFTR0, Android 11: woken from standby after Aerial's
+            // while it was not watching (MiTV-MFTR0, Android 11: woken from standby after xiaoheiDESK's
             // screensaver, PatchWall stayed in front once the guard was back, issue #47).
             lastRevivedAt = SystemClock.elapsedRealtime()
             Settings.Secure.putString(resolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, others.joinToString(":"))
@@ -391,7 +391,7 @@ object GuardSetup {
     /**
      * Switches accessibility off and, a moment later, on again, so Android binds every service anew.
      * Past Android 6 accessibility_enabled no longer unbinds anything: on Xiaomi Box 5 Max
-     * (MiTV-AZFU0, Android 14) the guard stayed deaf after it (issue #651). There Aerial is taken
+     * (MiTV-AZFU0, Android 14) the guard stayed deaf after it (issue #651). There xiaoheiDESK is taken
      * out of the list and put back, as rebindIfStalled does.
      */
     fun restartAccessibility(context: Context) {
@@ -421,9 +421,9 @@ object GuardSetup {
     }
 
     /**
-     * Whether Aerial owns the TV's system screensaver (tools/install.sh sets it when it writes
+     * Whether xiaoheiDESK owns the TV's system screensaver (tools/install.sh sets it when it writes
      * screensaver_components; tools/restore.sh clears it). TCL MT5879 writes its own screensaver
-     * back on every boot, so Aerial puts itself back each time it starts.
+     * back on every boot, so xiaoheiDESK puts itself back each time it starts.
      */
     fun setOwnScreensaver(context: Context, own: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_OWN_SCREENSAVER, own).apply()
@@ -436,7 +436,7 @@ object GuardSetup {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val key = "screensaver_components"
         val current = Settings.Secure.getString(resolver, key).orEmpty()
-        val mine = ComponentName(context, AerialDream::class.java).flattenToString()
+        val mine = ComponentName(context, XiaoheiDream::class.java).flattenToString()
         // 1.6 and earlier: the class was OrchardDream, and install.sh had claimed the screensaver.
         val renamed = "${context.packageName}/${context.packageName}.dream.OrchardDream" in current
         if (renamed) prefs.edit().putBoolean(KEY_OWN_SCREENSAVER, true).apply()
@@ -445,15 +445,15 @@ object GuardSetup {
         if (systemChosen(context)) return
         runCatching {
             Settings.Secure.putString(resolver, key, mine)
-            Log.i(TAG, "the system screensaver was $current; put Aerial's back")
+            Log.i(TAG, "the system screensaver was $current; put xiaoheiDESK's back")
         }.onFailure { Log.w(TAG, "could not set the system screensaver", it) }
     }
 
     /**
-     * "Never" for the screensaver switches the system's off too while it is Aerial's, since that is
+     * "Never" for the screensaver switches the system's off too while it is xiaoheiDESK's, since that is
      * what starts over other apps: on a Haier TV (Android 9) it came up over a phone casting to the
      * TV, and no delay in Personalize could stop it (issue #333). Switched back on when a delay is
-     * chosen again, and only if Aerial was the one that switched it off.
+     * chosen again, and only if xiaoheiDESK was the one that switched it off.
      */
     fun setSystemScreensaverOff(context: Context, off: Boolean) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) return
@@ -461,7 +461,7 @@ object GuardSetup {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         runCatching {
             if (off) {
-                val mine = ComponentName(context, AerialDream::class.java).flattenToString()
+                val mine = ComponentName(context, XiaoheiDream::class.java).flattenToString()
                 if (Settings.Secure.getString(resolver, "screensaver_components") != mine) return
                 if (Settings.Secure.getInt(resolver, KEY_SCREENSAVER_ENABLED, 1) == 0) return
                 Settings.Secure.putInt(resolver, KEY_SCREENSAVER_ENABLED, 0)
@@ -480,7 +480,7 @@ object GuardSetup {
 
     /**
      * The screensaver chosen in Personalize changed. "System" gives the TV's dream back to the one
-     * the firmware came with, where Aerial had taken it (TCL); any other choice takes it again.
+     * the firmware came with, where xiaoheiDESK had taken it (TCL); any other choice takes it again.
      */
     fun screensaverModeChanged(context: Context) {
         if (!isUserUnlocked(context)) return
@@ -488,7 +488,7 @@ object GuardSetup {
         if (!prefs.getBoolean(KEY_OWN_SCREENSAVER, false)) return
         if (!systemChosen(context)) { keepScreensaver(context); return }
         val resolver = context.contentResolver
-        val mine = ComponentName(context, AerialDream::class.java).flattenToString()
+        val mine = ComponentName(context, XiaoheiDream::class.java).flattenToString()
         val firmware = SystemScreensaver.firmwareDream(context) ?: return
         if (Settings.Secure.getString(resolver, "screensaver_components").orEmpty() != mine) return
         runCatching {
@@ -498,8 +498,8 @@ object GuardSetup {
     }
 
     /**
-     * The firmware wrote its own dream back while Aerial's was chosen: TCL MT5879 put back its
-     * art screensaver at boot once, after Aerial had looked (watched by Home Guard).
+     * The firmware wrote its own dream back while xiaoheiDESK's was chosen: TCL MT5879 put back its
+     * art screensaver at boot once, after xiaoheiDESK had looked (watched by Home Guard).
      */
     fun screensaverSettingChanged(context: Context) = keepScreensaver(context)
 

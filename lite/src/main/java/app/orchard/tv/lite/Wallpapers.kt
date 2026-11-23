@@ -21,24 +21,24 @@ class Wallpaper(val id: String, val kind: WallpaperKind, val title: String, val 
 
 /** The full app's screensaver kinds that Lite has (no system screensaver: Lite is no DreamService). */
 enum class ScreensaverMode(val key: String) {
-    Aerial("aerial"), Photos("photos"), Clock("clock"), Videos("videos");
+    Xiaohei("aerial"), Photos("photos"), Clock("clock"), Videos("videos");
 
     companion object {
-        fun of(key: String?) = entries.firstOrNull { it.key == key } ?: Aerial
+        fun of(key: String?) = entries.firstOrNull { it.key == key } ?: Xiaohei
     }
 }
 
 /**
  * What is behind Home, as the full app's wallpaper/Wallpapers.kt with its ids, so the phone page
  * works the same: Bing's photo of the day ("daily:latest" follows the newest; the last eight are
- * kept), Aerial's built-in pictures ("grad:<key>"), the owner's photos from the phone
+ * kept), xiaoheiDESK's built-in pictures ("grad:<key>"), the owner's photos from the phone
  * ("photo:<id>"; "photos:rotate" shows a different one each day). Lite has no moving wallpapers.
  *
  * Home's backdrop is baked once per picture at the screen's size, shaded, kept on disk; its frosted
  * copy makes the glass. Main thread for state; [load] and the fetches run on a background thread.
  */
 object Wallpapers {
-    private const val TAG = "AerialLite"
+    private const val TAG = "XiaoheiLite"
     const val LATEST_DAILY = "daily:latest"
     const val ROTATE_PHOTOS = "photos:rotate"
     const val VIDEOS = "videos:mine"

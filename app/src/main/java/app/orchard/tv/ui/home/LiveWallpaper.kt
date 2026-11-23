@@ -34,15 +34,15 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import app.orchard.tv.ui.components.FilmSlot
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.system.DiagLog
 import app.orchard.tv.ui.theme.Motion
-import app.orchard.tv.wallpaper.Aerial
-import app.orchard.tv.wallpaper.AerialFormats
-import app.orchard.tv.wallpaper.AerialQuality
-import app.orchard.tv.wallpaper.AerialSet
-import app.orchard.tv.wallpaper.AerialStream
-import app.orchard.tv.wallpaper.Aerials
+import app.orchard.tv.wallpaper.Xiaohei
+import app.orchard.tv.wallpaper.XiaoheiFormats
+import app.orchard.tv.wallpaper.XiaoheiQuality
+import app.orchard.tv.wallpaper.XiaoheiSet
+import app.orchard.tv.wallpaper.XiaoheiStream
+import app.orchard.tv.wallpaper.XiaoheiFilms
 import app.orchard.tv.wallpaper.ScreensaverMode
 import app.orchard.tv.wallpaper.Wallpapers
 import kotlinx.coroutines.Dispatchers
@@ -63,7 +63,7 @@ internal const val START_AFTER_MS = 10_000L
 internal const val KEEP_STOPPED_MS = 2 * 60 * 1000L
 
 /**
- * Runs [letGo] the moment Aerial stops (an app, a dream or standby in front) and returns how many
+ * Runs [letGo] the moment xiaoheiDESK stops (an app, a dream or standby in front) and returns how many
  * times it let something go, a key for the film's LaunchedEffect so it starts again on Home.
  * LaunchedEffect(play) lets the player go only at the next recomposition, and none comes once the
  * activity is stopped (Compose pauses its frame clock): on TCL MT5879, with no frame between
@@ -90,7 +90,7 @@ internal fun rememberStops(letGo: () -> Boolean): Int {
  * (HomeScreen): which film is showing, how far in, and stepping to the next or previous one.
  */
 class LiveFilm {
-    var film by mutableStateOf<Aerial?>(null); internal set
+    var film by mutableStateOf<Xiaohei?>(null); internal set
     internal var player: ExoPlayer? = null
 
     /**
@@ -107,15 +107,15 @@ class LiveFilm {
     val positionMs: Long get() = player?.currentPosition ?: 0L
 
     /** Adds a film after the one playing and goes to it; set by the player that has the film. */
-    internal var insert: ((Aerial) -> Unit)? = null
+    internal var insert: ((Xiaohei) -> Unit)? = null
 
     /**
      * The viewer's left and right in the screensaver carrying this film: right brings in a new
-     * film (AerialSet.addNew), left goes back to one kept.
+     * film (XiaoheiSet.addNew), left goes back to one kept.
      */
     fun skip(context: android.content.Context, step: Int) {
         val p = player ?: return
-        if (step < 0) p.seekToPreviousMediaItem() else insert?.invoke(AerialSet.addNew(context))
+        if (step < 0) p.seekToPreviousMediaItem() else insert?.invoke(XiaoheiSet.addNew(context))
     }
 
     /** The film and the moment showing now, while a player has it. */
@@ -216,17 +216,17 @@ fun LiveWallpaper(
     }
 
     fun open(): ExoPlayer {
-        val quality = AerialFormats.forWallpaper(context)
+        val quality = XiaoheiFormats.forWallpaper(context)
         val overHttp = Build.VERSION.SDK_INT < Build.VERSION_CODES.N
         // Where it was let go (into an app, or a screensaver's films), else the picture's own
-        // moment; then the other films kept (AerialSet), in the order the screensaver plays them.
+        // moment; then the other films kept (XiaoheiSet), in the order the screensaver plays them.
         val spot = Wallpapers.liveSpot()
         fresh = false
-        val films = AerialSet.playlist(context, spot?.first)
+        val films = XiaoheiSet.playlist(context, spot?.first)
         val resume = films.first().takeIf { it.id == spot?.first }
         var failures = 0
         var rendered = false
-        return AerialStream.player(context, quality).apply {
+        return XiaoheiStream.player(context, quality).apply {
             // Home is drawn over the film: it keeps the display's rate. Left to ask for the film's
             // (Media3's default, only where the change is seamless), TCL MT5879 went from 60 to
             // 120 Hz for a 29.97 fps film, and every frame of Home had 8.3 ms instead of 16.7.
@@ -244,7 +244,7 @@ fun LiveWallpaper(
                 }
 
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                    live.film = Aerials.all(context).firstOrNull { it.id == mediaItem?.mediaId }
+                    live.film = XiaoheiFilms.all(context).firstOrNull { it.id == mediaItem?.mediaId }
                     if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) DiagLog.i("wallpaper film now ${mediaItem?.mediaId} (reason $reason)")
                 }
 
@@ -262,11 +262,11 @@ fun LiveWallpaper(
                 }
             })
             live.insert = { film ->
-                addMediaItem(currentMediaItemIndex + 1, AerialStream.mediaItem(film, quality, overHttp))
+                addMediaItem(currentMediaItemIndex + 1, XiaoheiStream.mediaItem(film, quality, overHttp))
                 seekTo(currentMediaItemIndex + 1, 0L)
                 if (playbackState == Player.STATE_IDLE) prepare()
             }
-            setMediaItems(films.map { AerialStream.mediaItem(it, quality, overHttp) }, 0, if (resume != null) spot?.second ?: 0L else 0L)
+            setMediaItems(films.map { XiaoheiStream.mediaItem(it, quality, overHttp) }, 0, if (resume != null) spot?.second ?: 0L else 0L)
             surface?.let { setVideoSurfaceView(it) }
             prepare()
             live.player = this
@@ -345,17 +345,17 @@ fun LiveWallpaper(
     // showing is fetched in that format: the screensaver goes on from this film and moment.
     LaunchedEffect(live.film, showing) {
         val film = live.film ?: return@LaunchedEffect
-        if (!showing || Wallpapers.screensaver != ScreensaverMode.Aerial) return@LaunchedEffect
-        val saver = AerialFormats.forScreensaver(context, overWallpaper = true)
-        if (saver != AerialFormats.forWallpaper(context)) {
-            AerialStream.prepareSeek(context, film, saver, Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+        if (!showing || Wallpapers.screensaver != ScreensaverMode.Xiaohei) return@LaunchedEffect
+        val saver = XiaoheiFormats.forScreensaver(context, overWallpaper = true)
+        if (saver != XiaoheiFormats.forWallpaper(context)) {
+            XiaoheiStream.prepareSeek(context, film, saver, Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
         }
     }
 
     val scope = rememberCoroutineScope()
     val stops = rememberStops {
         if (player == null) return@rememberStops false
-        DiagLog.i("wallpaper film lets go as Aerial stops")
+        DiagLog.i("wallpaper film lets go as xiaoheiDESK stops")
         release()
         scope.launch { cover.snapTo(0f) }
         true
@@ -394,7 +394,7 @@ fun LiveWallpaper(
                 // left black there until the picture came back, an older one. Stopped on its frame,
                 // that frame becomes the picture first, within LEAVE_FRAME_MS: the decoder is held,
                 // paused, that much longer. Not into a screensaver of its own, which needs it at once.
-                if (cover.value > 0f && !otherFormatNow && !AerialStart.running) leaveOnPicture(p)
+                if (cover.value > 0f && !otherFormatNow && !XiaoheiStart.running) leaveOnPicture(p)
                 release()
                 return@LaunchedEffect
             }
@@ -455,7 +455,7 @@ fun LiveWallpaper(
                         live.stopped = false
                         // The picture is this frame: it shows rather than black while Home is still
                         // seen, an app coming in over it (see leaveOnPicture).
-                        if (!otherFormatNow && !AerialStart.running) cover.snapTo(0f)
+                        if (!otherFormatNow && !XiaoheiStart.running) cover.snapTo(0f)
                         release()
                         return@LaunchedEffect
                     }
@@ -471,7 +471,7 @@ fun LiveWallpaper(
                     if (copy != null) Wallpapers.useLiveFrame(copy, film, at)
                     if (!keepNow) {
                         live.stopped = false
-                        if (!otherFormatNow && !AerialStart.running) cover.snapTo(0f)
+                        if (!otherFormatNow && !XiaoheiStart.running) cover.snapTo(0f)
                         release()
                         return@LaunchedEffect
                     }
@@ -528,7 +528,7 @@ fun LiveWallpaper(
             // picture (MiTV-MFTR0 with file frames made to fail, issue #941).
             if (blackForStale && !keepNow) cover.snapTo(1f)
             val left = Wallpapers.leftLiveSpot()
-            if (!keepNow && !otherFormatNow && !AerialStart.running && player == null && left != null) {
+            if (!keepNow && !otherFormatNow && !XiaoheiStart.running && player == null && left != null) {
                 catchUp(left, underFilm = true)
                 if (player == null) reader.close()
             }
@@ -692,7 +692,7 @@ private const val BEHIND_CATCH_UP_MS = 3_000L
  * every time, 16 frames dropped each (frames of 4K reaching the screen: 24 a second, 30 with none
  * taken; 1080p films were not held up). Remembered for the process, as [pixelCopy] is.
  */
-internal val glassFrames: Boolean get() = !glassCostly && !AerialSettings.lite
+internal val glassFrames: Boolean get() = !glassCostly && !XiaoheiSettings.lite
 
 private var glassCostly = false
 
@@ -930,8 +930,8 @@ private class FrameReader(private val context: android.content.Context) {
     private fun retrieverFor(w: Worker, id: String): MediaMetadataRetriever? {
         if (w.openFor == id) w.retriever?.let { return it }
         w.close()
-        val film = Aerials.all(context).firstOrNull { it.id == id } ?: return null
-        val url = AerialStream.url(film, AerialQuality.Hd, Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+        val film = XiaoheiFilms.all(context).firstOrNull { it.id == id } ?: return null
+        val url = XiaoheiStream.url(film, XiaoheiQuality.Hd, Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
         val started = android.os.SystemClock.elapsedRealtime()
         val mmr = open(url, ranged = urlRefused) ?: run {
             // TCL x32a0 (Android 9): the retriever fails at once on Apple's https address that

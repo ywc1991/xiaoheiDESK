@@ -45,7 +45,7 @@ class DeviceProfile(
     /**
      * Home Guard filters keys whenever the screen is on, whatever is in front, and answers Home
      * itself. For firmwares whose own Home force-stops the app in front: Redmi Projector 4
-     * (mt5873, Android 13) did so to Aerial and to any app, a 1-2 s flash each press, and with
+     * (mt5873, Android 13) did so to xiaoheiDESK and to any app, a 1-2 s flash each press, and with
      * the filter on it never did, but a held volume key then moved one step only (issue #684, the
      * reporter's local build). Which of the two is worse is the owner's call, so only by profile.
      */

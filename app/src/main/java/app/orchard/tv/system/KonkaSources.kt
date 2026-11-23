@@ -12,7 +12,7 @@ import android.util.Log
  * Verified on Konka KKTV U86V9 (MT9652, Android 9), PR #125.
  */
 internal object KonkaSources {
-    private const val TAG = "AerialKonkaSources"
+    private const val TAG = "XiaoheiKonkaSources"
     private const val MANAGER = "com.konka.android.tv.KKCommonManager"
     private const val SOURCE_ENUM = "com.konka.android.tv.KKCommonManager\$EN_KK_INPUT_SOURCE"
     private val player = ComponentName("com.konka.tvsettings", "com.konka.tvsettings.RootActivity")

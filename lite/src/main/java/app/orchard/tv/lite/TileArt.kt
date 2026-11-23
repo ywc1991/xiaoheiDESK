@@ -17,7 +17,7 @@ import kotlin.math.roundToInt
 // tile looks the same in both. Keep the two in step. Lite draws a tile as one picture, so the
 // logo layer is flattened onto the plate (no parallax) and there is no ambient backdrop.
 
-/** Firmware apps Aerial draws its own tile for, each in the color that tells the kind apart. */
+/** Firmware apps xiaoheiDESK draws its own tile for, each in the color that tells the kind apart. */
 enum class SystemTile(top: Long, bottom: Long, val glyph: Glyph) {
     Settings(0xFF8E8E93, 0xFF48484A, Glyph.Gear),
     Photos(0xFFFFB340, 0xFFFF5E3A, Glyph.Photo),
@@ -49,7 +49,7 @@ object TileFactory {
     }
 
     /**
-     * Icons drawn in Aerial's one look ([unify]) rather than in their own colors. Banners are
+     * Icons drawn in xiaoheiDESK's one look ([unify]) rather than in their own colors. Banners are
      * the app's own art for TV and are left as they are.
      */
     @Volatile var unified = true
@@ -85,13 +85,13 @@ object TileFactory {
     }
 
     /**
-     * A firmware app (settings, photos, weather...) drawn as Aerial's own tile: a white glyph over
+     * A firmware app (settings, photos, weather...) drawn as xiaoheiDESK's own tile: a white glyph over
      * a color that tells the kind apart, the way tvOS draws its system apps. TV makers ship these
      * with phone icons that look different on every TV and unlike the apps around them.
      */
     fun forSystem(kind: SystemTile): Bitmap = glyphTile(kind.top, kind.bottom, kind.glyph)
 
-    /** One of Aerial's own glyphs in white over [top] to [bottom]; also for [TileRecipe.glyph]. */
+    /** One of xiaoheiDESK's own glyphs in white over [top] to [bottom]; also for [TileRecipe.glyph]. */
     fun glyphTile(top: Int, bottom: Int, glyph: Glyph): Bitmap {
         val back = colorTile(top, bottom)
         // The glyph on its own layer, so it shifts against the color when the tile leans. The
@@ -169,7 +169,7 @@ object TileFactory {
         }
     }
 
-    /** Aerial's own tile color: a diagonal gradient with soft light from the top left. */
+    /** xiaoheiDESK's own tile color: a diagonal gradient with soft light from the top left. */
     private fun colorTile(top: Int, bottom: Int): Bitmap = layer {
         drawRect(0f, 0f, W.toFloat(), H.toFloat(), Paint().apply {
             shader = LinearGradient(0f, 0f, W * 0.4f, H.toFloat(), top, bottom, Shader.TileMode.CLAMP)
@@ -424,7 +424,7 @@ object TileFactory {
     }
 
     /**
-     * Aerial's one look for tiles made from icons, as tvOS draws its own apps: the logo in white,
+     * xiaoheiDESK's one look for tiles made from icons, as tvOS draws its own apps: the logo in white,
      * on a gradient in the app's color. The plate the icon came on ([top] to [bottom]) gives that
      * color when it has one; a white, black or grey plate does not, and the logo's own color is
      * used instead. A logo that is itself grey on such a plate gets graphite.

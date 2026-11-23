@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.roundToInt
 
 /**
- * Aerial's glyphs: filled Material Symbols Rounded (GlyphPaths), whose soft, even weight sits
+ * xiaoheiDESK's glyphs: filled Material Symbols Rounded (GlyphPaths), whose soft, even weight sits
  * closest to SF Symbols among icons an Android app may ship (SF Symbols are licensed for Apple
  * platforms only). Vector paths, rasterized at each UI size, in a square box.
  */

@@ -17,7 +17,7 @@ import androidx.core.content.getSystemService
 import app.orchard.tv.BuildConfig
 import app.orchard.tv.guard.GuardSetup
 import app.orchard.tv.guard.HomeGuardService
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.update.Updates
 import app.orchard.tv.wallpaper.PhoneServer
 import app.orchard.tv.wallpaper.Wallpapers
@@ -25,18 +25,18 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * What a maintainer without the reporter's TV needs to adapt Aerial to it, as Markdown to paste
+ * What a maintainer without the reporter's TV needs to adapt xiaoheiDESK to it, as Markdown to paste
  * into a GitHub issue (.github/ISSUE_TEMPLATE/device.yml). Shown on the phone page and printed by
  *   adb shell dumpsys activity app.orchard.tv/.MainActivity report
  * which tools/report.sh adds to what only a shell can read.
  *
  * Nothing personal: no account, serial number, Wi-Fi name, address, phone page token, weather city
- * or list of installed apps (only whether the packages Aerial treats specially are there). Log lines
+ * or list of installed apps (only whether the packages xiaoheiDESK treats specially are there). Log lines
  * have addresses masked, since a film URL or a peer can turn up in them.
  */
 object Diagnostics {
 
-    /** Packages Aerial looks for somewhere, by what they mean for it. */
+    /** Packages xiaoheiDESK looks for somewhere, by what they mean for it. */
     private val VENDOR_PACKAGES = listOf(
         "com.mitv.tvhome", "com.xiaomi.mitv.settings", "com.xiaomi.mitv.tvplayer", "com.xiaomi.mitv.hyper.screensaver",
         "com.tcl.settings", "com.tcl.tv", "com.tcl.MultiScreenInteraction_TV", "com.tcl.appmarket2",
@@ -48,12 +48,12 @@ object Diagnostics {
         "com.dangbeimarket",
     )
 
-    // AerialDiag is in DiagLog already; AerialWeather names the city.
-    private val LOG_TAGS = listOf("AerialGuard", "AerialUpdates", "AerialStream", "AerialWallpaper", "AerialKonkaSources", "AndroidRuntime")
+    // XiaoheiDiag is in DiagLog already; XiaoheiWeather names the city.
+    private val LOG_TAGS = listOf("XiaoheiGuard", "XiaoheiUpdates", "XiaoheiStream", "XiaoheiWallpaper", "XiaoheiKonkaSources", "AndroidRuntime")
 
     /**
-     * Whether ART has compiled Aerial with its profile yet. Installed without install.sh (which runs
-     * `compile -m speed`), Aerial runs interpreted until the system's background job compiles it,
+     * Whether ART has compiled xiaoheiDESK with its profile yet. Installed without install.sh (which runs
+     * `compile -m speed`), xiaoheiDESK runs interpreted until the system's background job compiles it,
      * and Home's start takes about twice as long (Xiaomi MiTV-MFTR0: tiles at 0.8 s against 0.4 s).
      */
     private fun compiled(context: Context): String {
@@ -113,16 +113,16 @@ object Diagnostics {
             " location=${granted(context, Manifest.permission.ACCESS_FINE_LOCATION)}" +
             " usage=${HomeGuardService.usageStatsAllowed(context)}" + restrictedSettings(context))
         appendLine("ADB         adb_enabled=${global(context, Settings.Global.ADB_ENABLED)} keep_adb=${GuardSetup.keepAdb(context)} guard_off_in_standby=${GuardSetup.offInStandby(context)}")
-        appendLine("Screensaver enabled=${secure(context, "screensaver_enabled")} components=${secure(context, "screensaver_components")} Aerial's=${Wallpapers.screensaver}")
+        appendLine("Screensaver enabled=${secure(context, "screensaver_enabled")} components=${secure(context, "screensaver_components")} xiaoheiDESK's=${Wallpapers.screensaver}")
         appendLine("Sounds      sound_effects_enabled=${system(context, Settings.System.SOUND_EFFECTS_ENABLED)}")
-        appendLine("Effects     ${AerialSettings.effects.key}, lite=${AerialSettings.lite}; ${DeviceClass.describe(context)}")
+        appendLine("Effects     ${XiaoheiSettings.effects.key}, lite=${XiaoheiSettings.lite}; ${DeviceClass.describe(context)}")
         appendLine("Compiled    ${compiled(context)}; self compile ${app.orchard.tv.update.SelfCompile.diagnostics(context)}")
         appendLine("Frames      ${FrameStats.summary()}")
-        appendLine("Settings    focus=${AerialSettings.focusStyle.key} one_row=${AerialSettings.oneRowHome} columns=${AerialSettings.homeColumns} peek=${AerialSettings.peekNextRow} names=${AerialSettings.showAllNames} boot_source=${AerialSettings.bootSource != null} boot_app=${AerialSettings.bootApp}")
-        runCatching { app.orchard.tv.wallpaper.AerialStream.usage(context) }.getOrNull()?.let { (used, limit) ->
-            appendLine("Aerials     quality=${AerialSettings.aerialQuality.key} films=${app.orchard.tv.wallpaper.AerialSet.films(context).joinToString(",") { it.id.take(8) }} cache=${used / 1_048_576}/${limit / 1_048_576} MB")
+        appendLine("Settings    focus=${XiaoheiSettings.focusStyle.key} one_row=${XiaoheiSettings.oneRowHome} columns=${XiaoheiSettings.homeColumns} peek=${XiaoheiSettings.peekNextRow} names=${XiaoheiSettings.showAllNames} boot_source=${XiaoheiSettings.bootSource != null} boot_app=${XiaoheiSettings.bootApp}")
+        runCatching { app.orchard.tv.wallpaper.XiaoheiStream.usage(context) }.getOrNull()?.let { (used, limit) ->
+            appendLine("Films         quality=${XiaoheiSettings.xiaoheiQuality.key} films=${app.orchard.tv.wallpaper.XiaoheiSet.films(context).joinToString(",") { it.id.take(8) }} cache=${used / 1_048_576}/${limit / 1_048_576} MB")
         }
-        appendLine("            wallpaper=${app.orchard.tv.wallpaper.Wallpapers.selectedId.substringBefore('/')} always_moves=${AerialSettings.wallpaperAlwaysMoves} quality=${AerialSettings.aerialQuality.key} weather=${AerialSettings.showWeather} saver_clock=${AerialSettings.screensaverClock}")
+        appendLine("            wallpaper=${app.orchard.tv.wallpaper.Wallpapers.selectedId.substringBefore('/')} always_moves=${XiaoheiSettings.wallpaperAlwaysMoves} quality=${XiaoheiSettings.xiaoheiQuality.key} weather=${XiaoheiSettings.showWeather} saver_clock=${XiaoheiSettings.screensaverClock}")
         runCatching { app.orchard.tv.ui.home.filmGlassReport(context) }.getOrNull()?.let { appendLine("            film glass $it") }
         appendLine("```")
 
@@ -229,7 +229,7 @@ object Diagnostics {
 
     /**
      * Android 13+: where Android says the APK came from. 3 is a local file (a USB stick, a file
-     * manager, Aerial's own update before 1.63): such an app gets ACCESS_RESTRICTED_SETTINGS denied
+     * manager, xiaoheiDESK's own update before 1.63): such an app gets ACCESS_RESTRICTED_SETTINGS denied
      * and may not switch its accessibility service on, and Home Guard kept going off on two Android 14
      * TVs installed that way (issues #811 #829); install.sh allows it. An app cannot read that op
      * itself (it came out unknown on Xiaomi MiTV-MFTR0), so `adb shell appops get` tells.
@@ -252,7 +252,7 @@ object Diagnostics {
         Class.forName("android.os.SystemProperties").getMethod("get", String::class.java).invoke(null, key) as String
     }.getOrNull()
 
-    /** This process's own lines (all an app may read), from Aerial's tags and crashes. */
+    /** This process's own lines (all an app may read), from xiaoheiDESK's tags and crashes. */
     private fun logcat(): List<String> = runCatching {
         val args = listOf("logcat", "-d", "-v", "time", "-t", "400") + LOG_TAGS.map { "$it:V" } + "*:S"
         val p = ProcessBuilder(args).redirectErrorStream(true).start()

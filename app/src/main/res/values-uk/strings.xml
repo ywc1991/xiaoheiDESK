@@ -87,7 +87,7 @@
     <string name="wp_auto_note">Світло береться з обкладинки вибраного застосунку.</string>
     <string name="wp_screensaver">Заставка</string>
     <string name="ss_follow_hint">Ще не вибрано, тож відповідає шпалерам: аерозйомка зі шпалерами аерозйомки, фото з картинкою, починаючи з неї. Виберіть, щоб закріпити.</string>
-    <string name="ss_aerial">Аерозйомка</string>
+    <string name="ss_xiaohei">Аерозйомка</string>
     <string name="ss_photos">Фото</string>
     <string name="ss_clock">Годинник</string>
     <string name="wp_phone_title">Налаштування з телефона чи комп\'ютера</string>
@@ -111,7 +111,7 @@
     <string name="ss_quality_hd">1080p</string>
     <string name="ss_quality_uhd">4K</string>
     <string name="ss_quality_dv">4K Dolby Vision</string>
-    <string name="ss_aerial_keeps">xiaoheiDESK зберігає на телевізорі %2$d останні фільми (до %1$s); шпалери й заставка показують їх по черзі, щодня додається новий. У заставці вправо — новий фільм, вліво — попередній.</string>
+    <string name="ss_xiaohei_keeps">xiaoheiDESK зберігає на телевізорі %2$d останні фільми (до %1$s); шпалери й заставка показують їх по черзі, щодня додається новий. У заставці вправо — новий фільм, вліво — попередній.</string>
     <string name="st_focus_style">Стиль фокуса</string>
     <string name="st_home_layout">Головний екран</string>
     <string name="st_layout">Розкладка</string>

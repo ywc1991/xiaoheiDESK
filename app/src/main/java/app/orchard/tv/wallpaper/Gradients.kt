@@ -13,7 +13,7 @@ import androidx.core.graphics.createBitmap
 import kotlin.math.sin
 
 /**
- * Aerial's own wallpapers, in the manner of the Mac's: layered hills, dunes in side light, a sea
+ * xiaoheiDESK's own wallpapers, in the manner of the Mac's: layered hills, dunes in side light, a sea
  * at the horizon, Big Sur's stacked colour bands, and soft fields of light. They are drawn on the
  * TV at its real resolution rather than shipped as pictures, so they cost nothing to install and
  * stay sharp on a 4K UI. Apple's own wallpapers cannot ship in an MIT app; these are original.
@@ -98,7 +98,7 @@ object Gradients {
     )
 
     /**
-     * The light fields Aerial shipped before these, so a wallpaper chosen then still resolves: each
+     * The light fields xiaoheiDESK shipped before these, so a wallpaper chosen then still resolves: each
      * points at the new one closest in colour. "aurora" kept its key.
      */
     private val renamed = mapOf(

@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import app.orchard.tv.apps.TileSheet
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.settings.ArtScope
 import app.orchard.tv.settings.Restricted
 import app.orchard.tv.settings.Effects
@@ -15,7 +15,7 @@ import app.orchard.tv.system.SystemProbe
 import app.orchard.tv.update.Updates
 import app.orchard.tv.ui.components.DiagLayers
 import app.orchard.tv.ui.components.UhdCanvas
-import app.orchard.tv.wallpaper.AerialQuality
+import app.orchard.tv.wallpaper.XiaoheiQuality
 import app.orchard.tv.wallpaper.ScreensaverMode
 import app.orchard.tv.wallpaper.Wallpapers
 import kotlinx.coroutines.launch
@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 /**
  * Options set from a computer over ADB, e.g.
  *   adb shell am broadcast -a app.orchard.tv.CONFIG -n app.orchard.tv/.guard.ConfigReceiver --ez keep_adb true
- *   ... --ez own_screensaver true   (keep Aerial as the system screensaver; see GuardSetup)
+ *   ... --ez own_screensaver true   (keep xiaoheiDESK as the system screensaver; see GuardSetup)
  *   ... --ez guard_off_in_standby true  (Home Guard leaves at screen off, back at screen on;
  *                                   for TVs that do not wake with it enabled, issue #371)
  *   ... --ez clear_pin true         (turn the parental PIN off, for an owner who forgot it; Kids
@@ -35,12 +35,12 @@ import kotlinx.coroutines.launch
  *   ... --ez large_clock true --ez clock_right false --ez one_row_home true
  *       --ez peek_next_row false --ez home_plate true --ez show_all_names false --ei home_columns 6
  *                                   (Home's layout, as in Personalize; for screenshots of each)
- *   ... --ei preview_apps 3         (Home shows only its first 3 tiles until Aerial restarts, or 0;
+ *   ... --ei preview_apps 3         (Home shows only its first 3 tiles until xiaoheiDESK restarts, or 0;
  *                                   nothing is saved, for trying a nearly empty Home)
  *   ... --ez check_update true      (look for a new version now, not within three hours)
  *   ... --ez update_test true       ("Download and Install" takes files/update-test.apk instead,
- *                                   until Aerial restarts; for trying an update before a release)
- *   ... --ez update_test_self true  (the same with the APK Aerial runs from: a reinstall, for TVs whose
+ *                                   until xiaoheiDESK restarts; for trying an update before a release)
+ *   ... --ez update_test_self true  (the same with the APK xiaoheiDESK runs from: a reinstall, for TVs whose
  *                                   shell cannot write Android/data, as TCL MT5879's)
  * The manifest requires the sender to hold WRITE_SECURE_SETTINGS, which the ADB shell has and
  * ordinary apps cannot get, so no other app on the TV can flip these.
@@ -53,7 +53,7 @@ class ConfigReceiver : BroadcastReceiver() {
             val app = context.applicationContext
             @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
             kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Default) {
-                runCatching { TileSheet.export(app, name) }.onFailure { android.util.Log.e("AerialTiles", "Export failed", it) }
+                runCatching { TileSheet.export(app, name) }.onFailure { android.util.Log.e("XiaoheiTiles", "Export failed", it) }
             }
             resultData = "exporting $name"
             return
@@ -97,8 +97,8 @@ class ConfigReceiver : BroadcastReceiver() {
             return
         }
         if (intent.getBooleanExtra("clear_pin", false)) {
-            AerialSettings.init(context)
-            AerialSettings.choosePin(null)
+            XiaoheiSettings.init(context)
+            XiaoheiSettings.choosePin(null)
             Restricted.init(context)
             Restricted.turnOff()
         }
@@ -116,25 +116,25 @@ class ConfigReceiver : BroadcastReceiver() {
         }
         if (listOf("kids_off", "kids_used_minutes", "kids_continuous_minutes", "clear_pin").any(intent::hasExtra)) KidsWatch.poke()
         val layout = mapOf<String, (Boolean) -> Unit>(
-            "large_clock" to AerialSettings::chooseLargeClock,
-            "clock_right" to AerialSettings::chooseClockRight,
-            "one_row_home" to AerialSettings::chooseOneRowHome,
-            "peek_next_row" to AerialSettings::choosePeekNextRow,
-            "home_plate" to AerialSettings::chooseHomePlate,
-            "show_all_names" to AerialSettings::chooseShowAllNames,
-            "show_desk_cat" to AerialSettings::chooseShowDeskCat,
-            "art_fit_whole" to AerialSettings::chooseArtFitWhole,
-            "corner_auto_peek" to AerialSettings::chooseCornerAutoPeek,
-            "screensaver_frame" to AerialSettings::chooseScreensaverFrame,
+            "large_clock" to XiaoheiSettings::chooseLargeClock,
+            "clock_right" to XiaoheiSettings::chooseClockRight,
+            "one_row_home" to XiaoheiSettings::chooseOneRowHome,
+            "peek_next_row" to XiaoheiSettings::choosePeekNextRow,
+            "home_plate" to XiaoheiSettings::chooseHomePlate,
+            "show_all_names" to XiaoheiSettings::chooseShowAllNames,
+            "show_desk_cat" to XiaoheiSettings::chooseShowDeskCat,
+            "art_fit_whole" to XiaoheiSettings::chooseArtFitWhole,
+            "corner_auto_peek" to XiaoheiSettings::chooseCornerAutoPeek,
+            "screensaver_frame" to XiaoheiSettings::chooseScreensaverFrame,
         ).filterKeys { intent.hasExtra(it) }
         if (layout.isNotEmpty()) {
-            AerialSettings.init(context)
+            XiaoheiSettings.init(context)
             layout.forEach { (key, choose) -> choose(intent.getBooleanExtra(key, false)) }
         }
-        if (intent.hasExtra("preview_apps")) AerialSettings.previewApps = intent.getIntExtra("preview_apps", 0).coerceAtLeast(0)
+        if (intent.hasExtra("preview_apps")) XiaoheiSettings.previewApps = intent.getIntExtra("preview_apps", 0).coerceAtLeast(0)
         if (intent.hasExtra("home_columns")) {
-            AerialSettings.init(context)
-            AerialSettings.chooseHomeColumns(intent.getIntExtra("home_columns", 5))
+            XiaoheiSettings.init(context)
+            XiaoheiSettings.chooseHomeColumns(intent.getIntExtra("home_columns", 5))
         }
         // ... --ez diag true / --ez mode_switch false / --ez soft_layer true   (see DiagLog;
         //                                 the last two apply the next time Home starts)
@@ -156,7 +156,7 @@ class ConfigReceiver : BroadcastReceiver() {
         if (intent.getBooleanExtra("update_test_self", false)) Updates.testApk = java.io.File(context.applicationInfo.sourceDir)
         // ... --ez self_compile true   (reinstall the running APK with its dex metadata now, SelfCompile)
         if (intent.getBooleanExtra("self_compile", false)) app.orchard.tv.update.SelfCompile.runNow(context)
-        // ... --ez system_compile true   (Android 7-11: have the package manager compile Aerial now, SelfCompile)
+        // ... --ez system_compile true   (Android 7-11: have the package manager compile xiaoheiDESK now, SelfCompile)
         if (intent.getBooleanExtra("system_compile", false)) app.orchard.tv.update.SelfCompile.askSystemNow(context)
         if (intent.getBooleanExtra("check_update", false)) {
             Updates.init(context)
@@ -164,13 +164,13 @@ class ConfigReceiver : BroadcastReceiver() {
         }
         if (intent.hasExtra("keep_adb")) GuardSetup.setKeepAdb(context, intent.getBooleanExtra("keep_adb", false))
         // ... --ei adb_probe_port <port>   (verify the keep_adb toggle without closing a working
-        //                                 link, until Aerial restarts; issue #454)
+        //                                 link, until xiaoheiDESK restarts; issue #454)
         if (intent.hasExtra("adb_probe_port")) GuardSetup.adbProbePort = intent.getIntExtra("adb_probe_port", 5555)
         if (intent.hasExtra("guard_off_in_standby")) GuardSetup.setOffInStandby(context, intent.getBooleanExtra("guard_off_in_standby", false))
         if (intent.hasExtra("own_screensaver")) GuardSetup.setOwnScreensaver(context, intent.getBooleanExtra("own_screensaver", false))
         // aerial, photos, clock, videos or system.
         // Which school of online museum paintings the gallery shows: all / cn / west (owner 1.1.20).
-        intent.getStringExtra("art_scope")?.let { AerialSettings.chooseArtScope(ArtScope.of(it)) }
+        intent.getStringExtra("art_scope")?.let { XiaoheiSettings.chooseArtScope(ArtScope.of(it)) }
         intent.getStringExtra("screensaver")?.let { key ->
             Wallpapers.init(context)
             ScreensaverMode.entries.firstOrNull { it.key == key }?.let { Wallpapers.chooseScreensaver(it) }
@@ -181,13 +181,13 @@ class ConfigReceiver : BroadcastReceiver() {
         //                                 only reports them.)
         intent.getStringExtra("wallpaper")?.let { id ->
             Wallpapers.init(context)
-            AerialSettings.init(context)
+            XiaoheiSettings.init(context)
             val before = Wallpapers.selectedId
             if (id.isNotEmpty()) Wallpapers.select(id)
-            resultData = "wallpaper_before=$before aerial_quality=${AerialSettings.aerialQuality.key}"
+            resultData = "wallpaper_before=$before aerial_quality=${XiaoheiSettings.xiaoheiQuality.key}"
             return
         }
-        // ... --es skip_layers picture,plate   (parts of Home left undrawn until Aerial restarts, to
+        // ... --es skip_layers picture,plate   (parts of Home left undrawn until xiaoheiDESK restarts, to
         //                                 find what a slow TV's frames cost; see DiagLayers)
         intent.getStringExtra("skip_layers")?.let { list ->
             resultData = "skip_layers=" + DiagLayers.skip(list).joinToString(",")
@@ -196,12 +196,12 @@ class ConfigReceiver : BroadcastReceiver() {
         // ... --es effects auto|full|lite / --es aerial_quality auto|1080p|4k|dolby_vision
         //                                 (as in Personalize; for comparing frame times of each)
         intent.getStringExtra("effects")?.let { key ->
-            AerialSettings.init(context)
-            Effects.entries.firstOrNull { it.key == key }?.let(AerialSettings::chooseEffects)
+            XiaoheiSettings.init(context)
+            Effects.entries.firstOrNull { it.key == key }?.let(XiaoheiSettings::chooseEffects)
         }
         intent.getStringExtra("aerial_quality")?.let { key ->
-            AerialSettings.init(context)
-            AerialQuality.entries.firstOrNull { it.key == key }?.let(AerialSettings::chooseAerialQuality)
+            XiaoheiSettings.init(context)
+            XiaoheiQuality.entries.firstOrNull { it.key == key }?.let(XiaoheiSettings::chooseXiaoheiQuality)
         }
         // Opt-in for an input ("*" = any recognized Apple TV input). Empty input disables.
         // Optional player and current-input setting key allow testing other firmware routes.

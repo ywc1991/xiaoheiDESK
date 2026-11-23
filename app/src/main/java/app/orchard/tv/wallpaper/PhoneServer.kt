@@ -17,7 +17,7 @@ import app.orchard.tv.apps.IconLibrary
 import app.orchard.tv.apps.SourceDevice
 import app.orchard.tv.apps.SourceLooks
 import app.orchard.tv.apps.TileArtFactory
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.settings.KidsLock
 import app.orchard.tv.settings.Restricted
 import app.orchard.tv.settings.RestrictedKind
@@ -50,7 +50,7 @@ import java.security.SecureRandom
  * send photos, give an app's tile a picture of one's own, and name the weather's city. Choosing
  * pictures or typing a place with a remote is slow; with a phone it is not.
  *
- * It listens on the local network while Aerial runs (see [listen]), and every address carries a
+ * It listens on the local network while xiaoheiDESK runs (see [listen]), and every address carries a
  * random token shown only on the TV (the QR code and the address under it), so another device on
  * the network cannot use it by guessing. The token stays the same from one start to the next.
  */
@@ -64,7 +64,7 @@ class PhoneServer private constructor(private val context: Context, private val 
         return runCatching {
             // In Kids and Elders mode the page changes nothing without the parental PIN: anyone on
             // the network with the address (a child with a phone) could otherwise undo the mode.
-            // The page sends it with each change once it is entered (header X-Aerial-Pin).
+            // The page sends it with each change once it is entered (header X-xiaoheiDESK-Pin).
             if (session.method == Method.POST && path != "/api/kids/unlock" && (Restricted.active || path.startsWith("/api/kids/")) &&
                 path != "/api/kids/start" && !pinOk(session.headers["x-aerial-pin"])
             ) return json(state().put("saved", false).put("kidsLocked", true))
@@ -107,16 +107,16 @@ class PhoneServer private constructor(private val context: Context, private val 
                     val f = form(session)
                     val on = f["on"] == "1"
                     val known = when (f["key"]) {
-                        "wallpaperAlwaysMoves" -> { onMain { AerialSettings.chooseWallpaperAlwaysMoves(on) }; true }
-                        "showWeather" -> { onMain { AerialSettings.chooseShowWeather(on) }; true }
-                        "screensaverClock" -> { onMain { AerialSettings.chooseScreensaverClock(on) }; true }
+                        "wallpaperAlwaysMoves" -> { onMain { XiaoheiSettings.chooseWallpaperAlwaysMoves(on) }; true }
+                        "showWeather" -> { onMain { XiaoheiSettings.chooseShowWeather(on) }; true }
+                        "screensaverClock" -> { onMain { XiaoheiSettings.chooseScreensaverClock(on) }; true }
                         else -> false
                     }
                     json(state().put("saved", known))
                 }
                 session.method == Method.POST && path == "/api/focus" -> {
                     val style = FocusStyle.of(form(session)["style"])
-                    onMain { AerialSettings.chooseFocusStyle(style) }
+                    onMain { XiaoheiSettings.chooseFocusStyle(style) }
                     json(state())
                 }
                 session.method == Method.POST && path == "/api/delete" -> {
@@ -239,11 +239,11 @@ class PhoneServer private constructor(private val context: Context, private val 
                 ScreensaverVideos.all(context).forEach { put(JSONObject().put("id", it.id).put("name", it.name)) }
             })
             .put("videoRoom", ScreensaverVideos.room(context))
-            .put("focusStyle", AerialSettings.focusStyle.key)
+            .put("focusStyle", XiaoheiSettings.focusStyle.key)
             .put("kids", kidsState())
-            .put("wallpaperAlwaysMoves", AerialSettings.wallpaperAlwaysMoves)
-            .put("showWeather", AerialSettings.showWeather)
-            .put("screensaverClock", AerialSettings.screensaverClock)
+            .put("wallpaperAlwaysMoves", XiaoheiSettings.wallpaperAlwaysMoves)
+            .put("showWeather", XiaoheiSettings.showWeather)
+            .put("screensaverClock", XiaoheiSettings.screensaverClock)
             .put("wallpapers", list)
             .put("apps", JSONArray().apply {
                 // Pinned inputs first, then apps by the name Home shows. [default] is the name a
@@ -279,7 +279,7 @@ class PhoneServer private constructor(private val context: Context, private val 
                     val look = SourceLooks.of(src.id)
                     put(JSONObject().put("id", src.id).put("port", src.label).put("device", src.deviceName ?: "")
                         .put("name", look?.let { it.name ?: it.device?.let { d -> context.getString(d.label) } } ?: "")
-                        .put("pinned", src.id in AerialSettings.pinnedSources))
+                        .put("pinned", src.id in XiaoheiSettings.pinnedSources))
                 }
             })
             .put("folders", JSONArray().apply {
@@ -306,13 +306,13 @@ class PhoneServer private constructor(private val context: Context, private val 
         val folders = JSONObject()
         AppCatalog.folderApps.forEach { (id, apps) -> folders.put(id, JSONArray().apply { apps.forEach { put(tile(it)) } }) }
         // With the parental PIN on, hidden apps stay hidden from here: on the TV, seeing them takes the PIN.
-        val locked = AerialSettings.locked
+        val locked = XiaoheiSettings.locked
         return JSONObject()
             .put("home", JSONArray().apply { AppCatalog.home.forEach { put(tile(it)) } })
             .put("folders", folders)
             .put("hidden", JSONArray().apply { if (!locked) AppCatalog.hiddenApps.forEach { put(tile(it)) } })
             .put("hiddenCount", AppCatalog.hiddenApps.size)
-            .put("columns", AerialSettings.homeColumns)
+            .put("columns", XiaoheiSettings.homeColumns)
             .put("locked", locked)
             .put("ready", AppCatalog.layout != null)
     }
@@ -332,7 +332,7 @@ class PhoneServer private constructor(private val context: Context, private val 
             "move" -> if (key in known && target in known) ({ ops.move(key, target) }) else null
             "movein" -> if (key in known && target in known) ({ ops.moveInFolder(key, target) }) else null
             "hide" -> if (key in known) ({ ops.hide(key) }) else null
-            "unhide" -> if (key in known && !AerialSettings.locked) ({ ops.unhide(key) }) else null
+            "unhide" -> if (key in known && !XiaoheiSettings.locked) ({ ops.unhide(key) }) else null
             "folder" -> if (key in known && !key.startsWith(FOLDER_KEY_PREFIX)) ({ ops.toFolder(key, folder.ifEmpty { null }) }) else null
             "unfolder" -> if (key in known) ({ ops.outOfFolder(key) }) else null
             "ungroup" -> if (folder in AppCatalog.folderApps) ({ ops.ungroup(folder) }) else null
@@ -447,7 +447,7 @@ class PhoneServer private constructor(private val context: Context, private val 
     private fun pinOk(pin: String?): Boolean {
         val now = SystemClock.elapsedRealtime()
         if (pin.isNullOrEmpty() || now < pinRestUntil) return false
-        if (AerialSettings.pinMatches(pin)) { pinMisses = 0; return true }
+        if (XiaoheiSettings.pinMatches(pin)) { pinMisses = 0; return true }
         if (++pinMisses >= 5) { pinMisses = 0; pinRestUntil = now + 60_000L }
         return false
     }
@@ -462,8 +462,8 @@ class PhoneServer private constructor(private val context: Context, private val 
             .put("enabled", r.enabled)
             .put("active", r.active)
             .put("kind", r.kind.key)
-            .put("pinSet", AerialSettings.pinSet)
-            .put("pinArrows", AerialSettings.pinArrows)
+            .put("pinSet", XiaoheiSettings.pinSet)
+            .put("pinArrows", XiaoheiSettings.pinArrows)
             .put("usedMin", r.usage.usedMs / 60_000L)
             .put("limitMin", r.limitToday(now))
             .put("allowUntil", r.usage.allowUntil.takeIf { it > now } ?: 0L)
@@ -527,7 +527,7 @@ class PhoneServer private constructor(private val context: Context, private val 
 
     companion object {
         const val PORT = 8790
-        private const val TAG = "AerialPhone"
+        private const val TAG = "XiaoheiPhone"
         /** Enough for a batch of phone photos at full size. */
         private const val MAX_UPLOAD = 200L * 1024 * 1024
         /** As for an input's name: Home's caption has room for about this much. */
@@ -537,7 +537,7 @@ class PhoneServer private constructor(private val context: Context, private val 
         private var running: PhoneServer? = null
 
         /**
-         * Listens for as long as Aerial runs, from Home's start (MainActivity.startWork), so a
+         * Listens for as long as xiaoheiDESK runs, from Home's start (MainActivity.startWork), so a
          * computer can open the page at any time without Personalize open on the TV. On every
          * interface: the address the TV has may change, the page stays the same.
          */

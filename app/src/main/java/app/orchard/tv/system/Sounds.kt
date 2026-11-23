@@ -9,7 +9,7 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.view.KeyEvent
 import app.orchard.tv.R
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.settings.UiSounds
 
 /**
@@ -18,7 +18,7 @@ import app.orchard.tv.settings.UiSounds
  *
  * Two sets, chosen in Personalization: the TV's own sound effects (AudioManager.playSoundEffect),
  * so each TV sounds as its own menus do, which the system's key sound switch also silences (the
- * Xiaomi MFTR0 plays Android TV's android_TV_scroll_* and android_TV_select); or Aerial's own
+ * Xiaomi MFTR0 plays Android TV's android_TV_scroll_* and android_TV_select); or xiaoheiDESK's own
  * (tools/make-sounds.py before 1.27), for TVs that ship with key sounds off (#169).
  *
  * Focus sounds play only for a move the remote asked for: focus that lands somewhere because a
@@ -45,12 +45,12 @@ object Sounds {
         prepare()
     }
 
-    /** Loads Aerial's own set ahead of the first press when it is the one chosen; loading takes a moment. */
+    /** Loads xiaoheiDESK's own set ahead of the first press when it is the one chosen; loading takes a moment. */
     fun prepare() {
-        if (AerialSettings.uiSounds == UiSounds.Aerial) ownPool()
+        if (XiaoheiSettings.uiSounds == UiSounds.Xiaohei) ownPool()
     }
 
-    /** Aerial's own set, loaded the first time it is needed. */
+    /** xiaoheiDESK's own set, loaded the first time it is needed. */
     private fun ownPool(): SoundPool? {
         pool?.let { return it }
         val context = app ?: return null
@@ -139,10 +139,10 @@ object Sounds {
     }
 
     private fun play(effect: Int, kind: Kind) {
-        when (AerialSettings.uiSounds) {
+        when (XiaoheiSettings.uiSounds) {
             UiSounds.Off -> Unit
             UiSounds.Tv -> playTvEffect(effect)
-            UiSounds.Aerial -> {
+            UiSounds.Xiaohei -> {
                 val p = ownPool() ?: return
                 val (id, volume) = when (kind) {
                     Kind.Move -> move to 0.7f

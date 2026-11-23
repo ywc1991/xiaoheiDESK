@@ -16,7 +16,7 @@ import androidx.core.content.edit
 import app.orchard.tv.ui.components.UhdCanvas
 import app.orchard.tv.BuildConfig
 import app.orchard.tv.guard.GuardSetup
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.system.DiagLog
 import app.orchard.tv.ui.home.fileFramesJam
 import kotlinx.coroutines.CoroutineScope
@@ -47,12 +47,12 @@ data class Wallpaper(
     val caption: String? = null,
 )
 
-/** System: none of Aerial's; the TV's own screensaver starts as the firmware has it (SystemScreensaver). */
+/** System: none of xiaoheiDESK's; the TV's own screensaver starts as the firmware has it (SystemScreensaver). */
 enum class ScreensaverMode(val key: String) {
-    Aerial("aerial"), Photos("photos"), Gallery("gallery"), Usb("usb"), Clock("clock"), Videos("videos"), System("system");
+    Xiaohei("aerial"), Photos("photos"), Gallery("gallery"), Usb("usb"), Clock("clock"), Videos("videos"), System("system");
 
     companion object {
-        fun of(key: String?) = entries.firstOrNull { it.key == key } ?: Aerial
+        fun of(key: String?) = entries.firstOrNull { it.key == key } ?: Xiaohei
     }
 }
 
@@ -60,7 +60,7 @@ enum class ScreensaverMode(val key: String) {
  * Everything behind the home screen: which wallpaper is chosen, where pictures come from, and what
  * the screensaver shows. Sources:
  *
- * - Built-in: Aerial's own Mac-style pictures, drawn on the TV ([Gradients]).
+ * - Built-in: xiaoheiDESK's own Mac-style pictures, drawn on the TV ([Gradients]).
  * - Daily: Bing's photo of the day (cn.bing.com, reachable from China without a proxy). The last
  *   eight are kept; "daily:latest" always follows the newest.
  * - Photos: pictures uploaded from a phone through the setup page ([PhoneServer]). "photos:rotate"
@@ -77,7 +77,7 @@ enum class ScreensaverMode(val key: String) {
  * State is Compose snapshot state, written on the main thread only.
  */
 object Wallpapers {
-    private const val TAG = "AerialWallpaper"
+    private const val TAG = "XiaoheiWallpaper"
     const val LATEST_DAILY = "daily:latest"
     private const val DAILY_RETRY_MS = 30 * 60 * 1000L
     /** A video's poster (#1158): sharp enough for its card, small to keep (about 60 KB). */
@@ -117,7 +117,7 @@ object Wallpapers {
     var items by mutableStateOf<List<Wallpaper>>(emptyList()); private set
     var selectedId by mutableStateOf(LATEST_DAILY); private set
     /** The screensaver the owner chose; null while it follows the wallpaper ([screensaver]). */
-    private var chosenScreensaver by mutableStateOf<ScreensaverMode?>(ScreensaverMode.Aerial)
+    private var chosenScreensaver by mutableStateOf<ScreensaverMode?>(ScreensaverMode.Xiaohei)
 
     /**
      * The screensaver in effect. Until one is chosen it follows the wallpaper: aerial films with the
@@ -127,7 +127,7 @@ object Wallpapers {
     val screensaver: ScreensaverMode
         get() = chosenScreensaver ?: when {
             isVideo(selectedId) -> ScreensaverMode.Videos
-            selectedId == LIVE || selectedId == AUTO || isSource(selectedId) -> ScreensaverMode.Aerial
+            selectedId == LIVE || selectedId == AUTO || isSource(selectedId) -> ScreensaverMode.Xiaohei
             else -> ScreensaverMode.Photos
         }
 
@@ -154,7 +154,7 @@ object Wallpapers {
      * Plays as soon as Home shows it and keys do not stop it: the aerial wallpaper always; the
      * owner's videos when set to (issue #360).
      */
-    val keepsMoving: Boolean get() = selectedId == LIVE || AerialSettings.wallpaperAlwaysMoves
+    val keepsMoving: Boolean get() = selectedId == LIVE || XiaoheiSettings.wallpaperAlwaysMoves
 
     fun isSource(id: String = selectedId) = id.startsWith(SOURCE_PREFIX)
 
@@ -248,8 +248,8 @@ object Wallpapers {
         val fresh = runCatching {
             app.packageManager.getPackageInfo(app.packageName, 0).let { it.firstInstallTime == it.lastUpdateTime }
         }.getOrDefault(false)
-        prefs.edit { putString("screensaver", if (fresh) FOLLOW else ScreensaverMode.Aerial.key) }
-        return if (fresh) null else ScreensaverMode.Aerial
+        prefs.edit { putString("screensaver", if (fresh) FOLLOW else ScreensaverMode.Xiaohei.key) }
+        return if (fresh) null else ScreensaverMode.Xiaohei
     }
 
     /** The wallpaper's picture, when the photo screensaver starts from it: a picture wallpaper, not the aerial one. */
@@ -278,7 +278,7 @@ object Wallpapers {
     /** The day the rotating photo was last picked for; a new day picks the next one. */
     private var rotatedOn = 0L
 
-    /** Moves "My Photos, rotating" on to today's photo; Aerial calls it whenever Home comes back. */
+    /** Moves "My Photos, rotating" on to today's photo; xiaoheiDESK calls it whenever Home comes back. */
     fun rotateIfDue() {
         if (!started || selectedId != ROTATE_PHOTOS || rotatedOn == today()) return
         rebuildBackdrop()
@@ -328,7 +328,7 @@ object Wallpapers {
     /**
      * The first film's poster, else its opening frame, kept as the poster once read. The read gave
      * nothing at times on TCL MT9655 (issue #1158, 4K films, perhaps while one played behind Home),
-     * and the card then showed the first built-in picture until Aerial restarted. Not read where
+     * and the card then showed the first built-in picture until xiaoheiDESK restarted. Not read where
      * the media server would jam on the file (TCL's extractor, TCL MT5879; issue #1188).
      */
     private fun firstVideoFrame(id: String, w: Int, h: Int): Bitmap? {
@@ -405,7 +405,7 @@ object Wallpapers {
      */
     private var bakedKey: String? = null
 
-    /** Changes with the picture behind [wp], the screen size, and Aerial's version (the baking may change). */
+    /** Changes with the picture behind [wp], the screen size, and xiaoheiDESK's version (the baking may change). */
     private fun bakedKey(wp: Wallpaper): String {
         val stamp = when (wp.kind) {
             WallpaperKind.Daily, WallpaperKind.Photo -> fileFor(wp)?.lastModified() ?: 0L
@@ -547,7 +547,7 @@ object Wallpapers {
      */
     fun leaveLiveFilm(film: String, atMs: Long, persist: Boolean = true) {
         // Kept whatever the wallpaper: a screensaver of aerials over another one leaves its film
-        // here too, so the aerial wallpaper chosen later begins on it (AerialSet).
+        // here too, so the aerial wallpaper chosen later begins on it (XiaoheiSet).
         if (!persist) { leftHere = film to atMs; return }
         val picture = livePictureSpot()
         // Let go where the picture is (stopped there, or never moved): nothing to catch up.
@@ -685,7 +685,7 @@ object Wallpapers {
             .sortedByDescending { it.lastModified() }
             .map { Wallpaper("photo:${it.nameWithoutExtension}", WallpaperKind.Photo, if (zh) "我的照片" else "My Photo") }
         val auto = Wallpaper(AUTO, WallpaperKind.Auto, if (zh) "跟随 App" else "Follow App")
-        val live = Wallpaper(LIVE, WallpaperKind.Live, if (zh) "航拍" else "Aerial")
+        val live = Wallpaper(LIVE, WallpaperKind.Live, if (zh) "航拍" else "Films")
         // All of them in turn, then each on its own (#762); the pickers show the first only for two or more.
         val films = ScreensaverVideos.all(app)
         val videos = if (films.isEmpty()) emptyList() else

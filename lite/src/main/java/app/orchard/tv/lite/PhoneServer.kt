@@ -371,7 +371,7 @@ class PhoneServer private constructor(private val context: Context, private val 
     }
 
     private fun diagnostics(): String = buildString {
-        appendLine("Aerial Lite ${runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull()}")
+        appendLine("xiaoheiDESK Lite ${runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull()}")
         appendLine("Device      ${Build.MANUFACTURER} ${Build.MODEL} (${Build.DEVICE}), Android ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})")
         appendLine("Screen      ${Ui.screenW}x${Ui.screenH}")
         appendLine("Wallpaper   ${Wallpapers.selectedId}  screensaver=${Wallpapers.screensaver.key}  after=${LiteSettings.screensaverMinutes}")
@@ -459,7 +459,7 @@ class PhoneServer private constructor(private val context: Context, private val 
 
     companion object {
         const val PORT = 8790
-        private const val TAG = "AerialLite"
+        private const val TAG = "XiaoheiLite"
         private const val MAX_UPLOAD = 200L * 1024 * 1024
         private const val FOLDER_NAME_MAX = 24
         private val main = Handler(Looper.getMainLooper())

@@ -10,8 +10,8 @@ import kotlin.math.abs
 
 /**
  * Whether the input or app the TV starts on (Personalize) is due: once per power-on and once per
- * wake, never again while the TV stays on. Coocaa stops Aerial in the background; coming back to
- * it from the app it had opened started Aerial cold, which took that for a boot and opened the
+ * wake, never again while the TV stays on. Coocaa stops xiaoheiDESK in the background; coming back to
+ * it from the app it had opened started xiaoheiDESK cold, which took that for a boot and opened the
  * app again, round and round (issue #766). Kept on disk, since that is a new process each time.
  */
 object BootOpen {
@@ -66,7 +66,7 @@ object BootOpen {
 
     /**
      * Whether the TV has been to standby since the target was last opened, for a process that
-     * started just now. Xiaomi stops Aerial during standby and starts it cold on the wake, so the
+     * started just now. Xiaomi stops xiaoheiDESK during standby and starts it cold on the wake, so the
      * screen-on broadcast and Home Guard's EXTRA_WOKE were both missed and the target stayed shut
      * (MiTV-MFTR0, Android 14, PR #927 by xutaocn; MiTV-ASTP0, Android 9, issue #964). Only the
      * process's first time in front: Back from an app opened after the wake does not open it again.
@@ -78,11 +78,11 @@ object BootOpen {
     }
 
     /**
-     * Aerial's process started while the TV was in standby: count that as the screen going off.
-     * Xiaomi MiTV-ASTP0 (Android 9) stops Aerial on the way into standby before the screen-off
+     * xiaoheiDESK's process started while the TV was in standby: count that as the screen going off.
+     * Xiaomi MiTV-ASTP0 (Android 9) stops xiaoheiDESK on the way into standby before the screen-off
      * broadcast reaches it, and a short standby does not suspend the kernel long enough for
      * [sleptSince]; the guard revived in standby is the only one to know (issue #964, 6 of 6 wakes
-     * from Home stayed on Aerial's Home). getSystemService(Class) is Android 6+: the guard crashed on
+     * from Home stayed on xiaoheiDESK's Home). getSystemService(Class) is Android 6+: the guard crashed on
      * every bind on Android 5.1 in 1.74 (issues #1010 #1012 #1017 #1018), so this goes through core-ktx.
      */
     fun noteStartedInStandby(context: Context) {
@@ -109,7 +109,7 @@ object BootOpen {
 
     /**
      * Whether the TV was suspended since [openedAsleep] was read (a standby, then a wake). Xiaomi
-     * MiTV-MFTR0 (Android 14) stops Aerial during standby, so the screen-off broadcast that marks a
+     * MiTV-MFTR0 (Android 14) stops xiaoheiDESK during standby, so the screen-off broadcast that marks a
      * wake never reached it, and the app to start on opened at power-on only, never after standby
      * (PR #881, by xutaocn, found on that TV). The time asleep is counted by the kernel, whoever
      * was running. A few seconds of suspend with the screen on are not a standby.
@@ -128,6 +128,6 @@ object BootOpen {
     private const val SAME_BOOT_SLACK_MS = 2 * 60 * 1000L
     private const val SLEPT_MS = 30_000L
 
-    /** A wake on MiTV-MFTR0 took up to 2 minutes to bring Aerial's process up (PR #927). */
+    /** A wake on MiTV-MFTR0 took up to 2 minutes to bring xiaoheiDESK's process up (PR #927). */
     private const val COLD_WAKE_MS = 3 * 60 * 1000L
 }

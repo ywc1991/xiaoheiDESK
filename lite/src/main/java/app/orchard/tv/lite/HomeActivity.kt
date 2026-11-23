@@ -26,7 +26,7 @@ import android.widget.Toast
 import java.util.concurrent.Executors
 
 /**
- * Aerial Lite's only Activity: Home. Holds Home, the panels and the screensaver, and routes every
+ * xiaoheiDESK Lite's only Activity: Home. Holds Home, the panels and the screensaver, and routes every
  * key itself; loading runs on one background thread so the main thread only places views. Home is
  * arranged as the full app's HomeViewModel arranges it: the shared LayoutStore (order, folders,
  * hidden apps, the first run's order) over the apps with the names typed on the phone page.
@@ -346,7 +346,7 @@ class HomeActivity : Activity(), HomeView.Host {
     }
 
     /**
-     * An entry of the same page that Aerial may start, for one that needs a permission it cannot
+     * An entry of the same page that xiaoheiDESK may start, for one that needs a permission it cannot
      * hold: Xiaomi's PatchWall lists `.MainActivityUserMode`, which requires its signature
      * permission HOME_STATE, beside `.MainActivity`, which shows the same home and needs none
      * (MiTV-ANSP0, Android 9, issue #971; the full app's StandIn).
@@ -735,7 +735,7 @@ class HomeActivity : Activity(), HomeView.Host {
     }
 
     /**
-     * The full app's rule: Aerial's screensaver has to start before the firmware's (ad-carrying)
+     * The full app's rule: xiaoheiDESK's screensaver has to start before the firmware's (ad-carrying)
      * one. Xiaomi keeps that delay in system/screen_saver_timeout; start 15 s ahead of it when it
      * is shorter than the chosen delay, and never sooner than 30 s.
      */
@@ -825,7 +825,7 @@ class HomeActivity : Activity(), HomeView.Host {
     }
 
     companion object {
-        private const val TAG = "AerialLite"
+        private const val TAG = "XiaoheiLite"
         private const val SCREENSAVER_HOLD_MS = 4 * 60 * 60 * 1000L
         private const val HOME_LAYER = 1
         private const val GRID_LAYER = 2

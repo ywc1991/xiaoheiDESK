@@ -16,7 +16,7 @@ import java.util.Locale
  * Verified on the fourth-generation XGIMI Z6X from an ordinary app without added permissions.
  */
 internal object XgimiMstarSources {
-    private const val TAG = "AerialXgimiSources"
+    private const val TAG = "XiaoheiXgimiSources"
     private const val CONFIG_MANAGER = "com.xgimi.clients.GimiConfigManager"
     private val player = ComponentName("com.xgimi.xhplayer", "com.xgimi.xhplayer.InputActivity")
     private val hdmiSwitch = Regex("HDMI([1-9][0-9]*)?")

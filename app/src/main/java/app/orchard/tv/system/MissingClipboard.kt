@@ -4,8 +4,8 @@ import android.content.ClipboardManager
 
 /**
  * Compose casts getSystemService(CLIPBOARD_SERVICE) to ClipboardManager when it attaches its view,
- * and some firmwares ship without the clipboard service: Aerial crashed before drawing anything
- * (Skyworth 8R37_G320, Android 8.0, issue #95). Aerial has no text field, so nothing copies or
+ * and some firmwares ship without the clipboard service: xiaoheiDESK crashed before drawing anything
+ * (Skyworth 8R37_G320, Android 8.0, issue #95). xiaoheiDESK has no text field, so nothing copies or
  * pastes; the stand-in only gets past that cast. Its constructor needs the missing service, hence
  * an instance allocated without running it.
  */

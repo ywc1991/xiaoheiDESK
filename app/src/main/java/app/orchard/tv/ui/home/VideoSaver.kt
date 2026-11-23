@@ -36,7 +36,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.withContext
 
-/** A local, silent playlist, shared by Home and AerialDream. An empty or broken set falls back. */
+/** A local, silent playlist, shared by Home and XiaoheiDream. An empty or broken set falls back. */
 @Composable
 internal fun VideoSaver(steps: SharedFlow<Int>, onUnavailable: () -> Unit) {
     val context = LocalContext.current
@@ -51,7 +51,7 @@ internal fun VideoSaver(steps: SharedFlow<Int>, onUnavailable: () -> Unit) {
 private fun LocalFilms(films: List<ScreensaverVideo>?, steps: SharedFlow<Int>, onUnavailable: () -> Unit) {
     val context = LocalContext.current
     val player = remember {
-        // As AerialSaver does: Home's wallpaper film starts again as Home resumes for a moment
+        // As XiaoheiSaver does: Home's wallpaper film starts again as Home resumes for a moment
         // under the dream, and would hold the decoder this film needs (TCL MT5879).
         LiveFilm.onHome?.letDecoderGo()
         ExoPlayer.Builder(context).setLoadControl(
@@ -113,7 +113,7 @@ private fun LocalFilms(films: List<ScreensaverVideo>?, steps: SharedFlow<Int>, o
     }
     // The list is read off the main thread, but the film's view is there from the first frame: a
     // SurfaceView added to the dream's window after its first frame never got a surface, and the
-    // film played into nothing, a black screen (TCL MT5879, Android 11, issue #609). AerialSaver's
+    // film played into nothing, a black screen (TCL MT5879, Android 11, issue #609). XiaoheiSaver's
     // view is in the first frame, which is why the aerial screensaver showed.
     LaunchedEffect(films) {
         val list = films ?: return@LaunchedEffect

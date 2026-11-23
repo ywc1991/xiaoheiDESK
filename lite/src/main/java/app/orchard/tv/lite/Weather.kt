@@ -20,7 +20,7 @@ import kotlin.math.roundToInt
  * Fetched when Home comes to the front, at most once an hour; nothing runs while the TV is idle.
  */
 object Weather {
-    private const val TAG = "AerialLite"
+    private const val TAG = "XiaoheiLite"
     private const val REFRESH_MS = 60 * 60 * 1000L
     private const val RETRY_MS = 10 * 60 * 1000L
     private const val RELOCATE_MS = 24 * 60 * 60 * 1000L
@@ -116,7 +116,7 @@ object Weather {
 
     /**
      * Names the place (from the phone page), as the full app's Weather.choose: Chinese names from
-     * Aerial's own list first, others from Open-Meteo's geocoder. False when there is no such
+     * xiaoheiDESK's own list first, others from Open-Meteo's geocoder. False when there is no such
      * place. Off the main thread; fetch again after it.
      */
     fun choose(name: String): Boolean {

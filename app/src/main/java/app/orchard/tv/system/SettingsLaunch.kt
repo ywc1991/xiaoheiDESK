@@ -33,7 +33,7 @@ internal fun settingsLaunchIntent(context: Context, intent: Intent): Intent {
 }
 
 /**
- * Pages to open instead when the one just opened closes at once, which Aerial sees as being back
+ * Pages to open instead when the one just opened closes at once, which xiaoheiDESK sees as being back
  * in front within a moment of opening it. See SystemProbe.networkSettingsIntents.
  */
 internal object LaunchFallback {
@@ -45,7 +45,7 @@ internal object LaunchFallback {
         armedAt = SystemClock.uptimeMillis()
     }
 
-    /** The next page to try, if Aerial is back too soon after the last one; called on resume. */
+    /** The next page to try, if xiaoheiDESK is back too soon after the last one; called on resume. */
     fun next(): Intent? {
         val pages = rest
         rest = emptyList()

@@ -89,7 +89,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.orchard.tv.R
-import app.orchard.tv.settings.AerialSettings
+import app.orchard.tv.settings.XiaoheiSettings
 import app.orchard.tv.wallpaper.Images
 import app.orchard.tv.system.NetKind
 import app.orchard.tv.system.NetworkStatus
@@ -694,7 +694,7 @@ fun ShelfClock(
                 .toSaverClock(toSaver, Type.Clock.fontSize, 0.dp, drift)
                 .capBox(Type.Clock.fontSize),
         )
-        Weather.now?.takeIf { AerialSettings.showWeather }?.let { w ->
+        Weather.now?.takeIf { XiaoheiSettings.showWeather }?.let { w ->
             val place = Weather.place?.takeIf { it.length <= 12 }
             val range = if (w.high != null && w.low != null) stringResource(R.string.weather_high_low, w.high, w.low) else null
             val detail = listOfNotNull(place, stringResource(conditionName(w.kind)), range).joinToString(" · ")
@@ -750,11 +750,11 @@ private fun Modifier.toSaverClock(progress: () -> Float, fontSize: TextUnit, cap
             scaleX = k
             scaleY = k
             val targetCapTop = SaverClockTop.toPx() + SaverClockStyle.fontSize.toPx() * CAP_TOP
-            val targetLeft = if (AerialSettings.clockRight) rootW - SaverClockSide.toPx() - box.width * s else SaverClockSide.toPx()
+            val targetLeft = if (XiaoheiSettings.clockRight) rootW - SaverClockSide.toPx() - box.width * s else SaverClockSide.toPx()
             translationX = p * (targetLeft - box.left + drift.x.toPx())
             translationY = p * (targetCapTop - s * capTop.toPx() - box.top + drift.y.toPx())
             // The screensaver shows no time: Home's goes as the screensaver comes.
-            if (!AerialSettings.screensaverClock) alpha = 1f - p
+            if (!XiaoheiSettings.screensaverClock) alpha = 1f - p
             // Its shadow lies outside the capBox: an offscreen buffer would cut it as it fades.
             compositingStrategy = CompositingStrategy.ModulateAlpha
         }
