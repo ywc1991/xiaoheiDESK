@@ -1,6 +1,29 @@
 {
   "releases": [
     {
+      "v": "1.2.2",
+      "zh": [
+        "桌面守护：开机或待机唤醒后，如果电视弹出系统的「选择主屏幕」框（原生或厂商自绘的），守护会直接关掉它回到小黑DESK，不再卡在框上、遥控器像失灵一样。",
+        "老电视的画质：只支持 OpenGL ES 2 的 GPU（晶晨 S905L4、Mali-450 一类）上首页大号时钟边缘发虚，这类机型改为先在 CPU 上画好再显示，数字重新变锐利；其他机型行为不变。",
+        "天气更耐断网：连续失败会按 3、6、12……分钟退避重试（最长 1 小时），并且停在首页或屏保时也会自己重试，不用回一次桌面才刷新。",
+        "天气旧读数保留：12 小时内的读数继续显示，超过 3 小时会在旁边标「N 小时前」，不再整行消失让人以为坏了；加密连接超时会改走明文重试一次。",
+        "打开文件夹后最后一排被屏幕下沿切掉：现在选中哪一排，整排连同名字都会滚进屏幕。",
+        "输入密码（儿童模式等）时方向键不再跑到面板后面看不见的地方，按一次就往下走。",
+        "慢开机机型：机型配置里「开机时让原桌面显示多久」的上限从 10 秒放宽到 45 秒（小米 4A 一类固件约 29 秒才准备好）。",
+        "诊断报告新增一行天气状态（不含城市名），「天气不显示」时能直接看出是没取到、还是被隐藏了。"
+      ],
+      "en": [
+        "Home Guard: when the TV puts up the system's Home chooser (Android's own or a firmware's copy) after a boot or a wake, the guard closes it and returns to xiaoheiDESK instead of sitting on the dialog with a dead-looking remote.",
+        "Older GPUs: on a GPU with OpenGL ES 2 only (Amlogic S905L4, Mali-450 and the like) the large clock's digits came out soft at the edges; the digits are now drawn on the CPU on those sets, sharp again. Other TVs are unchanged.",
+        "Weather survives a blocked line: retries back off 3, 6, 12 ... minutes (an hour at most), and keep trying while Home or its screensaver stays up, instead of only when Home comes back.",
+        "An old weather reading stays: up to 12 hours it is still shown, with its age past 3 hours, instead of the row going blank; a TLS timeout is retried once over plain HTTP.",
+        "In a folder with several rows the last one is no longer cut by the screen's edge: the focused row scrolls fully into view with its name.",
+        "On the PIN pad (leaving Kids mode and elsewhere) the arrows no longer move focus behind the panel and out of sight.",
+        "Slow-booting sets: the device profile's “how long to leave the stock launcher up at power-on” now goes up to 45 s, from 10 s (Xiaomi 4A-style firmware is ready about 29 s in).",
+        "The diagnostics report has a weather line (no place name), so “no weather” can be told apart from “weather hidden”."
+      ]
+    },
+    {
       "v": "1.2.1",
       "zh": [
         "提升对华为鸿蒙 2/3/4 智慧屏（底层 Android 6–10）的兼容性：U 盘名画屏保现在能在这些机型上真正读到 U 盘里的图片。",

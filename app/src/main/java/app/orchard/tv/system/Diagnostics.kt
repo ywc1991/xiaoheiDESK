@@ -124,6 +124,8 @@ object Diagnostics {
         }
         appendLine("            wallpaper=${app.orchard.tv.wallpaper.Wallpapers.selectedId.substringBefore('/')} always_moves=${XiaoheiSettings.wallpaperAlwaysMoves} quality=${XiaoheiSettings.xiaoheiQuality.key} weather=${XiaoheiSettings.showWeather} saver_clock=${XiaoheiSettings.screensaverClock}")
         runCatching { app.orchard.tv.ui.home.filmGlassReport(context) }.getOrNull()?.let { appendLine("            film glass $it") }
+        // Why the weather row is blank, without naming the place: this report is posted in public.
+        runCatching { app.orchard.tv.weather.Weather.diagnostics() }.getOrNull()?.let { appendLine("Weather     $it") }
         appendLine("```")
 
         appendLine()

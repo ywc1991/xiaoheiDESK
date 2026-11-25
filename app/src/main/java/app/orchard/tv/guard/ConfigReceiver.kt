@@ -138,9 +138,10 @@ class ConfigReceiver : BroadcastReceiver() {
         }
         // ... --ez diag true / --ez mode_switch false / --ez soft_layer true   (see DiagLog;
         //                                 the last two apply the next time Home starts)
+        // ... --ez soft_clock true|false   (the large clock drawn on the CPU, see DiagLog.softClock)
         if (intent.hasExtra("diag")) DiagLog.setEnabled(context, intent.getBooleanExtra("diag", false))
         // ... --ez saver_fade_offscreen true   (issue #654, see DiagLog.saverFadeOffscreen)
-        for (key in listOf("mode_switch", "soft_layer", "saver_fade_offscreen")) {
+        for (key in listOf("mode_switch", "soft_layer", "soft_clock", "saver_fade_offscreen")) {
             if (intent.hasExtra(key)) DiagLog.setOption(context, key, intent.getBooleanExtra(key, false))
         }
         // ... --ez uhd_canvas true|false / --es uhd_canvas auto   (Home at the panel's resolution,

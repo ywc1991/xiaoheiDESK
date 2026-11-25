@@ -949,6 +949,8 @@ class MainActivity : ComponentActivity() {
     private fun resumeWork() {
         vm.resumed = true
         KidsWatch.homeInFront = true
+        // A reading that failed is retried while Home stays up, not only as it comes back.
+        Weather.whileShown(true)
         idleHandler.removeCallbacks(endHomeBounce)
         vm.homeBounce = false
         DiagLog.i("onResume; screensaver after ${idleBeforeScreensaver() / 1000} s")
@@ -990,6 +992,7 @@ class MainActivity : ComponentActivity() {
         if (locked) return
         vm.resumed = false
         KidsWatch.homeInFront = false
+        Weather.whileShown(false)
         Updates.onHomePaused()
         DiagLog.i("onPause")
         leftForAnApp = openedAppSinceHome

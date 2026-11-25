@@ -47,6 +47,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.drawText
+import app.orchard.tv.system.DiagLog
+import kotlin.math.abs
+import kotlin.math.ceil
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TransformOrigin
@@ -687,17 +695,25 @@ fun ShelfClock(
             style = Type.ClockDate.copy(shadow = shadow),
             modifier = aside.capBox(Type.ClockDate.fontSize),
         )
+        val context = LocalContext.current
+        val softDigits = remember { DiagLog.softClock(context) }
+        var timeLayout by remember { mutableStateOf<TextLayoutResult?>(null) }
         BasicText(
             timeText(now),
             style = Type.Clock.copy(shadow = shadow),
             modifier = Modifier.padding(top = 16.dp)
                 .toSaverClock(toSaver, Type.Clock.fontSize, 0.dp, drift)
-                .capBox(Type.Clock.fontSize),
+                .capBox(Type.Clock.fontSize)
+                .then(if (softDigits) Modifier.softwareText({ timeLayout }, toSaver) else Modifier),
+            onTextLayout = { timeLayout = it },
         )
-        Weather.now?.takeIf { XiaoheiSettings.showWeather }?.let { w ->
+        val atMs = now.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        Weather.shown(atMs)?.takeIf { XiaoheiSettings.showWeather }?.let { w ->
             val place = Weather.place?.takeIf { it.length <= 12 }
             val range = if (w.high != null && w.low != null) stringResource(R.string.weather_high_low, w.high, w.low) else null
-            val detail = listOfNotNull(place, stringResource(conditionName(w.kind)), range).joinToString(" · ")
+            // An old reading says how old it is rather than passing for now.
+            val age = Weather.hoursOld(w, atMs)?.let { stringResource(R.string.weather_hours_ago, it) }
+            val detail = listOfNotNull(place, stringResource(conditionName(w.kind)), range, age).joinToString(" · ")
             Row(aside.padding(top = 18.dp).capBox(Type.ClockDetail.fontSize), verticalAlignment = Alignment.CenterVertically) {
                 GlyphIcon(glyphFor(w), Color.White, 18.dp, Modifier.padding(end = 7.dp))
                 BasicText(
@@ -758,6 +774,33 @@ private fun Modifier.toSaverClock(progress: () -> Float, fontSize: TextUnit, cap
             // Its shadow lies outside the capBox: an offscreen buffer would cut it as it fades.
             compositingStrategy = CompositingStrategy.ModulateAlpha
         }
+}
+
+/**
+ * Draws a line of text from a picture made on the CPU, while [moving] is 0: the GPU's own way with
+ * glyphs this large left the big clock's slopes and curves jagged on ZTE W152D (Amlogic S905L4,
+ * Mali-450, OpenGL ES 2), where drawing Home in software (soft_layer) made them smooth. Only where
+ * [DiagLog.softClock] says so. While the time moves to the screensaver's place, scaled down, the
+ * text is drawn as usual: a picture shrunk to a third would shimmer.
+ */
+private fun Modifier.softwareText(layout: () -> TextLayoutResult?, moving: () -> Float) = drawWithCache {
+    val text = layout()
+    val shadow = text?.layoutInput?.style?.shadow
+    // Room for the shadow, which lies outside the text's box.
+    val pad = shadow?.let { ceil(it.blurRadius + maxOf(abs(it.offset.x), abs(it.offset.y))).toInt() + 2 } ?: 0
+    val w = text?.let { ceil(it.size.width.toFloat()).toInt() + 2 * pad } ?: 0
+    val h = text?.let { ceil(it.size.height.toFloat()).toInt() + 2 * pad } ?: 0
+    val picture = if (text != null && w > 0 && h > 0) {
+        val bitmap = ImageBitmap(w, h)
+        CanvasDrawScope().draw(this, layoutDirection, androidx.compose.ui.graphics.Canvas(bitmap), Size(w.toFloat(), h.toFloat())) {
+            translate(pad.toFloat(), pad.toFloat()) { drawText(text) }
+        }
+        bitmap
+    } else null
+    onDrawWithContent {
+        if (picture == null || moving() > 0f) drawContent()
+        else drawImage(picture, Offset(-pad.toFloat(), -pad.toFloat()))
+    }
 }
 
 /**
@@ -885,7 +928,7 @@ fun CornerWeather(
 ) {
     val dim = Color.White.copy(alpha = 0.92f)
     val shadow = Shadow(Color.Black.copy(alpha = 0.45f), blurRadius = 12f)
-    Weather.now?.let { w ->
+    Weather.shown(System.currentTimeMillis())?.let { w ->
         Pressable(
             onClick = onClick,
             enabled = enabled,

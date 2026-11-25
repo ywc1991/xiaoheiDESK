@@ -433,7 +433,35 @@ class HomeGuardService : AccessibilityService() {
             screenOnAt = SystemClock.elapsedRealtime()
             restartForegroundCheck()
             takeOverOnceSettled("screen on", woke = true)
+            closeChooserAfterWake()
         }
+    }
+
+    /**
+     * Wake from standby: the firmware may put the Home chooser in front before the guard is
+     * delivering events again, and no window change ever follows it (XGIMI H3S, Android 9: three
+     * minutes with the chooser holding the focus and not one accessibility event seen). With
+     * canRetrieveWindowContent off, usage stats are the only front the guard can read there: they
+     * are read again a few times after the screen lights, and while xiaoheiDESK stays behind, Back
+     * closes the chooser, which resumes it.
+     */
+    private var chooserCheckRun = 0
+
+    private fun closeChooserAfterWake(run: Int = 0, left: Int = WAKE_CHOOSER_RECHECKS) {
+        // One run at a time: a boot pauses xiaoheiDESK more than once, and two runs would both send
+        // the Back that one chooser needs.
+        if (run == 0) {
+            chooserCheckRun++
+            return closeChooserAfterWake(chooserCheckRun, left)
+        }
+        if (run != chooserCheckRun || left <= 0 || xiaoheiResumed) return
+        handler.postDelayed({ closeChooserAfterWake(run, left - 1) }, WAKE_CHOOSER_RECHECK_MS)
+        if (SystemClock.uptimeMillis() - xiaoheiPausedAt > WAKE_CHOOSER_MS) return
+        val front = foreground()?.first ?: return
+        if (!isHomeChooser(front.first, front.second)) return
+        Log.i(TAG, "the Home chooser is in front after the wake; closing it")
+        DiagLog.i("guard: wake, usage stats name ${front.first}/${front.second} in front; Back")
+        performGlobalAction(GLOBAL_ACTION_BACK)
     }
 
     /**
@@ -522,10 +550,11 @@ class HomeGuardService : AccessibilityService() {
      */
     private val frontAfterHome: Runnable = Runnable {
         // XGIMI (Android 9, m7642) answers Home with its own Home chooser when set-home-activity did
-        // not take; it was never drawn and the remote went dead over it (issue #44). Only right
-        // after Home: the same chooser also serves apps' "open with".
-        lastWindow?.takeIf { it.first == XGIMI_FRAMEWORK && it.second.endsWith(".resolver.ResolverActivity") }?.let {
-            Log.i(TAG, "Home pressed and XGIMI's Home chooser came up; bringing xiaoheiDESK back")
+        // not take; it was never drawn and the remote went dead over it (issue #44). Android's own
+        // chooser does the same on a box with no Home on record. Only right after Home: the same
+        // chooser also serves apps' "open with".
+        lastWindow?.takeIf { isHomeChooser(it.first, it.second) }?.let {
+            Log.i(TAG, "Home pressed and the Home chooser (${it.first}) came up; bringing xiaoheiDESK back")
             goHome()
             return@Runnable
         }
@@ -734,8 +763,12 @@ class HomeGuardService : AccessibilityService() {
             DeviceProfile.current(this).bootStockMs > 0
         ) {
             bootStockHolding = true
-            allowStockUntil = SystemClock.uptimeMillis() + BOOT_STOCK_CAP_MS
-            handler.postDelayed(endBootStockHold, BOOT_STOCK_CAP_MS)
+            // An invisible PatchWall never says it showed, so the cap is the hold there: the 20 s
+            // cap cut a longer profile short (MiTV4-ANSM0, Android 6: MiIO binds about 29 s after
+            // PatchWall comes up).
+            val hold = maxOf(BOOT_STOCK_CAP_MS, DeviceProfile.current(this).bootStockMs.toLong())
+            allowStockUntil = SystemClock.uptimeMillis() + hold
+            handler.postDelayed(endBootStockHold, hold)
             DiagLog.i("guard: bound at boot; leaving the stock launcher on screen first (device profile)")
         }
         // Register before querying homes or checking the state so an unlock cannot be missed.
@@ -959,7 +992,7 @@ class HomeGuardService : AccessibilityService() {
         // also serves "open with", but only right after a revival or a wake, which is rarer than a
         // boot and was already accepted there.
         val stockInFront = last == null || last.first in stockHomes ||
-            (last.first == XGIMI_FRAMEWORK && last.second.endsWith(".resolver.ResolverActivity")) ||
+            isHomeChooser(last.first, last.second) ||
             (coveredSilently && xiaoheiCoveredUnseen(last))
         // xiaoheiDESK is in front after a wake because the guard already brought it back when the stock
         // launcher showed, or because it survived standby; either way the input the TV starts on
@@ -1837,6 +1870,11 @@ class HomeGuardService : AccessibilityService() {
         private const val DEAF_AFTER_MS = 20_000L
         /** How long a stock launcher's window change may take to arrive after Home (see frontAfterHome). */
         private const val FRONT_AFTER_HOME_MS = 1_500L
+        /** How long after the screen lights the Home chooser is looked for, and how often (see closeChooserAfterWake). */
+        private const val WAKE_CHOOSER_RECHECK_MS = 1_000L
+        private const val WAKE_CHOOSER_RECHECKS = 15
+        /** Only a wake this recent: a chooser left over from an hour ago is the viewer's own doing. */
+        private const val WAKE_CHOOSER_MS = 60_000L
         /** How often usage stats are read after Home once the guard has been found deaf. */
         private const val DEAF_LOOK_MS = 150L
         /** How recently PatchWall must have come to the front, and how often and how long to look; see uiBoostChanged. */
@@ -2059,6 +2097,21 @@ class HomeGuardService : AccessibilityService() {
             category.startsWith(VENDOR_HOME_PREFIX) ||
                 (category.endsWith(VENDOR_HOME_SUFFIX) && category != "android.intent.category.SECONDARY_HOME" &&
                     !category.endsWith("_AT_HOME"))
+
+        /**
+         * A Home chooser: Android's own "which Home app" dialog, or the firmware's copy of it.
+         * Firwmares that leave no HOME preferred-activity on record put it in front at power-on and
+         * on wake and leave it there, with no window change to follow: the guard read the front as
+         * the firmware's own package, took it for an app the viewer had opened and left it, and the
+         * remote looked dead over the dialog. XGIMI GMUI draws its own
+         * (com.xgimi.xgimiframeworkui/.resolver.ResolverActivity, issue #44); Android's own comes
+         * up on boxes that never had a Home set (OBE C3 Ultra, issue #1401), and its name is the
+         * same on every firmware since Android 4. The dialog also serves apps' "open with", which
+         * is why this is only acted on right after Home, a revival or a wake.
+         */
+        internal fun isHomeChooser(pkg: String, cls: String): Boolean =
+            (pkg == XGIMI_FRAMEWORK && cls.endsWith(".resolver.ResolverActivity")) ||
+                (pkg == "android" && cls == "com.android.internal.app.ResolverActivity")
 
         /** Launcher package to the screens its Home trampoline opens; see refreshStockHomes. */
         private val HOME_SCREENS_BEHIND_TRAMPOLINES = mapOf(

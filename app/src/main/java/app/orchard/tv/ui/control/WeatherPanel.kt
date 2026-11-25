@@ -155,7 +155,7 @@ private fun Header() {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            val now = Weather.now
+            val now = Weather.shown(System.currentTimeMillis())
             if (now != null) {
                 val nowText = stringResource(R.string.wx_now, now.celsius, wxNameOf(now.code, now.kind))
                 val rangeText = if (now.high != null && now.low != null)
@@ -166,7 +166,7 @@ private fun Header() {
                 )
             }
         }
-        val now = Weather.now
+        val now = Weather.shown(System.currentTimeMillis())
         if (now != null) {
             GlyphIcon(glyphFor(now.kind, now.day), Palette.Label, 34.dp, level = rainLevel(now.code))
         }

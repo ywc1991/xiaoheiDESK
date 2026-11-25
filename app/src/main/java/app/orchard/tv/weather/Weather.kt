@@ -11,11 +11,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.IOException
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.URLEncoder
 import java.time.Instant
@@ -32,6 +36,7 @@ enum class WeatherKind { Clear, PartlyCloudy, Cloudy, Fog, Rain, Snow, Thunder }
  * [high] and [low] are today's, shown under the large clock; null in a reading saved by an older
  * version. [code] is Open-Meteo's raw WMO weather code, kept so the forecast panel can name the
  * exact condition (e.g. 61 light rain vs 65 heavy rain) and pick how many raindrops to draw.
+ * [readAt] is when it was read, in wall-clock millis; 0 in a reading saved by an older version.
  */
 data class WeatherNow(
     val celsius: Int,
@@ -40,6 +45,7 @@ data class WeatherNow(
     val high: Int? = null,
     val low: Int? = null,
     val code: Int = 0,
+    val readAt: Long = 0L,
 )
 
 /** One hour of today, from the current hour on. */
@@ -70,17 +76,26 @@ data class AirQuality(val aqi: Int, val pm25: Int? = null, val pm10: Int? = null
  * (api.met.no, also keyless and reachable from China). MET's timeseries is converted to the
  * same JSON shape Open-Meteo returns, so the parsing below and the weather UI stay unchanged.
  *
- * Fetched when Home comes to the front, at most once an hour; nothing runs while the TV is idle.
- * Compose state, written on the main thread only.
+ * Fetched when Home comes to the front, at most once an hour, and on the same terms while Home stays
+ * in front ([whileShown]); nothing runs while xiaoheiDESK is in the back. Compose state, written on
+ * the main thread only.
  */
 object Weather {
     private const val TAG = "XiaoheiWeather"
     private const val PREFS = "weather"
     private const val REFRESH_MS = 60 * 60 * 1000L
-    private const val RETRY_MS = 10 * 60 * 1000L
+    /**
+     * After a failed reading, doubled after each further failure up to [REFRESH_MS]: a line that
+     * blocks the weather host for a while, then lets it through, had the row blank for hours.
+     */
+    private const val RETRY_MS = 3 * 60 * 1000L
     private const val RELOCATE_MS = 24 * 60 * 60 * 1000L
+    /** A reading older than this is shown with its age ([hoursOld]). */
+    private const val STALE_MS = 3 * 60 * 60 * 1000L
     /** A reading older than this is not shown at all. Long enough to survive a night offline. */
-    private const val STALE_MS = 12 * 60 * 60 * 1000L
+    private const val SHOWN_MS = 12 * 60 * 60 * 1000L
+    /** Air quality keeps its own, shorter life: an AQI from yesterday says nothing about now. */
+    private const val AIR_SHOWN_MS = 6 * 60 * 60 * 1000L
     /** MET asks clients to cache; never hit it twice inside this window. */
     private const val METNO_CACHE_MS = 10 * 60 * 1000L
     private const val METNO_URL = "https://api.met.no/weatherapi/locationforecast/2.0/compact"
@@ -121,17 +136,19 @@ object Weather {
         prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         place = prefs.getString("place", null)
         chosen = prefs.getBoolean("chosen", false)
-        if (System.currentTimeMillis() - prefs.getLong("fetched_at", 0) < STALE_MS) {
+        val readAt = prefs.getLong("fetched_at", 0)
+        if (System.currentTimeMillis() - readAt < SHOWN_MS) {
             val kind = runCatching { WeatherKind.valueOf(prefs.getString("kind", null) ?: "") }.getOrNull()
             if (kind != null) now = WeatherNow(
                 prefs.getInt("celsius", 0), kind, prefs.getBoolean("day", true),
                 high = prefs.getInt("high", NONE).takeIf { it != NONE },
                 low = prefs.getInt("low", NONE).takeIf { it != NONE },
                 code = prefs.getInt("code", 0),
+                readAt = readAt,
             )
         }
         // Air quality is a separate, optional source. A stale or missing reading just hides the row.
-        if (System.currentTimeMillis() - prefs.getLong("air_fetched_at", 0) < STALE_MS &&
+        if (System.currentTimeMillis() - prefs.getLong("air_fetched_at", 0) < AIR_SHOWN_MS &&
             prefs.contains("air_aqi")
         ) {
             air = AirQuality(
@@ -142,28 +159,94 @@ object Weather {
         }
     }
 
+    /**
+     * The reading to show at [atMs], or null once it is over [SHOWN_MS] old. Up to that it stays,
+     * with its age beside it past [STALE_MS] ([hoursOld]): a line that blocks the weather host for a
+     * few hours left the row blank, and a blank row read as broken.
+     */
+    fun shown(atMs: Long): WeatherNow? = now?.takeIf { atMs - it.readAt < SHOWN_MS }
+
+    /** Whole hours since [w] was read, once that is over [STALE_MS]; else null. */
+    fun hoursOld(w: WeatherNow, atMs: Long): Int? =
+        (atMs - w.readAt).takeIf { it >= STALE_MS }?.let { (it / (60 * 60 * 1000L)).toInt() }
+
     private var failed = false
+
+    /** Failed readings in a row, for the retry's back-off. */
+    private var failures = 0
+
+    private fun retryMs(): Long = (RETRY_MS shl (failures - 1).coerceIn(0, 5)).coerceAtMost(REFRESH_MS)
+
+    /** How long until [refreshIfStale] would fetch, at the earliest. */
+    private fun dueInMs(): Long {
+        val since = System.currentTimeMillis() - lastAttempt
+        return ((if (failed) retryMs() else REFRESH_MS) - since).coerceAtLeast(0L)
+    }
 
     /** Like the daily photos: a failed reading is retried when the network connects (issue #129). */
     fun refreshIfStale(networkCameUp: Boolean = false) {
         if (!started) return
+        if (job?.isActive == true) return
         val since = System.currentTimeMillis() - lastAttempt
-        if (since >= REFRESH_MS || (failed && (networkCameUp || since >= RETRY_MS))) refresh()
+        if (since >= REFRESH_MS || (failed && (networkCameUp || since >= retryMs()))) refresh()
+    }
+
+    private var ticker: Job? = null
+
+    /**
+     * Checks again whenever a reading falls due while Home stays in front. Home used to be looked at
+     * only as it came to the front: left on Home or its screensaver, a TV whose reading had failed
+     * tried once in 13 hours, and the old reading went off the screen. A whole line that blocks the
+     * weather host for a few hours thus left the row blank until the viewer restarted.
+     */
+    fun whileShown(shown: Boolean) {
+        ticker?.cancel()
+        ticker = null
+        if (!shown || !started) return
+        ticker = scope.launch {
+            while (isActive) {
+                delay(dueInMs() + 1_000L)
+                job?.join()
+                refreshIfStale()
+            }
+        }
+    }
+
+    private var lastResult = "none"
+
+    /**
+     * For the diagnostics report: "the weather is gone after an update and back only once restarted",
+     * with nothing in the log. No place name or coordinates: the report is posted in public.
+     */
+    fun diagnostics(): String {
+        if (!started) return "not started in this process"
+        fun ago(at: Long) = if (at == 0L) "never" else "${(System.currentTimeMillis() - at) / 60_000} min ago"
+        return "shown=${shown(System.currentTimeMillis()) != null} chosen=$chosen located=${!prefs.getFloat("lat", Float.NaN).isNaN()}; " +
+            "read ${ago(prefs.getLong("fetched_at", 0))}; attempt ${ago(lastAttempt)}, result=$lastResult, " +
+            "inFlight=${job?.isActive == true}"
     }
 
     private fun refresh() {
         lastAttempt = System.currentTimeMillis()
+        lastResult = "pending"
         job?.cancel()
         job = scope.launch {
+            var why: String? = null
             val reading = withContext(Dispatchers.IO) {
-                runCatching { fetch() }.onFailure { Log.w(TAG, "weather unavailable", it) }.getOrNull()
+                runCatching { fetch() }.onFailure {
+                    Log.w(TAG, "weather unavailable", it)
+                    why = reasonOf(it)
+                }.getOrNull()
             }
             prefs.getString("place", null)?.let { place = it }
             failed = reading == null
+            failures = if (reading == null) failures + 1 else 0
+            lastResult = if (reading != null) "success" else "failed ($why)"
             if (reading != null) {
-                now = reading
+                val at = System.currentTimeMillis()
+                now = reading.copy(readAt = at)
                 prefs.edit {
-                    putLong("fetched_at", System.currentTimeMillis())
+                    putLong("fetched_at", at)
                     putInt("celsius", reading.celsius)
                     putString("kind", reading.kind.name)
                     putBoolean("day", reading.day)
@@ -177,6 +260,10 @@ object Weather {
             }
         }
     }
+
+    private fun reasonOf(e: Throwable): String = (e as? HttpStatus)?.message ?: e.javaClass.simpleName
+
+    private class HttpStatus(code: Int) : IOException("HTTP $code")
 
     /** Off the main thread. */
     private fun fetch(): WeatherNow {
@@ -547,11 +634,14 @@ object Weather {
 
     /**
      * Android before 7.1 does not trust the Let's Encrypt root these hosts use; they answer the
-     * same over plain HTTP (allowed for them in network_security_config.xml).
+     * same over plain HTTP (allowed for them in network_security_config.xml). A handshake that
+     * times out is retried the same way: on a line that blocks it, the timeout and the certificate
+     * are the same problem, and the plain read goes through.
      */
     private fun get(url: String, connectMs: Int = 8_000, readMs: Int = 10_000): String = try {
         read(url, connectMs, readMs)
-    } catch (e: SSLException) {
+    } catch (e: IOException) {
+        if (e !is SSLException && e !is SocketTimeoutException) throw e
         read(url.replaceFirst("https://", "http://"), connectMs, readMs)
     }
 
@@ -560,6 +650,8 @@ object Weather {
         c.connectTimeout = connectMs
         c.readTimeout = readMs
         return try {
+            val code = c.responseCode
+            if (code !in 200..299) throw HttpStatus(code)
             c.inputStream.use { it.readBytes().decodeToString() }
         } finally {
             c.disconnect()
