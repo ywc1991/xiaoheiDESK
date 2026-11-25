@@ -564,7 +564,7 @@ val PlatePadV = 20.dp
 private val PlateCorner = 32.dp
 
 /** Panels' background (PanelBackdrop): the frosted picture under this much black. */
-private const val GRID_SHADE = 0.55f
+internal const val GRID_SHADE = 0.55f
 
 /** How much the plate swells as it dissolves into the grid's background. */
 private val PlateSwell = 14.dp
@@ -613,19 +613,20 @@ private fun bakePlate(glass: ImageBitmap, screen: Size, plate: Rect, radius: Flo
  * grid's frosted background fading over it [frost] of the way, one full-screen draw of a small
  * picture (in "Follow App" mode, which has none, a dark veil). Control Center keeps Home sharp
  * under a dark [veil], its own panel the glass (1.41 frosted all of Home behind it too, which
- * owners took for everything gone blurry).
+ * owners took for everything gone blurry). [shade] is how far the frosted picture is darkened
+ * before it is drawn; the weather opens on a lighter one, where a heavy shade read as black.
  */
 @Composable
-fun PanelBackdrop(frosted: ImageBitmap?, frost: () -> Float, veil: () -> Float) {
+fun PanelBackdrop(frosted: ImageBitmap?, frost: () -> Float, veil: () -> Float, shade: Float = GRID_SHADE) {
     val (shown, under, swap) = rememberFrostSwap(frosted)
-    val dark = remember(shown) { shown?.let { darkened(it, GRID_SHADE) } }
-    val darkUnder = remember(under) { under?.let { darkened(it, GRID_SHADE) } }
+    val dark = remember(shown, shade) { shown?.let { darkened(it, shade) } }
+    val darkUnder = remember(under, shade) { under?.let { darkened(it, shade) } }
     Canvas(Modifier.fillMaxSize()) {
         val f = frost()
         if (f >= 0.01f) {
             val full = IntSize(size.width.roundToInt(), size.height.roundToInt())
             val t = swap()
-            if (dark == null) drawRect(Color.Black, alpha = 0.55f * f)
+            if (dark == null) drawRect(Color.Black, alpha = shade * f)
             else if (darkUnder != null && t < 1f) {
                 drawImage(darkUnder, dstSize = full, filterQuality = FilterQuality.Low, alpha = f)
                 drawImage(dark, dstSize = full, filterQuality = FilterQuality.Low, alpha = f * t)

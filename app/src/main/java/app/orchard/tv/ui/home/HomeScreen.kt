@@ -294,6 +294,9 @@ internal const val CLOCK_BACK_MS = 1000
 /** How long Control Center takes to come in before a picture of Home stands in for it. */
 private const val HOME_SHOT_AFTER_MS = 450L
 
+/** The weather panel's frosted Home, darkened less than a folder's: it is looked through, not at. */
+private const val WEATHER_BACKDROP_SHADE = 0.42f
+
 /** How often that picture is taken again while Control Center stays open, for the clock. */
 private const val HOME_SHOT_EVERY_MS = 30_000L
 
@@ -958,17 +961,34 @@ fun HomeScreen(
         }
 
         homeShot?.let { shot -> Canvas(Modifier.fillMaxSize()) { drawImage(shot) } }
-        PanelBackdrop(Wallpapers.frosted.takeIf { Wallpapers.backdrop != null }, { backdropFrost }, { backdropVeil })
+        // The weather opens on a lighter frost than a folder: at the grid's shade it read as black
+        // behind the panel, not as the blurred Home the panel is over.
+        PanelBackdrop(
+            Wallpapers.frosted.takeIf { Wallpapers.backdrop != null },
+            { backdropFrost },
+            { backdropVeil },
+            if (overlay is Overlay.Weather) WEATHER_BACKDROP_SHADE else GRID_SHADE,
+        )
 
         // The pill holds only the network and Control Center. The time joins it once the clock
         // above the top row has scrolled away, so the screen never shows the time twice. The small
         // clock on the right puts the time just left of the pill; the weather sits left of it.
+        //
+        // A panel opens from this very corner over it, so the weather, the clock and the pill go
+        // rather than stand sharp beside it: half-covered under the frost they read as clutter on
+        // the panel's backdrop (the weather panel came up with "杭州 13°" and the settings pill
+        // still crisp behind it).
+        val cornerGone by animateFloatAsState(
+            if (overlay is Overlay.ControlCenter || overlay is Overlay.Weather || overlay is Overlay.Date) 0f else 1f,
+            tween(180, easing = Motion.EaseOut),
+            label = "corner-gone",
+        )
         Row(
             Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = 28.dp, end = metrics.margin - 14.dp)
                 .width(topGroupWidth)
-                .graphicsLayer { alpha = if (overlay is Overlay.ControlCenter) 0f else 1f },
+                .graphicsLayer { alpha = cornerGone },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End,
         ) {

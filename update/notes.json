@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "v": "1.2.3",
+      "zh": [
+        "天气面板重新排版：左边一列是城市名和它下面的空气质量，右边一列是天气图标、当前温度和今天最高最低温度，两边各成一列、不再挤成一长行。",
+        "空气质量与 PM2.5 后面加了冒号，读起来更像一句话：「空气质量：42 · 优 · PM2.5：18」。",
+        "打开天气面板时背后的桌面真正虚化了：磨砂底加深到能挡住内容，面板再加一层浅遮罩，只是隐约透出壁纸的颜色，不再糊成一片黑或透出字来。",
+        "打开天气面板、日历等面板时，右上角的时钟、天气和设置那组图标会跟着淡出，不会浮在虚化背景上抢视线。"
+      ],
+      "en": [
+        "The weather panel's head is laid out in two columns: the city with its air quality beneath on the left, the condition glyph with the current reading and today's high and low on the right, instead of one long cramped row.",
+        "Air quality and PM2.5 now carry a colon, so the line reads as a sentence: \"Air quality: 42 · Good · PM2.5: 18\".",
+        "Opening the weather panel now really frosts Home behind it: the frosted backdrop is darkened enough to hide what is under it and the panel adds a light veil, so only a hint of the wallpaper's colour comes through instead of a flat black or legible text.",
+        "While the weather, calendar and other panels are open, the clock, weather and Settings icons at the top right fade out with them instead of floating over the frosted backdrop."
+      ]
+    },
+    {
       "v": "1.2.2",
       "zh": [
         "桌面守护：开机或待机唤醒后，如果电视弹出系统的「选择主屏幕」框（原生或厂商自绘的），守护会直接关掉它回到小黑DESK，不再卡在框上、遥控器像失灵一样。",

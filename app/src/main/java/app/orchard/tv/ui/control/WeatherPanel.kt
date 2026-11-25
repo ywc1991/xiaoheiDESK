@@ -102,7 +102,7 @@ fun WeatherPanel(
             Box(
                 Modifier.fillMaxSize()
                     .then(if (interactive) Modifier.dismissOnTap(onClose) else Modifier)
-                    .background(if (interactive) Color.Black.copy(alpha = 0.28f) else Color.Transparent)
+                    .background(if (interactive) Color.Black.copy(alpha = 0.18f) else Color.Transparent)
             )
         }
 
@@ -145,9 +145,17 @@ fun WeatherPanel(
     }
 }
 
+/**
+ * The city on the left, with the air quality under it; on the right the sky's glyph, and under the
+ * glyph the reading: the temperature with the condition beside it, then today's high and low. The
+ * eye takes the place first and the numbers beside it, as a weather app puts them, rather than one
+ * long line of equal small print across the panel's head.
+ */
 @Composable
 private fun Header() {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    val now = Weather.shown(System.currentTimeMillis())
+    val air = Weather.air
+    Row(verticalAlignment = Alignment.Top) {
         Column(Modifier.weight(1f)) {
             BasicText(
                 Weather.place ?: stringResource(R.string.wx_unknown_place),
@@ -155,30 +163,45 @@ private fun Header() {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            val now = Weather.shown(System.currentTimeMillis())
-            if (now != null) {
-                val nowText = stringResource(R.string.wx_now, now.celsius, wxNameOf(now.code, now.kind))
-                val rangeText = if (now.high != null && now.low != null)
-                    stringResource(R.string.weather_high_low, now.high, now.low) else null
-                BasicText(
-                    if (rangeText != null) "$nowText  ·  $rangeText" else nowText,
-                    style = Type.Callout.copy(color = Palette.SecondaryLabel),
-                )
+            if (air != null) {
+                Spacer(Modifier.height(8.dp))
+                AirQualityInline(air)
             }
         }
-        val now = Weather.shown(System.currentTimeMillis())
         if (now != null) {
-            GlyphIcon(glyphFor(now.kind, now.day), Palette.Label, 34.dp, level = rainLevel(now.code))
+            Column(
+                Modifier.padding(start = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                GlyphIcon(glyphFor(now.kind, now.day), Palette.Label, 34.dp, level = rainLevel(now.code))
+                Spacer(Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    BasicText("${now.celsius}°", style = Type.Headline, maxLines = 1, softWrap = false)
+                    Spacer(Modifier.width(5.dp))
+                    BasicText(
+                        wxNameOf(now.code, now.kind),
+                        style = Type.Caption.copy(color = Palette.SecondaryLabel),
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
+                if (now.high != null && now.low != null) {
+                    Spacer(Modifier.height(3.dp))
+                    BasicText(
+                        stringResource(R.string.weather_high_low, now.high, now.low),
+                        style = Type.Caption.copy(color = Palette.TertiaryLabel),
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
+            }
         }
     }
-    AirQualityLine()
 }
 
-/** Current air quality under the place and reading, colour-coded by the US AQI band. Optional. */
+/** Air quality on the reading's line: a dot in its band's colour, then the AQI and PM2.5. */
 @Composable
-private fun AirQualityLine() {
-    val air = Weather.air ?: return
-    Spacer(Modifier.height(6.dp))
+private fun AirQualityInline(air: app.orchard.tv.weather.AirQuality) {
     val label = when {
         air.aqi <= 50 -> stringResource(R.string.wx_air_good)
         air.aqi <= 100 -> stringResource(R.string.wx_air_moderate)
@@ -197,12 +220,13 @@ private fun AirQualityLine() {
     }
     val pm = air.pm25?.let { stringResource(R.string.wx_air_pm25, it) } ?: ""
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.width(8.dp).height(8.dp).clip(RoundedCornerShape(4.dp)).background(tint))
-        Spacer(Modifier.width(7.dp))
+        Box(Modifier.width(6.dp).height(6.dp).clip(RoundedCornerShape(3.dp)).background(tint))
+        Spacer(Modifier.width(6.dp))
         BasicText(
             stringResource(R.string.wx_air_line, air.aqi, label, pm),
             style = Type.Caption.copy(color = Palette.SecondaryLabel),
             maxLines = 1,
+            softWrap = false,
             overflow = TextOverflow.Ellipsis,
         )
     }
